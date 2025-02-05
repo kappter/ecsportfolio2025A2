@@ -2,6 +2,7 @@
 /* This is a comment! Text here will be ignored by the browser. */
 body {
 	margin: 0 auto;
+	font: 100%/1.4 Verdana, Arial, Helvetica, sans-serif;
 }
 .homePage {
 	background: #47475C;
@@ -11,6 +12,8 @@ body {
 	margin: 0 auto;
 }
 .header {
+	font: 100%/1.4 Verdana, Arial, Helvetica, sans-serif;
+	color: blue;
 	background: #74B5DB;
 	text-align: center;
 	margin: 0px;
