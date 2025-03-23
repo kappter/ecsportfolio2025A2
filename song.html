@@ -65,6 +65,7 @@
     }
     .add-block-form select, .add-block-form input {
       margin: 5px;
+      width: 150px; /* Consistent width for alignment */
     }
   </style>
 </head>
@@ -79,10 +80,21 @@
       <option value="bridge">Bridge</option>
       <option value="outro">Outro</option>
       <option value="break">Break/Instrumental</option>
-    </select>
-    <input type="number" id="measures" min="1" value="4" placeholder="Measures">
-    <input type="text" id="key" value="C Major" placeholder="Key">
-    <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)">
+    </select><br>
+    <input type="number" id="measures" min="1" value="4" placeholder="Measures"><br>
+    <input type="text" id="key" value="C Major" placeholder="Key"><br>
+    <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)"><br>
+    <select id="feel">
+      <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
+      <option value="Sadness">Sadness – Slow, minor key, melancholy tones</option>
+      <option value="Calmness">Calmness – Soft, slow, ambient, relaxing</option>
+      <option value="Anger">Anger – Aggressive, fast-paced, punk/metal vibes</option>
+      <option value="Romantic">Romantic – Smooth melodies, sentimental, love-themed</option>
+      <option value="Fear">Fear – Suspenseful, dissonant, anxious</option>
+      <option value="Empowerment">Empowerment – Anthemic, motivational, strong beat</option>
+      <option value="Nostalgia">Nostalgia – Familiar tunes, longing, reminiscence</option>
+      <option value="Euphoria">Euphoria – Upbeat, fast-tempo, dance/electronic</option>
+    </select><br>
     <button onclick="addBlock()">Add Block</button>
   </div>
 
@@ -162,6 +174,7 @@
       const measures = document.getElementById('measures').value;
       const key = document.getElementById('key').value;
       const tempo = document.getElementById('tempo').value;
+      const feel = document.getElementById('feel').value;
 
       if (!measures || measures < 1) {
         alert('Please enter a valid number of measures.');
@@ -173,10 +186,10 @@
       block.classList.add('song-block', partType);
       block.setAttribute('data-measures', measures);
 
-      // Add label
+      // Add label with "Feel"
       const label = document.createElement('span');
       label.classList.add('label');
-      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM`;
+      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${feel}`;
       block.appendChild(label);
 
       // Setup size, drag, and delete
@@ -187,18 +200,18 @@
       timeline.appendChild(block);
     }
 
-    // Initial blocks
+    // Initial blocks with "Feel"
     const initialBlocks = [
-      { type: 'intro', measures: 4, key: 'C Major', tempo: 120 },
-      { type: 'verse', measures: 8, key: 'C Major', tempo: 120 },
-      { type: 'chorus', measures: 8, key: 'D Major', tempo: 120 }
+      { type: 'intro', measures: 4, key: 'C Major', tempo: 120, feel: 'Happiness' },
+      { type: 'verse', measures: 8, key: 'C Major', tempo: 120, feel: 'Calmness' },
+      { type: 'chorus', measures: 8, key: 'D Major', tempo: 120, feel: 'Euphoria' }
     ];
 
-    initialBlocks.forEach(({ type, measures, key, tempo }) => {
+    initialBlocks.forEach(({ type, measures, key, tempo, feel }) => {
       const block = document.createElement('div');
       block.classList.add('song-block', type);
       block.setAttribute('data-measures', measures);
-      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM</span>`;
+      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${feel}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
