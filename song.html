@@ -25,6 +25,7 @@
       justify-content: center;
       cursor: move;
       position: relative;
+      transition: opacity 0.2s;
     }
     .intro { background-color: #87CEEB; }
     .verse { background-color: #90EE90; }
@@ -38,7 +39,22 @@
       top: 5px;
       left: 5px;
       font-size: 12px;
-      color: black; /* Better contrast */
+      color: black;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 0, 0, 0.7);
+      border: none;
+      color: white;
+      font-size: 12px;
+      padding: 2px 5px;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    .delete-btn:hover {
+      background: rgba(255, 0, 0, 1);
     }
     .add-block-form {
       margin: 20px;
@@ -76,6 +92,7 @@
 
   <script>
     const timeline = document.getElementById('timeline');
+    let draggedBlock = null;
 
     // Function to update block size based on measures
     function updateBlockSize(block) {
@@ -84,13 +101,15 @@
       block.style.width = `${measures * pixelsPerMeasure}px`;
     }
 
-    // Function to make a block draggable
-    function makeDraggable(block) {
+    // Function to make a block draggable and deletable
+    function setupBlock(block) {
       block.draggable = true;
 
-      block.addEventListener('dragstart', () => {
+      // Drag events
+      block.addEventListener('dragstart', (e) => {
         draggedBlock = block;
         setTimeout(() => block.style.opacity = '0.5', 0);
+        e.dataTransfer.setData('text/plain', ''); // Required for Firefox
       });
 
       block.addEventListener('dragend', () => {
@@ -98,11 +117,24 @@
         draggedBlock = null;
       });
 
-      block.addEventListener('dragover', (e) => e.preventDefault());
+      block.addEventListener('dragover', (e) => {
+        e.preventDefault(); // Allow dropping
+      });
+
+      block.addEventListener('dragenter', () => {
+        if (block !== draggedBlock) {
+          block.style.border = '2px dashed #000';
+        }
+      });
+
+      block.addEventListener('dragleave', () => {
+        block.style.border = 'none';
+      });
 
       block.addEventListener('drop', (e) => {
         e.preventDefault();
-        if (draggedBlock !== block) {
+        block.style.border = 'none';
+        if (draggedBlock && draggedBlock !== block) {
           const allBlocks = [...timeline.querySelectorAll('.song-block')];
           const draggedIndex = allBlocks.indexOf(draggedBlock);
           const dropIndex = allBlocks.indexOf(block);
@@ -113,6 +145,15 @@
           }
         }
       });
+
+      // Add delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.classList.add('delete-btn');
+      deleteBtn.textContent = 'X';
+      deleteBtn.addEventListener('click', () => {
+        block.remove();
+      });
+      block.appendChild(deleteBtn);
     }
 
     // Function to add a new block
@@ -121,6 +162,11 @@
       const measures = document.getElementById('measures').value;
       const key = document.getElementById('key').value;
       const tempo = document.getElementById('tempo').value;
+
+      if (!measures || measures < 1) {
+        alert('Please enter a valid number of measures.');
+        return;
+      }
 
       // Create new block
       const block = document.createElement('div');
@@ -133,17 +179,15 @@
       label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM`;
       block.appendChild(label);
 
-      // Update size and make draggable
+      // Setup size, drag, and delete
       updateBlockSize(block);
-      makeDraggable(block);
+      setupBlock(block);
 
       // Append to timeline
       timeline.appendChild(block);
     }
 
-    let draggedBlock = null;
-
-    // Optional: Add initial blocks
+    // Initial blocks
     const initialBlocks = [
       { type: 'intro', measures: 4, key: 'C Major', tempo: 120 },
       { type: 'verse', measures: 8, key: 'C Major', tempo: 120 },
@@ -156,7 +200,7 @@
       block.setAttribute('data-measures', measures);
       block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM</span>`;
       updateBlockSize(block);
-      makeDraggable(block);
+      setupBlock(block);
       timeline.appendChild(block);
     });
   </script>
