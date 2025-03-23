@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Song Builder</title>
+  <style>
+    .timeline {
+      display: flex;
+      flex-direction: row;
+      gap: 5px;
+      padding: 10px;
+      background: #f0f0f0;
+      overflow-x: auto;
+    }
+    .song-block {
+      height: 100px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: move;
+      position: relative;
+    }
+    .intro { background-color: #87CEEB; }
+    .verse { background-color: #90EE90; }
+    .chorus { background-color: #FF6347; }
+    .bridge { background-color: #9370DB; }
+    .outro { background-color: #D3D3D3; }
+    .label {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="timeline" id="timeline">
+    <div class="song-block intro" data-measures="4" style="width: 100px;">
+      <span class="label">Intro<br>4 measures<br>C Major<br>120 BPM</span>
+    </div>
+    <div class="song-block verse" data-measures="8" style="width: 200px;">
+      <span class="label">Verse<br>8 measures<br>C Major<br>120 BPM</span>
+    </div>
+    <div class="song-block chorus" data-measures="8" style="width: 200px;">
+      <span class="label">Chorus<br>8 measures<br>D Major<br>120 BPM</span>
+    </div>
+    <div class="song-block bridge" data-measures="8" style="width: 200px;">
+      <span class="label">Bridge<br>8 measures<br>C Major<br>100 BPM</span>
+    </div>
+    <div class="song-block outro" data-measures="4" style="width: 100px;">
+      <span class="label">Outro<br>4 measures<br>C Major<br>120 BPM</span>
+    </div>
+  </div>
+
+  <script>
+    const timeline = document.getElementById('timeline');
+    const blocks = document.querySelectorAll('.song-block');
+
+    // Simple drag-and-drop (manual implementation)
+    let draggedBlock = null;
+
+    blocks.forEach(block => {
+      block.draggable = true;
+
+      block.addEventListener('dragstart', () => {
+        draggedBlock = block;
+        setTimeout(() => block.style.opacity = '0.5', 0);
+      });
+
+      block.addEventListener('dragend', () => {
+        draggedBlock.style.opacity = '1';
+        draggedBlock = null;
+      });
+
+      block.addEventListener('dragover', (e) => e.preventDefault());
+
+      block.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedBlock !== block) {
+          const allBlocks = [...timeline.querySelectorAll('.song-block')];
+          const draggedIndex = allBlocks.indexOf(draggedBlock);
+          const dropIndex = allBlocks.indexOf(block);
+          if (draggedIndex < dropIndex) {
+            block.after(draggedBlock);
+          } else {
+            block.before(draggedBlock);
+          }
+        }
+      });
+    });
+
+    // Function to update block size based on measures
+    function updateBlockSize(block) {
+      const measures = parseInt(block.getAttribute('data-measures'));
+      const pixelsPerMeasure = 25; // 1 measure = 25px
+      block.style.width = `${measures * pixelsPerMeasure}px`;
+    }
+
+    // Initial sizing
+    blocks.forEach(updateBlockSize);
+  </script>
+</body>
+</html>
