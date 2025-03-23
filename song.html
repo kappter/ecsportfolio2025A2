@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Song Builder</title>
   <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
     .timeline {
       display: flex;
       flex-direction: row;
@@ -12,6 +15,7 @@
       padding: 10px;
       background: #f0f0f0;
       overflow-x: auto;
+      min-height: 120px;
     }
     .song-block {
       height: 100px;
@@ -24,44 +28,64 @@
     }
     .intro { background-color: #87CEEB; }
     .verse { background-color: #90EE90; }
+    .pre-chorus { background-color: #FFFF99; }
     .chorus { background-color: #FF6347; }
     .bridge { background-color: #9370DB; }
     .outro { background-color: #D3D3D3; }
+    .break { background-color: #FFA500; }
     .label {
       position: absolute;
       top: 5px;
       left: 5px;
       font-size: 12px;
+      color: black; /* Better contrast */
+    }
+    .add-block-form {
+      margin: 20px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      display: inline-block;
+    }
+    .add-block-form select, .add-block-form input {
+      margin: 5px;
     }
   </style>
 </head>
 <body>
+  <div class="add-block-form">
+    <h3>Add Song Part</h3>
+    <select id="part-type">
+      <option value="intro">Intro</option>
+      <option value="verse">Verse</option>
+      <option value="pre-chorus">Pre-Chorus</option>
+      <option value="chorus">Chorus</option>
+      <option value="bridge">Bridge</option>
+      <option value="outro">Outro</option>
+      <option value="break">Break/Instrumental</option>
+    </select>
+    <input type="number" id="measures" min="1" value="4" placeholder="Measures">
+    <input type="text" id="key" value="C Major" placeholder="Key">
+    <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)">
+    <button onclick="addBlock()">Add Block</button>
+  </div>
+
   <div class="timeline" id="timeline">
-    <div class="song-block intro" data-measures="4" style="width: 100px;">
-      <span class="label">Intro<br>4 measures<br>C Major<br>120 BPM</span>
-    </div>
-    <div class="song-block verse" data-measures="8" style="width: 200px;">
-      <span class="label">Verse<br>8 measures<br>C Major<br>120 BPM</span>
-    </div>
-    <div class="song-block chorus" data-measures="8" style="width: 200px;">
-      <span class="label">Chorus<br>8 measures<br>D Major<br>120 BPM</span>
-    </div>
-    <div class="song-block bridge" data-measures="8" style="width: 200px;">
-      <span class="label">Bridge<br>8 measures<br>C Major<br>100 BPM</span>
-    </div>
-    <div class="song-block outro" data-measures="4" style="width: 100px;">
-      <span class="label">Outro<br>4 measures<br>C Major<br>120 BPM</span>
-    </div>
+    <!-- Initial blocks can be added here or left empty -->
   </div>
 
   <script>
     const timeline = document.getElementById('timeline');
-    const blocks = document.querySelectorAll('.song-block');
 
-    // Simple drag-and-drop (manual implementation)
-    let draggedBlock = null;
+    // Function to update block size based on measures
+    function updateBlockSize(block) {
+      const measures = parseInt(block.getAttribute('data-measures'));
+      const pixelsPerMeasure = 25; // 1 measure = 25px
+      block.style.width = `${measures * pixelsPerMeasure}px`;
+    }
 
-    blocks.forEach(block => {
+    // Function to make a block draggable
+    function makeDraggable(block) {
       block.draggable = true;
 
       block.addEventListener('dragstart', () => {
@@ -89,17 +113,52 @@
           }
         }
       });
-    });
-
-    // Function to update block size based on measures
-    function updateBlockSize(block) {
-      const measures = parseInt(block.getAttribute('data-measures'));
-      const pixelsPerMeasure = 25; // 1 measure = 25px
-      block.style.width = `${measures * pixelsPerMeasure}px`;
     }
 
-    // Initial sizing
-    blocks.forEach(updateBlockSize);
+    // Function to add a new block
+    function addBlock() {
+      const partType = document.getElementById('part-type').value;
+      const measures = document.getElementById('measures').value;
+      const key = document.getElementById('key').value;
+      const tempo = document.getElementById('tempo').value;
+
+      // Create new block
+      const block = document.createElement('div');
+      block.classList.add('song-block', partType);
+      block.setAttribute('data-measures', measures);
+
+      // Add label
+      const label = document.createElement('span');
+      label.classList.add('label');
+      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM`;
+      block.appendChild(label);
+
+      // Update size and make draggable
+      updateBlockSize(block);
+      makeDraggable(block);
+
+      // Append to timeline
+      timeline.appendChild(block);
+    }
+
+    let draggedBlock = null;
+
+    // Optional: Add initial blocks
+    const initialBlocks = [
+      { type: 'intro', measures: 4, key: 'C Major', tempo: 120 },
+      { type: 'verse', measures: 8, key: 'C Major', tempo: 120 },
+      { type: 'chorus', measures: 8, key: 'D Major', tempo: 120 }
+    ];
+
+    initialBlocks.forEach(({ type, measures, key, tempo }) => {
+      const block = document.createElement('div');
+      block.classList.add('song-block', type);
+      block.setAttribute('data-measures', measures);
+      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM</span>`;
+      updateBlockSize(block);
+      makeDraggable(block);
+      timeline.appendChild(block);
+    });
   </script>
 </body>
 </html>
