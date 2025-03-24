@@ -177,20 +177,24 @@
         max-width: 100%;
         width: 612pt; /* 8.5in */
         padding: 36pt; /* 0.5in margins */
-        background: none;
+        background: #f0f0f0; /* Match screen */
         display: block;
       }
       .song-block {
         width: 100% !important;
-        height: 72pt; /* 1in, larger for visibility */
+        height: 72pt; /* 1in */
         margin-bottom: 10pt;
         page-break-inside: avoid;
+        color: white; /* Keep for consistency, though not visible */
       }
       .label {
         font-size: 9pt;
         max-width: 90%;
         padding: 6pt;
-        line-height: 1.4; /* Slightly increased for three lines */
+        line-height: 1.4;
+        color: black; /* Ensure visibility */
+        background: rgba(255, 255, 255, 0.7); /* Match screen */
+        border-radius: 3px; /* Match screen */
       }
       .tooltip, .delete-btn {
         display: none;
