@@ -335,6 +335,9 @@
       <button onclick="clearSelection()">Clear</button>
       <button onclick="printSong()">Print</button>
       <button id="play-btn" onclick="togglePlay()">Play</button>
+      <button onclick="exportSong()">Export</button>
+      <label for="import-file" style="flex: 1; padding: 5px; background: #ddd; text-align: center; cursor: pointer;">Import</label>
+      <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importSong(event)">
     </div>
   </div>
 
@@ -371,6 +374,7 @@
       currentSongName = songName || 'SongMaker';
       document.title = `${currentSongName} - SongMaker`;
       printSongName.textContent = currentSongName;
+      document.getElementById('song-name').value = currentSongName;
     }
 
     // Function to capitalize part name
@@ -746,6 +750,81 @@
       currentBlockDisplay.style.backgroundColor = '';
       currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
       calculateTimings();
+    }
+
+    // Function to export the song as JSON
+    function exportSong() {
+      const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).map(block => ({
+        type: block.classList[1],
+        measures: block.getAttribute('data-measures'),
+        key: block.getAttribute('data-key'),
+        tempo: block.getAttribute('data-tempo'),
+        timeSignature: block.getAttribute('data-time-signature'),
+        feel: block.getAttribute('data-feel'),
+        lyrics: block.getAttribute('data-lyrics')
+      }));
+      const songData = {
+        songName: currentSongName,
+        blocks: blocks
+      };
+      const json = JSON.stringify(songData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentSongName || 'Untitled'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Function to import a song from JSON
+    function importSong(event) {
+      const file = event.target.files[0];
+      if (!file || !file.name.endsWith('.json')) {
+        alert('Please select a valid .json file.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const songData = JSON.parse(e.target.result);
+          if (!songData.songName || !Array.isArray(songData.blocks)) {
+            throw new Error('Invalid song file format.');
+          }
+
+          // Clear existing timeline and playback
+          timeline.innerHTML = '';
+          resetPlayback();
+          if (selectedBlock) clearSelection();
+
+          // Update song name
+          updateTitle(songData.songName);
+
+          // Rebuild blocks
+          songData.blocks.forEach(({ type, measures, key, tempo, timeSignature, feel, lyrics }) => {
+            const block = document.createElement('div');
+            block.classList.add('song-block', type);
+            block.setAttribute('data-measures', measures);
+            block.setAttribute('data-tempo', tempo);
+            block.setAttribute('data-time-signature', timeSignature);
+            block.setAttribute('data-feel', feel);
+            block.setAttribute('data-lyrics', lyrics || '');
+            block.setAttribute('data-key', key);
+            block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+            updateBlockSize(block);
+            setupBlock(block);
+            timeline.appendChild(block);
+          });
+
+          calculateTimings();
+        } catch (error) {
+          alert(`Failed to load song: ${error.message}`);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = ''; // Reset file input
     }
 
     // Initial blocks with varied part types, feels, and lyrics
