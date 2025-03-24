@@ -57,7 +57,7 @@
       position: absolute;
       top: 5px;
       left: 5px;
-      font-size: 10px; /* Tweaked from 11px */
+      font-size: 10px;
       color: black;
       padding: 4px 6px;
       background: rgba(255, 255, 255, 0.7);
@@ -158,7 +158,7 @@
       font-weight: bold;
     }
     .print-header {
-      display: none; /* Hidden on screen */
+      display: none;
     }
     @media print {
       body {
@@ -171,7 +171,7 @@
         display: block;
         font-size: 18pt;
         text-align: center;
-        margin: 36pt 36pt 18pt; /* Top margin 0.5in, sides 0.5in, bottom 0.25in */
+        margin: 36pt 36pt 18pt;
       }
       .timeline {
         max-width: 100%;
@@ -182,14 +182,15 @@
       }
       .song-block {
         width: 100% !important;
-        height: auto;
+        height: 72pt; /* 1in, larger for visibility */
         margin-bottom: 10pt;
         page-break-inside: avoid;
       }
       .label {
-        font-size: 9pt; /* Tweaked from 10pt */
+        font-size: 9pt;
         max-width: 90%;
         padding: 6pt;
+        line-height: 1.4; /* Slightly increased for three lines */
       }
       .tooltip, .delete-btn {
         display: none;
@@ -317,7 +318,7 @@
     function updateTitle(songName) {
       currentSongName = songName || 'SongMaker';
       document.title = `${currentSongName} - SongMaker`;
-      printSongName.textContent = currentSongName; // Sync print header
+      printSongName.textContent = currentSongName;
     }
 
     // Function to capitalize part name
@@ -507,7 +508,7 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      label.innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>' + truncateLyrics(lyrics) : ''}`;
       block.appendChild(label);
 
       const tooltip = document.createElement('span');
@@ -550,7 +551,7 @@
       selectedBlock.setAttribute('data-feel', feel);
       selectedBlock.setAttribute('data-lyrics', lyrics);
       selectedBlock.setAttribute('data-key', key);
-      selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>' + truncateLyrics(lyrics) : ''}`;
       selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
       updateBlockSize(selectedBlock);
       clearSelection();
@@ -581,7 +582,7 @@
       block.setAttribute('data-feel', feel);
       block.setAttribute('data-lyrics', lyrics);
       block.setAttribute('data-key', key);
-      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
