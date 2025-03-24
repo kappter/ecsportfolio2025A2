@@ -29,7 +29,7 @@
       transition: opacity 0.2s;
     }
     .song-block.selected {
-      border: 2px solid #000; /* Highlight selected block */
+      border: 2px solid #000;
     }
     .intro { background-color: #87CEEB; }
     .verse { background-color: #90EE90; }
@@ -142,14 +142,15 @@
       height: 60px;
       resize: vertical;
     }
-    .add-block-form button {
+    .button-group {
       flex: 0 0 100%;
+      display: flex;
+      gap: 10px;
       margin-top: 10px;
     }
-    .time-calculator {
-      margin: 20px;
-      font-size: 16px;
-      font-weight: bold;
+    .add-block-form button {
+      flex: 1;
+      padding: 5px;
     }
   </style>
 </head>
@@ -243,7 +244,11 @@
       <label for="lyrics">Lyrics</label>
       <textarea id="lyrics" placeholder="Enter lyrics here"></textarea>
     </div>
-    <button onclick="updateBlock()">Update Block</button>
+    <div class="button-group">
+      <button onclick="addBlock()">Add Block</button>
+      <button onclick="updateBlock()">Update Block</button>
+      <button onclick="clearSelection()">Clear</button>
+    </div>
   </div>
 
   <div class="timeline" id="timeline">
@@ -259,7 +264,7 @@
     const timeCalculator = document.getElementById('time-calculator');
     let draggedBlock = null;
     let selectedBlock = null;
-    let currentSongName = 'Echoes of Joy'; // Persistent song name
+    let currentSongName = 'Echoes of Joy';
 
     // Function to update document title
     function updateTitle(songName) {
@@ -372,9 +377,9 @@
 
     // Function to load block data into form
     function loadBlockIntoForm(block) {
-      document.getElementById('part-type').value = block.classList[1]; // Second class is part type
+      document.getElementById('part-type').value = block.classList[1];
       document.getElementById('measures').value = block.getAttribute('data-measures');
-      document.getElementById('key').value = block.getAttribute('data-key') || 'C Major'; // Fallback if not set
+      document.getElementById('key').value = block.getAttribute('data-key') || 'C Major';
       document.getElementById('tempo').value = block.getAttribute('data-tempo');
       document.getElementById('time-signature').value = block.getAttribute('data-time-signature');
       document.getElementById('feel').value = block.getAttribute('data-feel');
@@ -444,7 +449,7 @@
       deleteBtn.classList.add('delete-btn');
       deleteBtn.textContent = 'X';
       deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent triggering click on block
+        e.stopPropagation();
         block.remove();
         if (block === selectedBlock) clearSelection();
         calculateTotalDuration();
@@ -459,8 +464,8 @@
       });
     }
 
-    // Function to update or add a block
-    function updateBlock() {
+    // Function to add a new block
+    function addBlock() {
       const partType = document.getElementById('part-type').value;
       const measures = document.getElementById('measures').value;
       const key = document.getElementById('key').value;
@@ -474,47 +479,65 @@
         return;
       }
 
-      if (selectedBlock) {
-        // Update existing block
-        selectedBlock.className = `song-block ${partType}`;
-        selectedBlock.setAttribute('data-measures', measures);
-        selectedBlock.setAttribute('data-tempo', tempo);
-        selectedBlock.setAttribute('data-time-signature', timeSignature);
-        selectedBlock.setAttribute('data-feel', feel);
-        selectedBlock.setAttribute('data-lyrics', lyrics);
-        selectedBlock.setAttribute('data-key', key); // Store full key
-        selectedBlock.querySelector('.label').textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
-        selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
-        updateBlockSize(selectedBlock);
-        clearSelection();
-      } else {
-        // Add new block
-        const block = document.createElement('div');
-        block.classList.add('song-block', partType);
-        block.setAttribute('data-measures', measures);
-        block.setAttribute('data-tempo', tempo);
-        block.setAttribute('data-time-signature', timeSignature);
-        block.setAttribute('data-feel', feel);
-        block.setAttribute('data-lyrics', lyrics);
-        block.setAttribute('data-key', key);
+      const block = document.createElement('div');
+      block.classList.add('song-block', partType);
+      block.setAttribute('data-measures', measures);
+      block.setAttribute('data-tempo', tempo);
+      block.setAttribute('data-time-signature', timeSignature);
+      block.setAttribute('data-feel', feel);
+      block.setAttribute('data-lyrics', lyrics);
+      block.setAttribute('data-key', key);
 
-        const label = document.createElement('span');
-        label.classList.add('label');
-        label.textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
-        block.appendChild(label);
+      const label = document.createElement('span');
+      label.classList.add('label');
+      label.textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      block.appendChild(label);
 
-        const tooltip = document.createElement('span');
-        tooltip.classList.add('tooltip');
-        tooltip.textContent = lyrics || 'No lyrics';
-        block.appendChild(tooltip);
+      const tooltip = document.createElement('span');
+      tooltip.classList.add('tooltip');
+      tooltip.textContent = lyrics || 'No lyrics';
+      block.appendChild(tooltip);
 
-        updateBlockSize(block);
-        setupBlock(block);
-        timeline.appendChild(block);
-      }
+      updateBlockSize(block);
+      setupBlock(block);
+      timeline.appendChild(block);
 
       calculateTotalDuration();
-      document.getElementById('lyrics').value = ''; // Clear lyrics field
+      document.getElementById('lyrics').value = '';
+    }
+
+    // Function to update an existing block
+    function updateBlock() {
+      if (!selectedBlock) {
+        alert('Please select a block to update.');
+        return;
+      }
+
+      const partType = document.getElementById('part-type').value;
+      const measures = document.getElementById('measures').value;
+      const key = document.getElementById('key').value;
+      const tempo = document.getElementById('tempo').value;
+      const timeSignature = document.getElementById('time-signature').value;
+      const feel = document.getElementById('feel').value;
+      const lyrics = document.getElementById('lyrics').value;
+
+      if (!measures || measures < 1 || !tempo || tempo < 1) {
+        alert('Please enter valid measures and tempo.');
+        return;
+      }
+
+      selectedBlock.className = `song-block ${partType}`;
+      selectedBlock.setAttribute('data-measures', measures);
+      selectedBlock.setAttribute('data-tempo', tempo);
+      selectedBlock.setAttribute('data-time-signature', timeSignature);
+      selectedBlock.setAttribute('data-feel', feel);
+      selectedBlock.setAttribute('data-lyrics', lyrics);
+      selectedBlock.setAttribute('data-key', key);
+      selectedBlock.querySelector('.label').textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
+      updateBlockSize(selectedBlock);
+      clearSelection();
+      calculateTotalDuration();
     }
 
     // Initial blocks with varied part types, feels, and lyrics
