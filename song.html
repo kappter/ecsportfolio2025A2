@@ -152,6 +152,43 @@
       flex: 1;
       padding: 5px;
     }
+    .time-calculator {
+      margin: 20px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    @media print {
+      body {
+        margin: 0;
+      }
+      .add-block-form, .button-group, .time-calculator {
+        display: none; /* Hide form, buttons, and calculator */
+      }
+      .timeline {
+        max-width: 100%;
+        width: 612pt; /* 8.5in in points */
+        padding: 36pt; /* 0.5in margins */
+        background: none;
+        display: block; /* Stack blocks vertically */
+      }
+      .song-block {
+        width: 100% !important; /* Full width for print */
+        height: auto;
+        margin-bottom: 10pt;
+        page-break-inside: avoid; /* Prevent block splitting across pages */
+      }
+      .label {
+        font-size: 10pt;
+        max-width: 90%;
+        padding: 6pt;
+      }
+      .tooltip {
+        display: none; /* Hide tooltips in print */
+      }
+      .delete-btn {
+        display: none; /* Hide delete buttons */
+      }
+    }
   </style>
 </head>
 <body>
@@ -248,6 +285,7 @@
       <button onclick="addBlock()">Add Block</button>
       <button onclick="updateBlock()">Update Block</button>
       <button onclick="clearSelection()">Clear</button>
+      <button onclick="printSong()">Print</button>
     </div>
   </div>
 
@@ -280,37 +318,6 @@
     // Function to abbreviate key
     function abbreviateKey(key) {
       return key.replace(' Major', '').replace(' Minor', 'm');
-    }
-
-    // Function to abbreviate feel
-    function abbreviateFeel(feel) {
-      const map = {
-        'Happiness': 'Hap',
-        'Sadness': 'Sad',
-        'Calmness': 'Calm',
-        'Anger': 'Ang',
-        'Romantic': 'Rom',
-        'Fear': 'Fear',
-        'Empowerment': 'Emp',
-        'Nostalgia': 'Nos',
-        'Euphoria': 'Eup',
-        'Tension': 'Ten',
-        'Dissonance': 'Dis',
-        'Reluctance': 'Rel',
-        'Joy': 'Joy',
-        'Melancholy': 'Mel',
-        'Excitement': 'Exc',
-        'Serenity': 'Ser',
-        'Despair': 'Des',
-        'Hope': 'Hope',
-        'Confusion': 'Con',
-        'Triumph': 'Tri',
-        'Longing': 'Lon',
-        'Awe': 'Awe',
-        'Frustration': 'Fru',
-        'Bliss': 'Bli'
-      };
-      return map[feel] || feel.slice(0, 4);
     }
 
     // Function to truncate lyrics for display
@@ -490,7 +497,7 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      label.textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
       block.appendChild(label);
 
       const tooltip = document.createElement('span');
@@ -533,11 +540,16 @@
       selectedBlock.setAttribute('data-feel', feel);
       selectedBlock.setAttribute('data-lyrics', lyrics);
       selectedBlock.setAttribute('data-key', key);
-      selectedBlock.querySelector('.label').textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      selectedBlock.querySelector('.label').textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
       selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
       updateBlockSize(selectedBlock);
       clearSelection();
       calculateTotalDuration();
+    }
+
+    // Function to print the song
+    function printSong() {
+      window.print();
     }
 
     // Initial blocks with varied part types, feels, and lyrics
@@ -559,7 +571,7 @@
       block.setAttribute('data-feel', feel);
       block.setAttribute('data-lyrics', lyrics);
       block.setAttribute('data-key', key);
-      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
