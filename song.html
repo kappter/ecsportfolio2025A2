@@ -335,6 +335,7 @@
       <button onclick="clearSelection()">Clear</button>
       <button onclick="printSong()">Print</button>
       <button id="play-btn" onclick="togglePlay()">Play</button>
+      <button id="sound-btn" onclick="toggleSound()">Sound On</button>
       <button onclick="exportSong()">Export</button>
       <label for="import-file" style="flex: 1; padding: 5px; background: #ddd; text-align: center; cursor: pointer;">Import</label>
       <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importSong(event)">
@@ -360,6 +361,7 @@
     const timeCalculator = document.getElementById('time-calculator');
     const currentBlockDisplay = document.getElementById('current-block-display');
     const playBtn = document.getElementById('play-btn');
+    const soundBtn = document.getElementById('sound-btn');
     const printSongName = document.getElementById('print-song-name');
     let draggedBlock = null;
     let selectedBlock = null;
@@ -371,13 +373,20 @@
     let blockBeat = 0;
     let blockMeasure = 0;
     let lastBeatTime = 0;
+    let soundEnabled = true;
 
     // Valid time signatures from dropdown
     const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
 
-    // Audio objects for tick and tock sounds (using simple sine waves as placeholders)
-    const tickSound = new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAAACAAIAAgACAAIAAgA'); // Short tick
-    const tockSound = new Audio('data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAAACAAIAAgACAAIAAgACAAIAAgACAAIAAgA'); // Slightly longer tock
+    // Load local tick and tock sound files
+    const tickSound = new Audio('tick.wav');
+    const tockSound = new Audio('tock.wav');
+
+    // Function to toggle sound on/off
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      soundBtn.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
+    }
 
     // Function to update document title and print header
     function updateTitle(songName) {
@@ -704,10 +713,12 @@
         const currentBeatTime = leadInTime * beatsPerSecond;
 
         if (currentBeatTime >= leadInCount && leadInCount < leadInBeats) {
-          if (leadInCount === 0) {
-            tockSound.cloneNode().play(); // Tock on first beat
-          } else {
-            tickSound.cloneNode().play(); // Tick on other beats
+          if (soundEnabled) {
+            if (leadInCount === 0) {
+              tockSound.cloneNode().play(); // Tock on first beat
+            } else {
+              tickSound.cloneNode().play(); // Tick on other beats
+            }
           }
           leadInCount++;
           currentBlockDisplay.innerHTML = `<span class="label">Lead-In: ${leadInCount}</span>`;
@@ -738,8 +749,8 @@
         const timeInBlock = currentTime - currentTiming.start;
         const beatInBlock = timeInBlock * beatsPerSecond;
 
-        // Play tick/tock sounds
-        if (currentTime - lastBeatTime >= 1 / beatsPerSecond) {
+        // Play tick/tock sounds if enabled
+        if (soundEnabled && currentTime - lastBeatTime >= 1 / beatsPerSecond) {
           const isFirstBeatOfMeasure = blockBeat % currentTiming.beatsPerMeasure === 0;
           (isFirstBeatOfMeasure ? tockSound : tickSound).cloneNode().play();
           lastBeatTime = currentTime;
