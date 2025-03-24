@@ -661,22 +661,21 @@
         clearInterval(playInterval);
         playBtn.textContent = 'Play';
         isPlaying = false;
-        resetPlayback();
+        // Do not reset playback state here
       } else {
         const { timings, totalSeconds, totalBeats } = calculateTimings();
         if (timings.length === 0) return;
         playBtn.textContent = 'Pause';
         isPlaying = true;
-        currentTime = 0;
-        currentBeat = 0;
         playSong(timings, totalSeconds, totalBeats);
       }
     }
 
     // Function to play the song
     function playSong(timings, totalSeconds, totalBeats) {
-      let currentIndex = 0;
-      updateCurrentBlock(timings[0]);
+      let currentIndex = timings.findIndex(t => currentTime >= t.start && currentTime < t.start + t.duration);
+      if (currentIndex === -1) currentIndex = 0; // Start from beginning if time is out of range
+      updateCurrentBlock(timings[currentIndex]);
 
       playInterval = setInterval(() => {
         currentTime += 0.1;
@@ -779,7 +778,27 @@
       URL.revokeObjectURL(url);
     }
 
-    // Function to import a song from JSON
+    // Function to validate a block
+    function validateBlock(block) {
+      const requiredFields = ['type', 'measures', 'key', 'tempo', 'timeSignature'];
+      for (const field of requiredFields) {
+        if (!block[field] || block[field] === '') {
+          return `Missing or empty required field: ${field}`;
+        }
+      }
+      const measures = parseInt(block.measures);
+      const tempo = parseInt(block.tempo);
+      if (isNaN(measures) || measures <= 0) {
+        return 'Measures must be a positive number';
+      }
+      if (isNaN(tempo) || tempo <= 0) {
+        return 'Tempo must be a positive number';
+      }
+      // Optional fields: feel, lyrics (can be empty or missing)
+      return null;
+    }
+
+    // Function to import a song from JSON with validation and playback preservation
     function importSong(event) {
       const file = event.target.files[0];
       if (!file || !file.name.endsWith('.json')) {
@@ -791,12 +810,24 @@
         try {
           const songData = JSON.parse(e.target.result);
           if (!songData.songName || !Array.isArray(songData.blocks)) {
-            throw new Error('Invalid song file format.');
+            throw new Error('Invalid song file format: missing songName or blocks array.');
           }
 
-          // Clear existing timeline and playback
+          // Validate each block
+          for (let i = 0; i < songData.blocks.length; i++) {
+            const error = validateBlock(songData.blocks[i]);
+            if (error) {
+              throw new Error(`Block ${i + 1}: ${error}`);
+            }
+          }
+
+          // Preserve playback state
+          const wasPlaying = isPlaying;
+          const previousTime = currentTime;
+          if (wasPlaying) clearInterval(playInterval);
+
+          // Clear existing timeline and selection
           timeline.innerHTML = '';
-          resetPlayback();
           if (selectedBlock) clearSelection();
 
           // Update song name
@@ -809,18 +840,36 @@
             block.setAttribute('data-measures', measures);
             block.setAttribute('data-tempo', tempo);
             block.setAttribute('data-time-signature', timeSignature);
-            block.setAttribute('data-feel', feel);
+            block.setAttribute('data-feel', feel || '');
             block.setAttribute('data-lyrics', lyrics || '');
             block.setAttribute('data-key', key);
-            block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+            block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel || ''}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
             updateBlockSize(block);
             setupBlock(block);
             timeline.appendChild(block);
           });
 
-          calculateTimings();
+          // Recalculate timings and restore playback
+          const { timings, totalSeconds, totalBeats } = calculateTimings();
+          if (previousTime >= totalSeconds) {
+            resetPlayback(); // Reset if previous time exceeds new duration
+          } else {
+            currentTime = previousTime; // Restore previous time
+            currentBeat = Math.floor(timings.filter(t => t.start < currentTime).reduce((sum, t) => sum + t.totalBeats, 0));
+            const currentIndex = timings.findIndex(t => currentTime >= t.start && currentTime < t.start + t.duration);
+            if (currentIndex !== -1) updateCurrentBlock(timings[currentIndex]);
+            if (wasPlaying) {
+              isPlaying = true;
+              playBtn.textContent = 'Pause';
+              playSong(timings, totalSeconds, totalBeats);
+            }
+          }
         } catch (error) {
           alert(`Failed to load song: ${error.message}`);
+          if (isPlaying) {
+            const { timings, totalSeconds, totalBeats } = calculateTimings();
+            playSong(timings, totalSeconds, totalBeats); // Resume previous song if import fails
+          }
         }
       };
       reader.readAsText(file);
