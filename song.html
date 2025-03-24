@@ -11,12 +11,12 @@
     .timeline {
       display: flex;
       flex-direction: row;
-      flex-wrap: wrap; /* Enable wrapping */
+      flex-wrap: wrap;
       gap: 5px;
       padding: 10px;
       background: #f0f0f0;
-      max-width: 960px; /* Wrap when exceeding 960px */
-      height: auto; /* Adjust height dynamically */
+      max-width: 960px;
+      height: auto;
     }
     .song-block {
       height: 100px;
@@ -40,7 +40,7 @@
     .solo { background-color: #FFA07A; }
     .ad-lib { background-color: #98FB98; }
     .hook { background-color: #FF69B4; }
-    .interlude { background-color: #E6EFA; }
+    .interlude { background-color: #E6E6FA; }
     .breakdown { background-color: #FFA500; }
     .drop { background-color: #DC143C; }
     .coda { background-color: #C0C0C0; }
@@ -54,41 +54,15 @@
       position: absolute;
       top: 5px;
       left: 5px;
-      font-size: 13px;
+      font-size: 11px; /* Smaller to fit Feel */
       color: black;
       padding: 2px 5px;
       background: rgba(255, 255, 255, 0.7);
       border-radius: 3px;
-    }
-    .tooltip {
-      visibility: hidden;
-      background: rgba(26, 60, 52, 0.9);
-      color: white;
-      border: 1px solid #A3D9C9;
-      padding: 8px;
-      border-radius: 5px;
-      position: absolute;
-      z-index: 1;
-      top: -60px;
-      left: 10px;
-      font-size: 14px;
       white-space: nowrap;
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-    }
-    .tooltip::after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: rgba(26, 60, 52, 0.9) transparent transparent transparent;
-    }
-    .song-block:hover .tooltip {
-      visibility: visible;
-      opacity: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90%; /* Prevent overflow */
     }
     .delete-btn {
       position: absolute;
@@ -110,7 +84,15 @@
       padding: 10px;
       background: #fff;
       border: 1px solid #ccc;
-      display: inline-block;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px; /* Space between columns */
+      justify-content: space-between;
+    }
+    .form-column {
+      flex: 1;
+      max-width: 45%; /* Two columns */
+      min-width: 150px; /* Prevent squashing */
     }
     .add-block-form label {
       display: block;
@@ -119,8 +101,12 @@
     }
     .add-block-form select, .add-block-form input {
       margin: 0 0 10px;
-      width: 150px;
+      width: 100%;
       display: block;
+    }
+    .add-block-form button {
+      flex: 0 0 100%; /* Full width for button */
+      margin-top: 10px;
     }
     .time-calculator {
       margin: 20px;
@@ -132,68 +118,72 @@
 <body>
   <div class="add-block-form">
     <h3>Add Song Part</h3>
-    <label for="part-type">Part Type</label>
-    <select id="part-type">
-      <option value="intro">Intro - The opening section, setting the tone or mood</option>
-      <option value="verse">Verse - Provides the narrative or main storytelling</option>
-      <option value="refrain">Refrain - A short, repeated line at the end of each verse</option>
-      <option value="pre-chorus">Pre-Chorus - Builds anticipation before the chorus</option>
-      <option value="chorus">Chorus - The main, memorable section with the hook</option>
-      <option value="post-chorus">Post-Chorus - Reinforces the chorus theme</option>
-      <option value="bridge">Bridge - A contrasting section for variety</option>
-      <option value="outro">Outro - The closing section, providing resolution</option>
-      <option value="elision">Elision - Overlaps sections for smooth transitions</option>
-      <option value="solo">Solo - Highlights an instrument’s melody or skill</option>
-      <option value="ad-lib">Ad Lib - Improvised vocals or instrumentals</option>
-      <option value="hook">Hook - The catchiest part to hook the listener</option>
-      <option value="interlude">Interlude - Brief instrumental or non-lyrical section</option>
-      <option value="breakdown">Breakdown - Instruments simplify for dynamic contrast</option>
-      <option value="drop">Drop - High-impact section, common in electronic music</option>
-      <option value="coda">Coda - Conclusive section reinforcing the ending</option>
-      <option value="modulation">Modulation - Key change to increase intensity</option>
-      <option value="tag">Tag - Repeated phrase emphasizing a theme</option>
-      <option value="chorus-reprise">Chorus Reprise - Shortened, modified chorus return</option>
-      <option value="countermelody">Countermelody - Secondary melody complementing the main</option>
-      <option value="instrumental-verse-chorus">Instrumental Verse/Chorus - No vocals, instruments lead</option>
-      <option value="false-ending">False Ending - Song seems to end but resumes</option>
-    </select>
-    <label for="measures">Measures</label>
-    <input type="number" id="measures" min="1" value="4" placeholder="Measures">
-    <label for="key">Key</label>
-    <input type="text" id="key" value="C Major" placeholder="Key">
-    <label for="tempo">Tempo (BPM)</label>
-    <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)">
-    <label for="time-signature">Time Signature</label>
-    <select id="time-signature">
-      <option value="4/4">4/4 (4 beats per measure)</option>
-      <option value="3/4">3/4 (3 beats per measure)</option>
-      <option value="6/8">6/8 (6 beats per measure)</option>
-      <option value="2/4">2/4 (2 beats per measure)</option>
-      <option value="5/4">5/4 (5 beats per measure)</option>
-      <option value="7/8">7/8 (7 beats per measure)</option>
-      <option value="12/8">12/8 (12 beats per measure)</option>
-      <option value="9/8">9/8 (9 beats per measure)</option>
-      <option value="11/8">11/8 (11 beats per measure)</option>
-      <option value="15/8">15/8 (15 beats per measure)</option>
-      <option value="13/8">13/8 (13 beats per measure)</option>
-      <option value="10/4">10/4 (10 beats per measure)</option>
-      <option value="8/8">8/8 (8 beats per measure)</option>
-      <option value="14/8">14/8 (14 beats per measure)</option>
-      <option value="16/8">16/8 (16 beats per measure)</option>
-      <option value="7/4">7/4 (7 beats per measure)</option>
-    </select>
-    <label for="feel">Feel</label>
-    <select id="feel">
-      <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
-      <option value="Sadness">Sadness – Slow, minor key, melancholy tones</option>
-      <option value="Calmness">Calmness – Soft, slow, ambient, relaxing</option>
-      <option value="Anger">Anger – Aggressive, fast-paced, punk/metal vibes</option>
-      <option value="Romantic">Romantic – Smooth melodies, sentimental, love-themed</option>
-      <option value="Fear">Fear – Suspenseful, dissonant, anxious</option>
-      <option value="Empowerment">Empowerment – Anthemic, motivational, strong beat</option>
-      <option value="Nostalgia">Nostalgia – Familiar tunes, longing, reminiscence</option>
-      <option value="Euphoria">Euphoria – Upbeat, fast-tempo, dance/electronic</option>
-    </select>
+    <div class="form-column">
+      <label for="part-type">Part Type</label>
+      <select id="part-type">
+        <option value="intro">Intro - The opening section, setting the tone or mood</option>
+        <option value="verse">Verse - Provides the narrative or main storytelling</option>
+        <option value="refrain">Refrain - A short, repeated line at the end of each verse</option>
+        <option value="pre-chorus">Pre-Chorus - Builds anticipation before the chorus</option>
+        <option value="chorus">Chorus - The main, memorable section with the hook</option>
+        <option value="post-chorus">Post-Chorus - Reinforces the chorus theme</option>
+        <option value="bridge">Bridge - A contrasting section for variety</option>
+        <option value="outro">Outro - The closing section, providing resolution</option>
+        <option value="elision">Elision - Overlaps sections for smooth transitions</option>
+        <option value="solo">Solo - Highlights an instrument’s melody or skill</option>
+        <option value="ad-lib">Ad Lib - Improvised vocals or instrumentals</option>
+        <option value="hook">Hook - The catchiest part to hook the listener</option>
+        <option value="interlude">Interlude - Brief instrumental or non-lyrical section</option>
+        <option value="breakdown">Breakdown - Instruments simplify for dynamic contrast</option>
+        <option value="drop">Drop - High-impact section, common in electronic music</option>
+        <option value="coda">Coda - Conclusive section reinforcing the ending</option>
+        <option value="modulation">Modulation - Key change to increase intensity</option>
+        <option value="tag">Tag - Repeated phrase emphasizing a theme</option>
+        <option value="chorus-reprise">Chorus Reprise - Shortened, modified chorus return</option>
+        <option value="countermelody">Countermelody - Secondary melody complementing the main</option>
+        <option value="instrumental-verse-chorus">Instrumental Verse/Chorus - No vocals, instruments lead</option>
+        <option value="false-ending">False Ending - Song seems to end but resumes</option>
+      </select>
+      <label for="measures">Measures</label>
+      <input type="number" id="measures" min="1" value="4" placeholder="Measures">
+      <label for="key">Key</label>
+      <input type="text" id="key" value="C Major" placeholder="Key">
+    </div>
+    <div class="form-column">
+      <label for="tempo">Tempo (BPM)</label>
+      <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)">
+      <label for="time-signature">Time Signature</label>
+      <select id="time-signature">
+        <option value="4/4">4/4 (4 beats per measure)</option>
+        <option value="3/4">3/4 (3 beats per measure)</option>
+        <option value="6/8">6/8 (6 beats per measure)</option>
+        <option value="2/4">2/4 (2 beats per measure)</option>
+        <option value="5/4">5/4 (5 beats per measure)</option>
+        <option value="7/8">7/8 (7 beats per measure)</option>
+        <option value="12/8">12/8 (12 beats per measure)</option>
+        <option value="9/8">9/8 (9 beats per measure)</option>
+        <option value="11/8">11/8 (11 beats per measure)</option>
+        <option value="15/8">15/8 (15 beats per measure)</option>
+        <option value="13/8">13/8 (13 beats per measure)</option>
+        <option value="10/4">10/4 (10 beats per measure)</option>
+        <option value="8/8">8/8 (8 beats per measure)</option>
+        <option value="14/8">14/8 (14 beats per measure)</option>
+        <option value="16/8">16/8 (16 beats per measure)</option>
+        <option value="7/4">7/4 (7 beats per measure)</option>
+      </select>
+      <label for="feel">Feel</label>
+      <select id="feel">
+        <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
+        <option value="Sadness">Sadness – Slow, minor key, melancholy tones</option>
+        <option value="Calmness">Calmness – Soft, slow, ambient, relaxing</option>
+        <option value="Anger">Anger – Aggressive, fast-paced, punk/metal vibes</option>
+        <option value="Romantic">Romantic – Smooth melodies, sentimental, love-themed</option>
+        <option value="Fear">Fear – Suspenseful, dissonant, anxious</option>
+        <option value="Empowerment">Empowerment – Anthemic, motivational, strong beat</option>
+        <option value="Nostalgia">Nostalgia – Familiar tunes, longing, reminiscence</option>
+        <option value="Euphoria">Euphoria – Upbeat, fast-tempo, dance/electronic</option>
+      </select>
+    </div>
     <button onclick="addBlock()">Add Block</button>
   </div>
 
@@ -244,6 +234,22 @@
       return key.replace(' Major', '').replace(' Minor', 'm');
     }
 
+    // Function to abbreviate feel
+    function abbreviateFeel(feel) {
+      const map = {
+        'Happiness': 'Hap',
+        'Sadness': 'Sad',
+        'Calmness': 'Calm',
+        'Anger': 'Ang',
+        'Romantic': 'Rom',
+        'Fear': 'Fear',
+        'Empowerment': 'Emp',
+        'Nostalgia': 'Nos',
+        'Euphoria': 'Eup'
+      };
+      return map[feel] || feel.slice(0, 4); // Fallback to first 4 chars
+    }
+
     // Function to update block size based on measures
     function updateBlockSize(block) {
       const measures = parseInt(block.getAttribute('data-measures'));
@@ -281,7 +287,7 @@
       return `${minutes}:${remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds}`;
     }
 
-    // Function to calculate total duration and per-block durations
+    // Function to calculate total duration
     function calculateTotalDuration() {
       const blocks = timeline.querySelectorAll('.song-block');
       let totalSeconds = 0;
@@ -290,14 +296,10 @@
         const measures = parseInt(block.getAttribute('data-measures'));
         const tempo = parseInt(block.getAttribute('data-tempo'));
         const timeSignature = block.getAttribute('data-time-signature');
-        const feel = block.getAttribute('data-feel');
         const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
         const beats = measures * beatsPerMeasure;
         const seconds = (beats / tempo) * 60;
         totalSeconds += seconds;
-
-        const tooltip = block.querySelector('.tooltip');
-        tooltip.textContent = `${feel}\nDuration: ${formatDuration(seconds)}`;
       });
 
       timeCalculator.textContent = `Total Duration: ${formatDuration(totalSeconds)}`;
@@ -344,7 +346,7 @@
             block.before(draggedBlock);
           }
         }
-        calculateTotalDuration(); // Recalculate after drop
+        calculateTotalDuration();
       });
 
       const deleteBtn = document.createElement('button');
@@ -380,13 +382,8 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.textContent = `${abbreviatePart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b`;
+      label.textContent = `${abbreviatePart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}`;
       block.appendChild(label);
-
-      const tooltip = document.createElement('span');
-      tooltip.classList.add('tooltip');
-      tooltip.textContent = `${feel}\nDuration: Calculating...`;
-      block.appendChild(tooltip);
 
       updateBlockSize(block);
       setupBlock(block);
@@ -412,7 +409,7 @@
       block.setAttribute('data-tempo', tempo);
       block.setAttribute('data-time-signature', timeSignature);
       block.setAttribute('data-feel', feel);
-      block.innerHTML = `<span class="label">${abbreviatePart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b</span><span class="tooltip">${feel}\nDuration: Calculating...</span>`;
+      block.innerHTML = `<span class="label">${abbreviatePart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
