@@ -177,7 +177,7 @@
       transition: background-color 0.2s;
     }
     .current-block-display.pulse {
-      animation: pulse 1s infinite; /* Default, updated dynamically */
+      animation: pulse 1s infinite;
     }
     @keyframes pulse {
       0% { transform: scale(1); }
@@ -345,7 +345,7 @@
   </div>
 
   <div class="time-calculator" id="time-calculator">
-    Current Time: 0:00.0 / Total Duration: 0:00.0 | Beat: 0
+    Current Time: 0:00.0 / Total Duration: 0:00.0 | Beat: 0 of 0
   </div>
 
   <div class="current-block-display" id="current-block-display">
@@ -445,7 +445,7 @@
         // Add transition block before this block (except for the first block)
         if (index > 0) {
           const nextPart = formatPart(blocks[index].classList[1]);
-          const transitionBeats = beatsPerMeasure * 0.5;
+          const transitionBeats = beatsPerMeasure * 1; // One full measure
           const transitionSeconds = (transitionBeats / tempo) * 60;
           const transitionStart = totalSeconds - transitionSeconds;
           timings.push({
@@ -475,7 +475,7 @@
         totalBeats += beats;
       });
 
-      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat}`;
+      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat} of ${totalBeats}`;
       return { timings, totalSeconds, totalBeats };
     }
 
@@ -679,7 +679,7 @@
         const timeInBlock = currentTime - currentTiming.start;
         currentBeat = Math.floor(timings.filter(t => t.start < currentTime).reduce((sum, t) => sum + t.totalBeats, 0));
 
-        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat}`;
+        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat} of ${totalBeats}`;
 
         if (currentIndex < timings.length && currentTime >= currentTiming.start + currentTiming.duration) {
           currentIndex++;
@@ -724,7 +724,7 @@
       }
 
       // Add pulse animation based on tempo
-      const beatDuration = 60 / timing.tempo; // Seconds per beat
+      const beatDuration = 60 / timing.tempo;
       currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
       currentBlockDisplay.classList.add('pulse');
     }
