@@ -4,86 +4,98 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SongMaker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
+      background: #24292e;
+      color: #fff;
+      margin: 0;
+      padding: 0;
     }
     .timeline {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      gap: 5px;
-      padding: 10px;
-      background: #f0f0f0;
-      max-width: 960px;
-      height: auto;
+      gap: 8px;
+      padding: 16px;
+      background: #2d3436;
+      border-radius: 8px;
+      max-width: 1200px;
+      margin: 16px auto;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
     .song-block {
-      height: 140px;
-      color: white;
+      height: 120px;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: move;
       position: relative;
-      transition: opacity 0.2s, border 0.2s;
+      border-radius: 6px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .song-block:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
     }
     .song-block.selected {
-      border: 2px solid #000;
+      border: 2px solid #00c4b4;
     }
     .song-block.playing {
-      border: 4px solid #000;
+      border: 4px solid #00c4b4;
     }
     .song-block.transition {
-      background-color: #FFFFE0;
-      width: 20px;
-      height: 140px;
+      background: linear-gradient(135deg, #636e72, #2d3436);
+      width: 16px;
+      height: 120px;
     }
-    .intro { background-color: #87CEEB; }
-    .verse { background-color: #90EE90; }
-    .refrain { background-color: #FFD700; }
-    .pre-chorus { background-color: #FFFF99; }
-    .chorus { background-color: #FF6347; }
-    .post-chorus { background-color: #FF9999; }
-    .bridge { background-color: #9370DB; }
-    .outro { background-color: #D3D3D3; }
-    .elision { background-color: #B0E0E6; }
-    .solo { background-color: #FFA07A; }
-    .ad-lib { background-color: #98FB98; }
-    .hook { background-color: #FF69B4; }
-    .interlude { background-color: #E6E6FA; }
-    .breakdown { background-color: #FFA500; }
-    .drop { background-color: #DC143C; }
-    .coda { background-color: #C0C0C0; }
-    .modulation { background-color: #BA55D3; }
-    .tag { background-color: #F0E68C; }
-    .chorus-reprise { background-color: #FF4500; }
-    .countermelody { background-color: #DDA0DD; }
-    .instrumental-verse-chorus { background-color: #20B2AA; }
-    .false-ending { background-color: #778899; }
+    .intro { background: linear-gradient(135deg, #3498db, #2980b9); }
+    .verse { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .refrain { background: linear-gradient(135deg, #f1c40f, #d4ac0d); }
+    .pre-chorus { background: linear-gradient(135deg, #f7dc6f, #f4d03f); }
+    .chorus { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .post-chorus { background: linear-gradient(135deg, #ff9999, #ff6666); }
+    .bridge { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .outro { background: linear-gradient(135deg, #bdc3c7, #95a5a6); }
+    .elision { background: linear-gradient(135deg, #85d8ce, #4db6ac); }
+    .solo { background: linear-gradient(135deg, #e67e22, #d35400); }
+    .ad-lib { background: linear-gradient(135deg, #82e0aa, #52be80); }
+    .hook { background: linear-gradient(135deg, #ff69b4, #ff1493); }
+    .interlude { background: linear-gradient(135deg, #dcdcdc, #b0b0b0); }
+    .breakdown { background: linear-gradient(135deg, #e67e22, #d35400); }
+    .drop { background: linear-gradient(135deg, #ff4136, #e60000); }
+    .coda { background: linear-gradient(135deg, #d3d3d3, #a9a9a9); }
+    .modulation { background: linear-gradient(135deg, #ba55d3, #9932cc); }
+    .tag { background: linear-gradient(135deg, #f4e19c, #e6d171); }
+    .chorus-reprise { background: linear-gradient(135deg, #ff4500, #e63900); }
+    .countermelody { background: linear-gradient(135deg, #dda0dd, #c77dff); }
+    .instrumental-verse-chorus { background: linear-gradient(135deg, #20b2aa, #008080); }
+    .false-ending { background: linear-gradient(135deg, #778899, #5f6f94); }
     .label {
       position: absolute;
-      top: 5px;
-      left: 5px;
-      font-size: 10px;
-      color: black;
-      padding: 4px 6px;
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: 3px;
+      top: 8px;
+      left: 8px;
+      font-size: 11px;
+      color: #fff;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
       white-space: normal;
-      max-width: 85%;
-      line-height: 1.3;
+      max-width: 80%;
+      line-height: 1.4;
     }
     .tooltip {
       visibility: hidden;
-      background: rgba(26, 60, 52, 0.9);
-      color: white;
-      border: 1px solid #A3D9C9;
+      background: #1a202c;
+      color: #fff;
+      border: 1px solid #00c4b4;
       padding: 8px;
-      border-radius: 5px;
+      border-radius: 4px;
       position: absolute;
       z-index: 1;
-      top: -10px;
+      top: -8px;
       left: 50%;
       transform: translateX(-50%);
       font-size: 12px;
@@ -100,7 +112,7 @@
       margin-left: -5px;
       border-width: 5px;
       border-style: solid;
-      border-color: transparent transparent rgba(26, 60, 52, 0.9) transparent;
+      border-color: transparent transparent #1a202c transparent;
     }
     .song-block:hover .tooltip {
       visibility: visible;
@@ -108,93 +120,129 @@
     }
     .delete-btn {
       position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(255, 0, 0, 0.7);
+      top: 8px;
+      right: 8px;
+      background: rgba(231, 76, 60, 0.8);
       border: none;
-      color: white;
+      color: #fff;
       font-size: 12px;
-      padding: 2px 5px;
+      padding: 2px 6px;
       cursor: pointer;
       border-radius: 50%;
+      transition: background 0.2s;
     }
     .delete-btn:hover {
-      background: rgba(255, 0, 0, 1);
+      background: #e74c3c;
     }
     .add-block-form {
-      margin: 20px;
-      padding: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
+      margin: 16px auto;
+      padding: 16px;
+      background: #2d3436;
+      border-radius: 8px;
+      max-width: 1200px;
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
-      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
     .form-column {
       flex: 1;
-      max-width: 45%;
-      min-width: 150px;
+      min-width: 200px;
+    }
+    .add-block-form h3 {
+      color: #00c4b4;
+      margin: 0 0 16px;
+      width: 100%;
     }
     .add-block-form label {
       display: block;
-      margin: 5px 0 2px;
+      margin: 4px 0;
       font-size: 14px;
+      color: #dfe6e9;
     }
     .add-block-form select, .add-block-form input, .add-block-form textarea {
-      margin: 0 0 10px;
       width: 100%;
-      display: block;
+      padding: 8px;
+      margin-bottom: 12px;
+      background: #3b4048;
+      border: 1px solid #4a5568;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .add-block-form select:focus, .add-block-form input:focus, .add-block-form textarea:focus {
+      border-color: #00c4b4;
+      outline: none;
     }
     .add-block-form textarea {
-      height: 60px;
+      height: 80px;
       resize: vertical;
     }
     .button-group {
       flex: 0 0 100%;
       display: flex;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 8px;
     }
-    .add-block-form button {
+    .add-block-form button, .add-block-form label[for="import-file"] {
       flex: 1;
-      padding: 5px;
+      padding: 10px;
+      background: #00c4b4;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .add-block-form button:hover, .add-block-form label[for="import-file"]:hover {
+      background: #00b39f;
     }
     .time-calculator {
-      margin: 20px;
+      margin: 16px auto;
+      max-width: 1200px;
       font-size: 16px;
-      font-weight: bold;
+      color: #b2bec3;
+      background: #2d3436;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
     .current-block-display {
       width: 600px;
-      height: 200px;
-      margin: 20px;
-      border: 2px solid #333;
+      height: 180px;
+      margin: 16px auto;
+      border: 2px solid #4a5568;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-      transition: background-color 0.2s;
+      background: #2d3436;
+      transition: background 0.2s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
     .current-block-display.pulse {
       animation: pulse 1s infinite;
     }
     @keyframes pulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
+      50% { transform: scale(1.03); }
       100% { transform: scale(1); }
     }
     .current-block-display .label {
       font-size: 16px;
-      padding: 10px 15px;
+      padding: 12px 16px;
       line-height: 1.5;
       max-width: 90%;
+      color: #dfe6e9;
     }
     .print-header {
       display: none;
     }
     @media print {
       body {
+        background: #fff;
+        color: #000;
         margin: 0;
       }
       .add-block-form, .button-group, .time-calculator, .current-block-display {
@@ -202,34 +250,36 @@
       }
       .print-header {
         display: block;
-        font-size: 18pt;
+        font-size: 24px;
         text-align: center;
         margin: 36pt 36pt 18pt;
+        color: #000;
       }
       .timeline {
         max-width: 100%;
         width: 612pt;
         padding: 36pt;
-        background: #f0f0f0;
+        background: #fff;
         display: block;
+        box-shadow: none;
       }
       .song-block {
         width: 100% !important;
         height: 144pt;
         margin-bottom: 10pt;
         page-break-inside: avoid;
-        color: white;
         border: 2pt solid #333;
+        background: none !important;
       }
       .song-block.playing, .song-block.transition {
         border: 2pt solid #333;
       }
       .label {
-        font-size: 9pt;
+        font-size: 10pt;
         max-width: 90%;
         padding: 8pt 10pt;
         line-height: 1.5;
-        color: black;
+        color: #000;
         background: #fff;
         border-radius: 3px;
       }
@@ -337,7 +387,7 @@
       <button id="play-btn" onclick="togglePlay()">Play</button>
       <button id="sound-btn" onclick="toggleSound()">Sound On</button>
       <button onclick="exportSong()">Export</button>
-      <label for="import-file" style="flex: 1; padding: 5px; background: #ddd; text-align: center; cursor: pointer;">Import</label>
+      <label for="import-file">Import</label>
       <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importSong(event)">
     </div>
   </div>
@@ -375,20 +425,15 @@
     let lastBeatTime = 0;
     let soundEnabled = true;
 
-    // Valid time signatures from dropdown
     const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
-
-    // Load local tick and tock sound files
     const tickSound = new Audio('tick.wav');
     const tockSound = new Audio('tock.wav');
 
-    // Function to toggle sound on/off
     function toggleSound() {
       soundEnabled = !soundEnabled;
       soundBtn.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
     }
 
-    // Function to update document title and print header
     function updateTitle(songName) {
       currentSongName = songName || 'SongMaker';
       document.title = `${currentSongName} - SongMaker`;
@@ -396,31 +441,26 @@
       document.getElementById('song-name').value = currentSongName;
     }
 
-    // Function to capitalize part name
     function formatPart(part) {
       return part.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
 
-    // Function to abbreviate key
     function abbreviateKey(key) {
       return key.replace(' Major', '').replace(' Minor', 'm');
     }
 
-    // Function to truncate lyrics for display
     function truncateLyrics(lyrics) {
       if (!lyrics) return '';
       const words = lyrics.split(' ');
       return words.length > 5 ? words.slice(0, 5).join(' ') + '...' : lyrics;
     }
 
-    // Function to update block size based on measures
     function updateBlockSize(block) {
       const measures = parseInt(block.getAttribute('data-measures'));
       const pixelsPerMeasure = 25;
       block.style.width = `${measures * pixelsPerMeasure}px`;
     }
 
-    // Function to get beats per measure from time signature
     function getBeatsPerMeasure(timeSignature) {
       switch (timeSignature) {
         case '4/4': return 4;
@@ -439,18 +479,16 @@
         case '14/8': return 14;
         case '16/8': return 16;
         case '7/4': return 7;
-        default: return 4; // Fallback
+        default: return 4;
       }
     }
 
-    // Function to format seconds to minutes:seconds.tenths
     function formatDuration(seconds) {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = (seconds % 60).toFixed(1);
       return `${minutes}:${remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds}`;
     }
 
-    // Function to calculate total duration and block timings with transitions
     function calculateTimings() {
       const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)'));
       let totalSeconds = 0;
@@ -465,12 +503,11 @@
         const beats = measures * beatsPerMeasure;
         const seconds = (beats / tempo) * 60;
 
-        // Add transition block before this block (except for the first block)
         if (index > 0) {
           const nextPart = formatPart(blocks[index].classList[1]);
-          const transitionBeats = beatsPerMeasure * 2; // Two measures
+          const transitionBeats = beatsPerMeasure * 2;
           const transitionSeconds = (transitionBeats / tempo) * 60;
-          const transitionStart = totalSeconds - transitionSeconds;
+          const transitionStart = totalSeconds;
           timings.push({
             isTransition: true,
             block: null,
@@ -482,6 +519,7 @@
             totalBeats: transitionBeats,
             totalMeasures: 2
           });
+          totalSeconds += transitionSeconds;
           totalBeats += transitionBeats;
         }
 
@@ -504,7 +542,6 @@
       return { timings, totalSeconds, totalBeats };
     }
 
-    // Function to load block data into form
     function loadBlockIntoForm(block) {
       document.getElementById('part-type').value = block.classList[1];
       document.getElementById('measures').value = block.getAttribute('data-measures');
@@ -515,7 +552,6 @@
       document.getElementById('lyrics').value = block.getAttribute('data-lyrics') || '';
     }
 
-    // Function to clear form selection
     function clearSelection() {
       if (selectedBlock) {
         selectedBlock.classList.remove('selected');
@@ -530,7 +566,6 @@
       document.getElementById('lyrics').value = '';
     }
 
-    // Function to make a block draggable, deletable, and editable
     function setupBlock(block) {
       block.draggable = true;
 
@@ -550,7 +585,7 @@
 
       block.addEventListener('dragenter', () => {
         if (block !== draggedBlock) {
-          block.style.border = '2px dashed #000';
+          block.style.border = '2px dashed #00c4b4';
         }
       });
 
@@ -593,7 +628,6 @@
       });
     }
 
-    // Function to add a new block
     function addBlock() {
       const partType = document.getElementById('part-type').value;
       const measures = document.getElementById('measures').value;
@@ -635,7 +669,6 @@
       document.getElementById('lyrics').value = '';
     }
 
-    // Function to update an existing block
     function updateBlock() {
       if (!selectedBlock) {
         alert('Please select a block to update.');
@@ -669,12 +702,10 @@
       calculateTimings();
     }
 
-    // Function to print the song
     function printSong() {
       window.print();
     }
 
-    // Function to toggle play/reset with lead-in
     function togglePlay() {
       if (isPlaying) {
         clearInterval(playInterval);
@@ -695,7 +726,6 @@
       }
     }
 
-    // Function to play four-count lead-in
     function playLeadIn(timings, totalSeconds, totalBeats) {
       const firstBlock = timings[0];
       const tempo = firstBlock.tempo;
@@ -705,19 +735,19 @@
       let leadInTime = 0;
       let leadInCount = 0;
 
-      currentBlockDisplay.style.backgroundColor = '#ccc';
+      currentBlockDisplay.style.backgroundColor = '#3b4048';
       currentBlockDisplay.innerHTML = '<span class="label">Lead-In</span>';
 
       playInterval = setInterval(() => {
-        leadInTime += 0.01; // 10ms precision for sound timing
+        leadInTime += 0.01;
         const currentBeatTime = leadInTime * beatsPerSecond;
 
         if (currentBeatTime >= leadInCount && leadInCount < leadInBeats) {
           if (soundEnabled) {
             if (leadInCount === 0) {
-              tockSound.cloneNode().play(); // Tock on first beat
+              tockSound.cloneNode().play();
             } else {
-              tickSound.cloneNode().play(); // Tick on other beats
+              tickSound.cloneNode().play();
             }
           }
           leadInCount++;
@@ -730,10 +760,9 @@
         }
 
         timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of 0 (Measure: ${blockMeasure} of 0)`;
-      }, 10); // 10ms interval for precise beat timing
+      }, 10);
     }
 
-    // Function to play the song
     function playSong(timings, totalSeconds, totalBeats) {
       let currentIndex = 0;
       updateCurrentBlock(timings[currentIndex]);
@@ -742,24 +771,21 @@
       lastBeatTime = currentTime;
 
       playInterval = setInterval(() => {
-        currentTime += 0.01; // 10ms precision
+        currentTime += 0.01;
         const currentTiming = timings[currentIndex];
         const beatsPerSecond = currentTiming.tempo / 60;
         const songBeat = Math.floor(currentTime * beatsPerSecond);
         const timeInBlock = currentTime - currentTiming.start;
         const beatInBlock = timeInBlock * beatsPerSecond;
 
-        // Play tick/tock sounds if enabled
         if (soundEnabled && currentTime - lastBeatTime >= 1 / beatsPerSecond) {
           const isFirstBeatOfMeasure = blockBeat % currentTiming.beatsPerMeasure === 0;
           (isFirstBeatOfMeasure ? tockSound : tickSound).cloneNode().play();
           lastBeatTime = currentTime;
         }
 
-        // Update Song Beat on each pulse
         currentBeat = songBeat;
 
-        // Update Block info only on transition
         if (currentTime >= currentTiming.start + currentTiming.duration) {
           currentIndex++;
           if (currentIndex < timings.length) {
@@ -779,10 +805,9 @@
         }
 
         timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${currentTiming.totalBeats} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
-      }, 10); // 10ms interval for precise beat timing
+      }, 10);
     }
 
-    // Function to update the current block display and highlight
     function updateCurrentBlock(timing) {
       const previousBlock = timeline.querySelector('.playing');
       if (previousBlock) previousBlock.classList.remove('playing');
@@ -799,24 +824,22 @@
         if (nextBlock) nextBlock.before(transitionBlock);
         transitionBlock.classList.add('playing');
 
-        currentBlockDisplay.style.backgroundColor = '#FFFFE0';
+        currentBlockDisplay.style.backgroundColor = '#636e72';
         currentBlockDisplay.innerHTML = `<span class="label">${timing.label}</span>`;
       } else {
         const existingTransition = timeline.querySelector('.transition');
         if (existingTransition) existingTransition.remove();
 
         timing.block.classList.add('playing');
-        currentBlockDisplay.style.backgroundColor = window.getComputedStyle(timing.block).backgroundColor;
+        currentBlockDisplay.style.backgroundColor = window.getComputedStyle(timing.block).backgroundColor.split(')')[0] + ', 0.8)';
         currentBlockDisplay.innerHTML = `<span class="label">${timing.label}</span>`;
       }
 
-      // Add pulse animation based on tempo
       const beatDuration = 60 / timing.tempo;
       currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
       currentBlockDisplay.classList.add('pulse');
     }
 
-    // Function to reset playback state
     function resetPlayback() {
       currentTime = 0;
       currentBeat = 0;
@@ -829,12 +852,11 @@
       if (transitionBlock) transitionBlock.remove();
       currentBlockDisplay.classList.remove('pulse');
       currentBlockDisplay.style.animation = '';
-      currentBlockDisplay.style.backgroundColor = '';
+      currentBlockDisplay.style.backgroundColor = '#2d3436';
       currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
       calculateTimings();
     }
 
-    // Function to export the song as JSON
     function exportSong() {
       const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).map(block => ({
         type: block.classList[1],
@@ -861,7 +883,6 @@
       URL.revokeObjectURL(url);
     }
 
-    // Function to validate a block
     function validateBlock(block) {
       const requiredFields = ['type', 'measures', 'key', 'tempo', 'timeSignature'];
       for (const field of requiredFields) {
@@ -880,11 +901,9 @@
       if (!validTimeSignatures.includes(block.timeSignature)) {
         return `Invalid time signature: ${block.timeSignature}. Must be one of ${validTimeSignatures.join(', ')}`;
       }
-      // Optional fields: feel, lyrics (can be empty or missing)
       return null;
     }
 
-    // Function to import a song from JSON with validation and playback snapping
     function importSong(event) {
       const file = event.target.files[0];
       if (!file || !file.name.endsWith('.json')) {
@@ -899,7 +918,6 @@
             throw new Error('Invalid song file format: missing songName or blocks array.');
           }
 
-          // Validate each block
           for (let i = 0; i < songData.blocks.length; i++) {
             const error = validateBlock(songData.blocks[i]);
             if (error) {
@@ -907,7 +925,6 @@
             }
           }
 
-          // Preserve playback state (reset if playing)
           if (isPlaying) {
             clearInterval(playInterval);
             playBtn.textContent = 'Play';
@@ -915,14 +932,11 @@
             resetPlayback();
           }
 
-          // Clear existing timeline and selection
           timeline.innerHTML = '';
           if (selectedBlock) clearSelection();
 
-          // Update song name
           updateTitle(songData.songName);
 
-          // Rebuild blocks
           songData.blocks.forEach(({ type, measures, key, tempo, timeSignature, feel, lyrics }) => {
             const block = document.createElement('div');
             block.classList.add('song-block', type);
@@ -944,10 +958,9 @@
         }
       };
       reader.readAsText(file);
-      event.target.value = ''; // Reset file input
+      event.target.value = '';
     }
 
-    // Initial blocks with varied part types, feels, and lyrics
     const initialBlocks = [
       { type: 'intro', measures: 4, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Happiness', lyrics: 'Here we go now' },
       { type: 'verse', measures: 8, key: 'C Major', tempo: 120, timeSignature: '3/4', feel: 'Calmness', lyrics: 'The wind blows soft and low' },
@@ -972,7 +985,6 @@
       timeline.appendChild(block);
     });
 
-    // Set initial title and calculate duration
     updateTitle(currentSongName);
     calculateTimings();
   </script>
