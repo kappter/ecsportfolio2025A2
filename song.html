@@ -369,6 +369,9 @@
     let currentTime = 0;
     let currentBeat = 0;
 
+    // Valid time signatures from dropdown
+    const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
+
     // Function to update document title and print header
     function updateTitle(songName) {
       currentSongName = songName || 'SongMaker';
@@ -674,7 +677,7 @@
     // Function to play the song
     function playSong(timings, totalSeconds, totalBeats) {
       let currentIndex = timings.findIndex(t => currentTime >= t.start && currentTime < t.start + t.duration);
-      if (currentIndex === -1) currentIndex = 0; // Start from beginning if time is out of range
+      if (currentIndex === -1) currentIndex = timings.findIndex(t => t.start >= currentTime) || 0; // Snap to nearest start if out of range
       updateCurrentBlock(timings[currentIndex]);
 
       playInterval = setInterval(() => {
@@ -715,7 +718,7 @@
         const transitionBlock = document.createElement('div');
         transitionBlock.classList.add('song-block', 'transition');
         transitionBlock.innerHTML = '<span class="label">T</span>';
-        const nextBlock = timing.nextBlock || timeline.querySelectorAll('.song-block:not(.transition)')[Array.from(timings).filter(t => !t.isTransition).findIndex(t => t.start > timing.start)];
+        const nextBlock = timeline.querySelectorAll('.song-block:not(.transition)')[Array.from(timings).filter(t => !t.isTransition).findIndex(t => t.start > timing.start)];
         if (nextBlock) nextBlock.before(transitionBlock);
         transitionBlock.classList.add('playing');
 
@@ -794,11 +797,14 @@
       if (isNaN(tempo) || tempo <= 0) {
         return 'Tempo must be a positive number';
       }
+      if (!validTimeSignatures.includes(block.timeSignature)) {
+        return `Invalid time signature: ${block.timeSignature}. Must be one of ${validTimeSignatures.join(', ')}`;
+      }
       // Optional fields: feel, lyrics (can be empty or missing)
       return null;
     }
 
-    // Function to import a song from JSON with validation and playback preservation
+    // Function to import a song from JSON with validation and playback snapping
     function importSong(event) {
       const file = event.target.files[0];
       if (!file || !file.name.endsWith('.json')) {
@@ -849,15 +855,18 @@
             timeline.appendChild(block);
           });
 
-          // Recalculate timings and restore playback
+          // Recalculate timings and snap playback
           const { timings, totalSeconds, totalBeats } = calculateTimings();
-          if (previousTime >= totalSeconds) {
-            resetPlayback(); // Reset if previous time exceeds new duration
+          if (timings.length === 0) {
+            resetPlayback();
           } else {
-            currentTime = previousTime; // Restore previous time
+            // Snap to nearest block/transition start
+            const nearestTiming = timings.reduce((prev, curr) => 
+              Math.abs(curr.start - previousTime) < Math.abs(prev.start - previousTime) ? curr : prev
+            );
+            currentTime = nearestTiming.start;
             currentBeat = Math.floor(timings.filter(t => t.start < currentTime).reduce((sum, t) => sum + t.totalBeats, 0));
-            const currentIndex = timings.findIndex(t => currentTime >= t.start && currentTime < t.start + t.duration);
-            if (currentIndex !== -1) updateCurrentBlock(timings[currentIndex]);
+            updateCurrentBlock(nearestTiming);
             if (wasPlaying) {
               isPlaying = true;
               playBtn.textContent = 'Pause';
