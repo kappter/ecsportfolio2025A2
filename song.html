@@ -19,7 +19,7 @@
       height: auto;
     }
     .song-block {
-      height: 100px;
+      height: 120px; /* Increased height to fit full labels */
       color: white;
       display: flex;
       align-items: center;
@@ -54,15 +54,14 @@
       position: absolute;
       top: 5px;
       left: 5px;
-      font-size: 11px; /* Smaller to fit Feel */
+      font-size: 12px; /* Slightly larger for readability */
       color: black;
       padding: 2px 5px;
       background: rgba(255, 255, 255, 0.7);
       border-radius: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 90%; /* Prevent overflow */
+      white-space: normal; /* Allow wrapping */
+      max-width: 90%;
+      line-height: 1.2; /* Better spacing for wrapped text */
     }
     .delete-btn {
       position: absolute;
@@ -86,13 +85,13 @@
       border: 1px solid #ccc;
       display: flex;
       flex-wrap: wrap;
-      gap: 20px; /* Space between columns */
+      gap: 20px;
       justify-content: space-between;
     }
     .form-column {
       flex: 1;
-      max-width: 45%; /* Two columns */
-      min-width: 150px; /* Prevent squashing */
+      max-width: 45%;
+      min-width: 150px;
     }
     .add-block-form label {
       display: block;
@@ -105,7 +104,7 @@
       display: block;
     }
     .add-block-form button {
-      flex: 0 0 100%; /* Full width for button */
+      flex: 0 0 100%;
       margin-top: 10px;
     }
     .time-calculator {
@@ -182,6 +181,15 @@
         <option value="Empowerment">Empowerment – Anthemic, motivational, strong beat</option>
         <option value="Nostalgia">Nostalgia – Familiar tunes, longing, reminiscence</option>
         <option value="Euphoria">Euphoria – Upbeat, fast-tempo, dance/electronic</option>
+        <option value="Tension">Tension – High-energy, suspenseful, unresolved</option>
+        <option value="Dissonance">Dissonance – Harsh, clashing tones, unsettling</option>
+        <option value="Reluctance">Reluctance – Hesitant, restrained, uncertain</option>
+        <option value="Joy">Joy – Bright, cheerful, celebratory</option>
+        <option value="Melancholy">Melancholy – Deeply emotional, wistful, minor tones</option>
+        <option value="Excitement">Excitement – Fast, vibrant, thrilling</option>
+        <option value="Serenity">Serenity – Peaceful, gentle, calming</option>
+        <option value="Despair">Despair – Dark, hopeless, heavy</option>
+        <option value="Hope">Hope – Optimistic, uplifting, forward-looking</option>
       </select>
     </div>
     <button onclick="addBlock()">Add Block</button>
@@ -200,33 +208,9 @@
     const timeCalculator = document.getElementById('time-calculator');
     let draggedBlock = null;
 
-    // Function to abbreviate part name
-    function abbreviatePart(part) {
-      const map = {
-        'intro': 'I',
-        'verse': 'V',
-        'refrain': 'R',
-        'pre-chorus': 'PC',
-        'chorus': 'C',
-        'post-chorus': 'PoC',
-        'bridge': 'B',
-        'outro': 'O',
-        'elision': 'E',
-        'solo': 'S',
-        'ad-lib': 'AL',
-        'hook': 'H',
-        'interlude': 'IL',
-        'breakdown': 'BD',
-        'drop': 'D',
-        'coda': 'Co',
-        'modulation': 'M',
-        'tag': 'T',
-        'chorus-reprise': 'CR',
-        'countermelody': 'CM',
-        'instrumental-verse-chorus': 'IVC',
-        'false-ending': 'FE'
-      };
-      return map[part] || part.charAt(0).toUpperCase();
+    // Function to capitalize part name (for display)
+    function formatPart(part) {
+      return part.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     }
 
     // Function to abbreviate key
@@ -245,9 +229,18 @@
         'Fear': 'Fear',
         'Empowerment': 'Emp',
         'Nostalgia': 'Nos',
-        'Euphoria': 'Eup'
+        'Euphoria': 'Eup',
+        'Tension': 'Ten',
+        'Dissonance': 'Dis',
+        'Reluctance': 'Rel',
+        'Joy': 'Joy',
+        'Melancholy': 'Mel',
+        'Excitement': 'Exc',
+        'Serenity': 'Ser',
+        'Despair': 'Des',
+        'Hope': 'Hope'
       };
-      return map[feel] || feel.slice(0, 4); // Fallback to first 4 chars
+      return map[feel] || feel.slice(0, 4);
     }
 
     // Function to update block size based on measures
@@ -382,7 +375,7 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.textContent = `${abbreviatePart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}`;
+      label.textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}`;
       block.appendChild(label);
 
       updateBlockSize(block);
@@ -392,14 +385,14 @@
       calculateTotalDuration();
     }
 
-    // Initial blocks with varied part types
+    // Initial blocks with varied part types and feels
     const initialBlocks = [
       { type: 'intro', measures: 4, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Happiness' },
       { type: 'verse', measures: 8, key: 'C Major', tempo: 120, timeSignature: '3/4', feel: 'Calmness' },
       { type: 'chorus', measures: 8, key: 'D Major', tempo: 120, timeSignature: '6/8', feel: 'Euphoria' },
-      { type: 'bridge', measures: 4, key: 'G Minor', tempo: 100, timeSignature: '7/8', feel: 'Sadness' },
-      { type: 'solo', measures: 16, key: 'G Minor', tempo: 100, timeSignature: '4/4', feel: 'Empowerment' },
-      { type: 'outro', measures: 8, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Nostalgia' }
+      { type: 'bridge', measures: 4, key: 'G Minor', tempo: 100, timeSignature: '7/8', feel: 'Tension' },
+      { type: 'solo', measures: 16, key: 'G Minor', tempo: 100, timeSignature: '4/4', feel: 'Dissonance' },
+      { type: 'outro', measures: 8, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Reluctance' }
     ];
 
     initialBlocks.forEach(({ type, measures, key, tempo, timeSignature, feel }) => {
@@ -409,7 +402,7 @@
       block.setAttribute('data-tempo', tempo);
       block.setAttribute('data-time-signature', timeSignature);
       block.setAttribute('data-feel', feel);
-      block.innerHTML = `<span class="label">${abbreviatePart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}</span>`;
+      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${abbreviateFeel(feel)}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
