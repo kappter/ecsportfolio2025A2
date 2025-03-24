@@ -345,7 +345,7 @@
   </div>
 
   <div class="time-calculator" id="time-calculator">
-    Current Time: 0:00.0 / Total Duration: 0:00.0 | Beat: 0 of 0
+    Current Time: 0:00.0 / Total Duration: 0:00.0 | Song Beat: 0 of 0 | Block: 0 of 0 (Measure: 0 of 0)
   </div>
 
   <div class="current-block-display" id="current-block-display">
@@ -445,7 +445,7 @@
         // Add transition block before this block (except for the first block)
         if (index > 0) {
           const nextPart = formatPart(blocks[index].classList[1]);
-          const transitionBeats = beatsPerMeasure * 1; // One full measure
+          const transitionBeats = beatsPerMeasure * 2; // Two measures
           const transitionSeconds = (transitionBeats / tempo) * 60;
           const transitionStart = totalSeconds - transitionSeconds;
           timings.push({
@@ -456,7 +456,8 @@
             label: `Transition to ${nextPart}`,
             tempo,
             beatsPerMeasure,
-            totalBeats: transitionBeats
+            totalBeats: transitionBeats,
+            totalMeasures: 2
           });
           totalBeats += transitionBeats;
         }
@@ -469,13 +470,14 @@
           label: block.querySelector('.label').innerHTML,
           tempo,
           beatsPerMeasure,
-          totalBeats: beats
+          totalBeats: beats,
+          totalMeasures: measures
         });
         totalSeconds += seconds;
         totalBeats += beats;
       });
 
-      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat} of ${totalBeats}`;
+      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: 0 of 0 (Measure: 0 of 0)`;
       return { timings, totalSeconds, totalBeats };
     }
 
@@ -678,8 +680,10 @@
         const beatsPerSecond = currentTiming.tempo / 60;
         const timeInBlock = currentTime - currentTiming.start;
         currentBeat = Math.floor(timings.filter(t => t.start < currentTime).reduce((sum, t) => sum + t.totalBeats, 0));
+        const blockBeat = Math.floor(timeInBlock * beatsPerSecond);
+        const blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
 
-        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat} of ${totalBeats}`;
+        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${currentTiming.totalBeats} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
 
         if (currentIndex < timings.length && currentTime >= currentTiming.start + currentTiming.duration) {
           currentIndex++;
