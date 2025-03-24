@@ -368,6 +368,8 @@
     let playInterval = null;
     let currentTime = 0;
     let currentBeat = 0;
+    let blockBeat = 0;
+    let blockMeasure = 0;
 
     // Valid time signatures from dropdown
     const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
@@ -484,7 +486,7 @@
         totalBeats += beats;
       });
 
-      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: 0 of 0 (Measure: 0 of 0)`;
+      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of 0 (Measure: ${blockMeasure} of 0)`;
       return { timings, totalSeconds, totalBeats };
     }
 
@@ -658,50 +660,63 @@
       window.print();
     }
 
-    // Function to toggle play/pause
+    // Function to toggle play/reset
     function togglePlay() {
       if (isPlaying) {
         clearInterval(playInterval);
         playBtn.textContent = 'Play';
         isPlaying = false;
-        // Do not reset playback state here
+        resetPlayback();
       } else {
         const { timings, totalSeconds, totalBeats } = calculateTimings();
         if (timings.length === 0) return;
-        playBtn.textContent = 'Pause';
+        playBtn.textContent = 'Reset';
         isPlaying = true;
+        currentTime = 0;
+        currentBeat = 0;
+        blockBeat = 0;
+        blockMeasure = 0;
         playSong(timings, totalSeconds, totalBeats);
       }
     }
 
     // Function to play the song
     function playSong(timings, totalSeconds, totalBeats) {
-      let currentIndex = timings.findIndex(t => currentTime >= t.start && currentTime < t.start + t.duration);
-      if (currentIndex === -1) currentIndex = timings.findIndex(t => t.start >= currentTime) || 0; // Snap to nearest start if out of range
+      let currentIndex = 0;
       updateCurrentBlock(timings[currentIndex]);
+      blockBeat = 0;
+      blockMeasure = 1;
 
       playInterval = setInterval(() => {
         currentTime += 0.1;
         const currentTiming = timings[currentIndex];
         const beatsPerSecond = currentTiming.tempo / 60;
-        const timeInBlock = currentTime - currentTiming.start;
-        currentBeat = Math.floor(timings.filter(t => t.start < currentTime).reduce((sum, t) => sum + t.totalBeats, 0));
-        const blockBeat = Math.floor(timeInBlock * beatsPerSecond);
-        const blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
+        const songBeat = Math.floor(currentTime * beatsPerSecond);
 
-        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${currentTiming.totalBeats} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
+        // Update Song Beat on each pulse
+        currentBeat = songBeat;
 
-        if (currentIndex < timings.length && currentTime >= currentTiming.start + currentTiming.duration) {
+        // Update Block info only on transition
+        if (currentTime >= currentTiming.start + currentTiming.duration) {
           currentIndex++;
           if (currentIndex < timings.length) {
             updateCurrentBlock(timings[currentIndex]);
+            blockBeat = 0;
+            blockMeasure = 1;
           } else {
             clearInterval(playInterval);
             playBtn.textContent = 'Play';
             isPlaying = false;
             resetPlayback();
+            return;
           }
+        } else {
+          const timeInBlock = currentTime - currentTiming.start;
+          blockBeat = Math.floor(timeInBlock * beatsPerSecond);
+          blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
         }
+
+        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${currentTiming.totalBeats} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
       }, 100); // Update every 100ms
     }
 
@@ -743,6 +758,8 @@
     function resetPlayback() {
       currentTime = 0;
       currentBeat = 0;
+      blockBeat = 0;
+      blockMeasure = 0;
       const previousBlock = timeline.querySelector('.playing');
       if (previousBlock) previousBlock.classList.remove('playing');
       const transitionBlock = timeline.querySelector('.transition');
@@ -827,10 +844,13 @@
             }
           }
 
-          // Preserve playback state
-          const wasPlaying = isPlaying;
-          const previousTime = currentTime;
-          if (wasPlaying) clearInterval(playInterval);
+          // Preserve playback state (reset if playing)
+          if (isPlaying) {
+            clearInterval(playInterval);
+            playBtn.textContent = 'Play';
+            isPlaying = false;
+            resetPlayback();
+          }
 
           // Clear existing timeline and selection
           timeline.innerHTML = '';
@@ -855,30 +875,9 @@
             timeline.appendChild(block);
           });
 
-          // Recalculate timings and snap playback
-          const { timings, totalSeconds, totalBeats } = calculateTimings();
-          if (timings.length === 0) {
-            resetPlayback();
-          } else {
-            // Snap to nearest block/transition start
-            const nearestTiming = timings.reduce((prev, curr) => 
-              Math.abs(curr.start - previousTime) < Math.abs(prev.start - previousTime) ? curr : prev
-            );
-            currentTime = nearestTiming.start;
-            currentBeat = Math.floor(timings.filter(t => t.start < currentTime).reduce((sum, t) => sum + t.totalBeats, 0));
-            updateCurrentBlock(nearestTiming);
-            if (wasPlaying) {
-              isPlaying = true;
-              playBtn.textContent = 'Pause';
-              playSong(timings, totalSeconds, totalBeats);
-            }
-          }
+          calculateTimings();
         } catch (error) {
           alert(`Failed to load song: ${error.message}`);
-          if (isPlaying) {
-            const { timings, totalSeconds, totalBeats } = calculateTimings();
-            playSong(timings, totalSeconds, totalBeats); // Resume previous song if import fails
-          }
         }
       };
       reader.readAsText(file);
