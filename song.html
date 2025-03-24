@@ -26,10 +26,13 @@
       justify-content: center;
       cursor: move;
       position: relative;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, border 0.2s;
     }
     .song-block.selected {
       border: 2px solid #000;
+    }
+    .song-block.playing {
+      border: 4px solid #000; /* Highlight active block */
     }
     .intro { background-color: #87CEEB; }
     .verse { background-color: #90EE90; }
@@ -157,6 +160,23 @@
       font-size: 16px;
       font-weight: bold;
     }
+    .current-block-display {
+      width: 600px;
+      height: 200px;
+      margin: 20px;
+      border: 2px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background-color 0.2s;
+    }
+    .current-block-display .label {
+      font-size: 16px;
+      padding: 10px 15px;
+      line-height: 1.5;
+      max-width: 90%;
+    }
     .print-header {
       display: none;
     }
@@ -164,7 +184,7 @@
       body {
         margin: 0;
       }
-      .add-block-form, .button-group, .time-calculator {
+      .add-block-form, .button-group, .time-calculator, .current-block-display {
         display: none;
       }
       .print-header {
@@ -175,24 +195,27 @@
       }
       .timeline {
         max-width: 100%;
-        width: 612pt; /* 8.5in */
-        padding: 36pt; /* 0.5in margins */
+        width: 612pt;
+        padding: 36pt;
         background: #f0f0f0;
         display: block;
       }
       .song-block {
         width: 100% !important;
-        height: 144pt; /* 2in, increased from 108pt */
+        height: 144pt;
         margin-bottom: 10pt;
         page-break-inside: avoid;
         color: white;
         border: 2pt solid #333;
       }
+      .song-block.playing {
+        border: 2pt solid #333; /* No highlight in print */
+      }
       .label {
         font-size: 9pt;
         max-width: 90%;
-        padding: 8pt 10pt; /* Increased padding */
-        line-height: 1.5; /* Adjusted for four lines */
+        padding: 8pt 10pt;
+        line-height: 1.5;
         color: black;
         background: #fff;
         border-radius: 3px;
@@ -298,6 +321,7 @@
       <button onclick="updateBlock()">Update Block</button>
       <button onclick="clearSelection()">Clear</button>
       <button onclick="printSong()">Print</button>
+      <button id="play-btn" onclick="togglePlay()">Play</button>
     </div>
   </div>
 
@@ -308,16 +332,25 @@
   </div>
 
   <div class="time-calculator" id="time-calculator">
-    Total Duration: 0:00.0
+    Current Time: 0:00.0 / Total Duration: 0:00.0
+  </div>
+
+  <div class="current-block-display" id="current-block-display">
+    <span class="label">No block playing</span>
   </div>
 
   <script>
     const timeline = document.getElementById('timeline');
     const timeCalculator = document.getElementById('time-calculator');
+    const currentBlockDisplay = document.getElementById('current-block-display');
+    const playBtn = document.getElementById('play-btn');
     const printSongName = document.getElementById('print-song-name');
     let draggedBlock = null;
     let selectedBlock = null;
     let currentSongName = 'Echoes of Joy';
+    let isPlaying = false;
+    let playInterval = null;
+    let currentTime = 0;
 
     // Function to update document title and print header
     function updateTitle(songName) {
@@ -380,10 +413,11 @@
       return `${minutes}:${remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds}`;
     }
 
-    // Function to calculate total duration
-    function calculateTotalDuration() {
+    // Function to calculate total duration and block timings
+    function calculateTimings() {
       const blocks = timeline.querySelectorAll('.song-block');
       let totalSeconds = 0;
+      const timings = [];
 
       blocks.forEach(block => {
         const measures = parseInt(block.getAttribute('data-measures'));
@@ -392,10 +426,12 @@
         const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
         const beats = measures * beatsPerMeasure;
         const seconds = (beats / tempo) * 60;
+        timings.push({ block, start: totalSeconds, duration: seconds });
         totalSeconds += seconds;
       });
 
-      timeCalculator.textContent = `Total Duration: ${formatDuration(totalSeconds)}`;
+      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)}`;
+      return { timings, totalSeconds };
     }
 
     // Function to load block data into form
@@ -437,7 +473,7 @@
       block.addEventListener('dragend', () => {
         draggedBlock.style.opacity = '1';
         draggedBlock = null;
-        calculateTotalDuration();
+        calculateTimings();
       });
 
       block.addEventListener('dragover', (e) => e.preventDefault());
@@ -465,7 +501,7 @@
             block.before(draggedBlock);
           }
         }
-        calculateTotalDuration();
+        calculateTimings();
       });
 
       const deleteBtn = document.createElement('button');
@@ -475,7 +511,7 @@
         e.stopPropagation();
         block.remove();
         if (block === selectedBlock) clearSelection();
-        calculateTotalDuration();
+        calculateTimings();
       });
       block.appendChild(deleteBtn);
 
@@ -525,7 +561,7 @@
       setupBlock(block);
       timeline.appendChild(block);
 
-      calculateTotalDuration();
+      calculateTimings();
       document.getElementById('lyrics').value = '';
     }
 
@@ -560,12 +596,73 @@
       selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
       updateBlockSize(selectedBlock);
       clearSelection();
-      calculateTotalDuration();
+      calculateTimings();
     }
 
     // Function to print the song
     function printSong() {
       window.print();
+    }
+
+    // Function to toggle play/pause
+    function togglePlay() {
+      if (isPlaying) {
+        clearInterval(playInterval);
+        playBtn.textContent = 'Play';
+        isPlaying = false;
+        resetPlayback();
+      } else {
+        const { timings, totalSeconds } = calculateTimings();
+        if (timings.length === 0) return;
+        playBtn.textContent = 'Pause';
+        isPlaying = true;
+        currentTime = 0;
+        playSong(timings, totalSeconds);
+      }
+    }
+
+    // Function to play the song
+    function playSong(timings, totalSeconds) {
+      let currentIndex = 0;
+      updateCurrentBlock(timings[0]);
+
+      playInterval = setInterval(() => {
+        currentTime += 0.1;
+        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)}`;
+
+        if (currentIndex < timings.length && currentTime >= timings[currentIndex].start + timings[currentIndex].duration) {
+          currentIndex++;
+          if (currentIndex < timings.length) {
+            updateCurrentBlock(timings[currentIndex]);
+          } else {
+            clearInterval(playInterval);
+            playBtn.textContent = 'Play';
+            isPlaying = false;
+            resetPlayback();
+          }
+        }
+      }, 100); // Update every 100ms
+    }
+
+    // Function to update the current block display and highlight
+    function updateCurrentBlock(timing) {
+      const previousBlock = timeline.querySelector('.playing');
+      if (previousBlock) previousBlock.classList.remove('playing');
+
+      const { block } = timing;
+      block.classList.add('playing');
+      currentBlockDisplay.style.backgroundColor = window.getComputedStyle(block).backgroundColor;
+      currentBlockDisplay.innerHTML = `<span class="label">${block.querySelector('.label').innerHTML}</span>`;
+    }
+
+    // Function to reset playback state
+    function resetPlayback() {
+      currentTime = 0;
+      const previousBlock = timeline.querySelector('.playing');
+      if (previousBlock) previousBlock.classList.remove('playing');
+      currentBlockDisplay.style.backgroundColor = '';
+      currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
+      calculateTimings();
     }
 
     // Initial blocks with varied part types, feels, and lyrics
@@ -595,7 +692,7 @@
 
     // Set initial title and calculate duration
     updateTitle(currentSongName);
-    calculateTotalDuration();
+    calculateTimings();
   </script>
 </body>
 </html>
