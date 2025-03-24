@@ -89,6 +89,12 @@
     <input type="number" id="measures" min="1" value="4" placeholder="Measures"><br>
     <input type="text" id="key" value="C Major" placeholder="Key"><br>
     <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)"><br>
+    <select id="time-signature">
+      <option value="4/4">4/4 (4 beats per measure)</option>
+      <option value="3/4">3/4 (3 beats per measure)</option>
+      <option value="6/8">6/8 (6 beats per measure)</option>
+      <option value="2/4">2/4 (2 beats per measure)</option>
+    </select><br>
     <select id="feel">
       <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
       <option value="Sadness">Sadness – Slow, minor key, melancholy tones</option>
@@ -123,6 +129,17 @@
       block.style.width = `${measures * pixelsPerMeasure}px`;
     }
 
+    // Function to get beats per measure from time signature
+    function getBeatsPerMeasure(timeSignature) {
+      switch (timeSignature) {
+        case '4/4': return 4;
+        case '3/4': return 3;
+        case '6/8': return 6;
+        case '2/4': return 2;
+        default: return 4; // Fallback
+      }
+    }
+
     // Function to calculate total duration
     function calculateTotalDuration() {
       const blocks = timeline.querySelectorAll('.song-block');
@@ -130,8 +147,11 @@
 
       blocks.forEach(block => {
         const measures = parseInt(block.getAttribute('data-measures'));
-        const tempo = parseInt(block.querySelector('.label').innerHTML.split('<br>')[3].replace(' BPM', ''));
-        const beats = measures * 4; // Assuming 4/4 time
+        const labelParts = block.querySelector('.label').innerHTML.split('<br>');
+        const tempo = parseInt(labelParts[3].replace(' BPM', ''));
+        const timeSignature = labelParts[4];
+        const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
+        const beats = measures * beatsPerMeasure;
         const seconds = (beats / tempo) * 60;
         totalSeconds += seconds;
       });
@@ -154,7 +174,7 @@
       block.addEventListener('dragend', () => {
         draggedBlock.style.opacity = '1';
         draggedBlock = null;
-        calculateTotalDuration(); // Update duration after reordering
+        calculateTotalDuration();
       });
 
       block.addEventListener('dragover', (e) => e.preventDefault());
@@ -189,7 +209,7 @@
       deleteBtn.textContent = 'X';
       deleteBtn.addEventListener('click', () => {
         block.remove();
-        calculateTotalDuration(); // Update duration after deletion
+        calculateTotalDuration();
       });
       block.appendChild(deleteBtn);
     }
@@ -200,6 +220,7 @@
       const measures = document.getElementById('measures').value;
       const key = document.getElementById('key').value;
       const tempo = document.getElementById('tempo').value;
+      const timeSignature = document.getElementById('time-signature').value;
       const feel = document.getElementById('feel').value;
 
       if (!measures || measures < 1 || !tempo || tempo < 1) {
@@ -213,28 +234,28 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${feel}`;
+      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${timeSignature}<br>${feel}`;
       block.appendChild(label);
 
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
 
-      calculateTotalDuration(); // Update duration after adding
+      calculateTotalDuration();
     }
 
-    // Initial blocks
+    // Initial blocks with time signature
     const initialBlocks = [
-      { type: 'intro', measures: 4, key: 'C Major', tempo: 120, feel: 'Happiness' },
-      { type: 'verse', measures: 8, key: 'C Major', tempo: 120, feel: 'Calmness' },
-      { type: 'chorus', measures: 8, key: 'D Major', tempo: 120, feel: 'Euphoria' }
+      { type: 'intro', measures: 4, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Happiness' },
+      { type: 'verse', measures: 8, key: 'C Major', tempo: 120, timeSignature: '3/4', feel: 'Calmness' },
+      { type: 'chorus', measures: 8, key: 'D Major', tempo: 120, timeSignature: '4/4', feel: 'Euphoria' }
     ];
 
-    initialBlocks.forEach(({ type, measures, key, tempo, feel }) => {
+    initialBlocks.forEach(({ type, measures, key, tempo, timeSignature, feel }) => {
       const block = document.createElement('div');
       block.classList.add('song-block', type);
       block.setAttribute('data-measures', measures);
-      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${feel}</span>`;
+      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${timeSignature}<br>${feel}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
