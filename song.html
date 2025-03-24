@@ -38,17 +38,17 @@
       position: absolute;
       top: 5px;
       left: 5px;
-      font-size: 13px; /* Increased for readability */
+      font-size: 13px;
       color: black;
-      padding: 2px 5px; /* Added padding */
-      background: rgba(255, 255, 255, 0.7); /* Light backdrop for contrast */
+      padding: 2px 5px;
+      background: rgba(255, 255, 255, 0.7);
       border-radius: 3px;
     }
     .tooltip {
       visibility: hidden;
-      background: rgba(26, 60, 52, 0.9); /* Dark teal */
+      background: rgba(26, 60, 52, 0.9);
       color: white;
-      border: 1px solid #A3D9C9; /* Light teal */
+      border: 1px solid #A3D9C9;
       padding: 8px;
       border-radius: 5px;
       position: absolute;
@@ -96,9 +96,15 @@
       border: 1px solid #ccc;
       display: inline-block;
     }
+    .add-block-form label {
+      display: block;
+      margin: 5px 0 2px;
+      font-size: 14px;
+    }
     .add-block-form select, .add-block-form input {
-      margin: 5px;
+      margin: 0 0 10px;
       width: 150px;
+      display: block;
     }
     .time-calculator {
       margin: 20px;
@@ -110,6 +116,7 @@
 <body>
   <div class="add-block-form">
     <h3>Add Song Part</h3>
+    <label for="part-type">Part Type</label>
     <select id="part-type">
       <option value="intro">Intro</option>
       <option value="verse">Verse</option>
@@ -118,10 +125,14 @@
       <option value="bridge">Bridge</option>
       <option value="outro">Outro</option>
       <option value="break">Break/Instrumental</option>
-    </select><br>
-    <input type="number" id="measures" min="1" value="4" placeholder="Measures"><br>
-    <input type="text" id="key" value="C Major" placeholder="Key"><br>
-    <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)"><br>
+    </select>
+    <label for="measures">Measures</label>
+    <input type="number" id="measures" min="1" value="4" placeholder="Measures">
+    <label for="key">Key</label>
+    <input type="text" id="key" value="C Major" placeholder="Key">
+    <label for="tempo">Tempo (BPM)</label>
+    <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)">
+    <label for="time-signature">Time Signature</label>
     <select id="time-signature">
       <option value="4/4">4/4 (4 beats per measure)</option>
       <option value="3/4">3/4 (3 beats per measure)</option>
@@ -136,7 +147,11 @@
       <option value="13/8">13/8 (13 beats per measure)</option>
       <option value="10/4">10/4 (10 beats per measure)</option>
       <option value="8/8">8/8 (8 beats per measure)</option>
-    </select><br>
+      <option value="14/8">14/8 (14 beats per measure)</option>
+      <option value="16/8">16/8 (16 beats per measure)</option>
+      <option value="7/4">7/4 (7 beats per measure)</option>
+    </select>
+    <label for="feel">Feel</label>
     <select id="feel">
       <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
       <option value="Sadness">Sadness – Slow, minor key, melancholy tones</option>
@@ -147,7 +162,7 @@
       <option value="Empowerment">Empowerment – Anthemic, motivational, strong beat</option>
       <option value="Nostalgia">Nostalgia – Familiar tunes, longing, reminiscence</option>
       <option value="Euphoria">Euphoria – Upbeat, fast-tempo, dance/electronic</option>
-    </select><br>
+    </select>
     <button onclick="addBlock()">Add Block</button>
   </div>
 
@@ -206,6 +221,9 @@
         case '13/8': return 13;
         case '10/4': return 10;
         case '8/8': return 8;
+        case '14/8': return 14;
+        case '16/8': return 16;
+        case '7/4': return 7;
         default: return 4; // Fallback
       }
     }
@@ -224,9 +242,8 @@
 
       blocks.forEach(block => {
         const measures = parseInt(block.getAttribute('data-measures'));
-        const labelParts = block.querySelector('.label').textContent.split('  ');
-        const timeSignature = labelParts[1];
-        const tempo = parseInt(labelParts[4].replace('b', ''));
+        const tempo = parseInt(block.getAttribute('data-tempo'));
+        const timeSignature = block.getAttribute('data-time-signature');
         const feel = block.getAttribute('data-feel');
         const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
         const beats = measures * beatsPerMeasure;
@@ -310,6 +327,8 @@
       const block = document.createElement('div');
       block.classList.add('song-block', partType);
       block.setAttribute('data-measures', measures);
+      block.setAttribute('data-tempo', tempo);
+      block.setAttribute('data-time-signature', timeSignature);
       block.setAttribute('data-feel', feel);
 
       const label = document.createElement('span');
@@ -340,6 +359,8 @@
       const block = document.createElement('div');
       block.classList.add('song-block', type);
       block.setAttribute('data-measures', measures);
+      block.setAttribute('data-tempo', tempo);
+      block.setAttribute('data-time-signature', timeSignature);
       block.setAttribute('data-feel', feel);
       block.innerHTML = `<span class="label">${abbreviatePart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b</span><span class="tooltip">${feel}\nDuration: Calculating...</span>`;
       updateBlockSize(block);
