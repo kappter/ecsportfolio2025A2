@@ -43,20 +43,33 @@
     }
     .tooltip {
       visibility: hidden;
-      background: #333;
+      background: rgba(0, 0, 0, 0.8);
       color: white;
-      padding: 5px;
-      border-radius: 3px;
+      border: 1px solid white;
+      padding: 8px;
+      border-radius: 5px;
       position: absolute;
       z-index: 1;
-      bottom: 105%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 12px;
+      top: -60px; /* Adjusted to appear above */
+      left: 10px; /* Slightly offset from label */
+      font-size: 14px;
       white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
     }
     .song-block:hover .tooltip {
       visibility: visible;
+      opacity: 1;
     }
     .delete-btn {
       position: absolute;
@@ -114,6 +127,9 @@
       <option value="5/4">5/4 (5 beats per measure)</option>
       <option value="7/8">7/8 (7 beats per measure)</option>
       <option value="12/8">12/8 (12 beats per measure)</option>
+      <option value="9/8">9/8 (9 beats per measure)</option>
+      <option value="11/8">11/8 (11 beats per measure)</option>
+      <option value="15/8">15/8 (15 beats per measure)</option>
     </select><br>
     <select id="feel">
       <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
@@ -142,6 +158,25 @@
     const timeCalculator = document.getElementById('time-calculator');
     let draggedBlock = null;
 
+    // Function to abbreviate part name
+    function abbreviatePart(part) {
+      const map = {
+        'intro': 'I',
+        'verse': 'V',
+        'pre-chorus': 'PC',
+        'chorus': 'C',
+        'bridge': 'B',
+        'outro': 'O',
+        'break': 'BR'
+      };
+      return map[part] || part.charAt(0).toUpperCase();
+    }
+
+    // Function to abbreviate key
+    function abbreviateKey(key) {
+      return key.replace(' Major', '').replace(' Minor', 'm');
+    }
+
     // Function to update block size based on measures
     function updateBlockSize(block) {
       const measures = parseInt(block.getAttribute('data-measures'));
@@ -159,6 +194,9 @@
         case '5/4': return 5;
         case '7/8': return 7;
         case '12/8': return 12;
+        case '9/8': return 9;
+        case '11/8': return 11;
+        case '15/8': return 15;
         default: return 4; // Fallback
       }
     }
@@ -177,16 +215,15 @@
 
       blocks.forEach(block => {
         const measures = parseInt(block.getAttribute('data-measures'));
-        const labelParts = block.querySelector('.label').innerHTML.split('<br>');
-        const tempo = parseInt(labelParts[1].split(' ')[2].replace('bpm', ''));
-        const timeSignature = labelParts[0].split(' (')[1].replace(')', '');
+        const labelParts = block.querySelector('.label').textContent.split(' ');
+        const timeSignature = labelParts[1];
+        const tempo = parseInt(labelParts[4].replace('b', ''));
         const feel = block.getAttribute('data-feel');
         const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
         const beats = measures * beatsPerMeasure;
         const seconds = (beats / tempo) * 60;
         totalSeconds += seconds;
 
-        // Update tooltip with duration and feel
         const tooltip = block.querySelector('.tooltip');
         tooltip.textContent = `${feel}\nDuration: ${formatDuration(seconds)}`;
       });
@@ -264,16 +301,16 @@
       const block = document.createElement('div');
       block.classList.add('song-block', partType);
       block.setAttribute('data-measures', measures);
-      block.setAttribute('data-feel', feel); // Store feel for tooltip
+      block.setAttribute('data-feel', feel);
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)} (${timeSignature})<br>${measures}m ${key} ${tempo}bpm`;
+      label.textContent = `${abbreviatePart(partType)}:${timeSignature} ${measures}m ${abbreviateKey(key)} ${tempo}b`;
       block.appendChild(label);
 
       const tooltip = document.createElement('span');
       tooltip.classList.add('tooltip');
-      tooltip.textContent = `${feel}\nDuration: Calculating...`; // Updated later
+      tooltip.textContent = `${feel}\nDuration: Calculating...`;
       block.appendChild(tooltip);
 
       updateBlockSize(block);
@@ -295,7 +332,7 @@
       block.classList.add('song-block', type);
       block.setAttribute('data-measures', measures);
       block.setAttribute('data-feel', feel);
-      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)} (${timeSignature})<br>${measures}m ${key} ${tempo}bpm</span><span class="tooltip">${feel}\nDuration: Calculating...</span>`;
+      block.innerHTML = `<span class="label">${abbreviatePart(type)}:${timeSignature} ${measures}m ${abbreviateKey(key)} ${tempo}b</span><span class="tooltip">${feel}\nDuration: Calculating...</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
