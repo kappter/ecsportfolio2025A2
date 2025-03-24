@@ -65,7 +65,12 @@
     }
     .add-block-form select, .add-block-form input {
       margin: 5px;
-      width: 150px; /* Consistent width for alignment */
+      width: 150px;
+    }
+    .time-calculator {
+      margin: 20px;
+      font-size: 16px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -99,39 +104,60 @@
   </div>
 
   <div class="timeline" id="timeline">
-    <!-- Initial blocks can be added here or left empty -->
+    <!-- Initial blocks -->
+  </div>
+
+  <div class="time-calculator" id="time-calculator">
+    Total Duration: 0:00
   </div>
 
   <script>
     const timeline = document.getElementById('timeline');
+    const timeCalculator = document.getElementById('time-calculator');
     let draggedBlock = null;
 
     // Function to update block size based on measures
     function updateBlockSize(block) {
       const measures = parseInt(block.getAttribute('data-measures'));
-      const pixelsPerMeasure = 25; // 1 measure = 25px
+      const pixelsPerMeasure = 25;
       block.style.width = `${measures * pixelsPerMeasure}px`;
+    }
+
+    // Function to calculate total duration
+    function calculateTotalDuration() {
+      const blocks = timeline.querySelectorAll('.song-block');
+      let totalSeconds = 0;
+
+      blocks.forEach(block => {
+        const measures = parseInt(block.getAttribute('data-measures'));
+        const tempo = parseInt(block.querySelector('.label').innerHTML.split('<br>')[3].replace(' BPM', ''));
+        const beats = measures * 4; // Assuming 4/4 time
+        const seconds = (beats / tempo) * 60;
+        totalSeconds += seconds;
+      });
+
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = Math.round(totalSeconds % 60);
+      timeCalculator.textContent = `Total Duration: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
     }
 
     // Function to make a block draggable and deletable
     function setupBlock(block) {
       block.draggable = true;
 
-      // Drag events
       block.addEventListener('dragstart', (e) => {
         draggedBlock = block;
         setTimeout(() => block.style.opacity = '0.5', 0);
-        e.dataTransfer.setData('text/plain', ''); // Required for Firefox
+        e.dataTransfer.setData('text/plain', '');
       });
 
       block.addEventListener('dragend', () => {
         draggedBlock.style.opacity = '1';
         draggedBlock = null;
+        calculateTotalDuration(); // Update duration after reordering
       });
 
-      block.addEventListener('dragover', (e) => {
-        e.preventDefault(); // Allow dropping
-      });
+      block.addEventListener('dragover', (e) => e.preventDefault());
 
       block.addEventListener('dragenter', () => {
         if (block !== draggedBlock) {
@@ -158,12 +184,12 @@
         }
       });
 
-      // Add delete button
       const deleteBtn = document.createElement('button');
       deleteBtn.classList.add('delete-btn');
       deleteBtn.textContent = 'X';
       deleteBtn.addEventListener('click', () => {
         block.remove();
+        calculateTotalDuration(); // Update duration after deletion
       });
       block.appendChild(deleteBtn);
     }
@@ -176,31 +202,28 @@
       const tempo = document.getElementById('tempo').value;
       const feel = document.getElementById('feel').value;
 
-      if (!measures || measures < 1) {
-        alert('Please enter a valid number of measures.');
+      if (!measures || measures < 1 || !tempo || tempo < 1) {
+        alert('Please enter valid measures and tempo.');
         return;
       }
 
-      // Create new block
       const block = document.createElement('div');
       block.classList.add('song-block', partType);
       block.setAttribute('data-measures', measures);
 
-      // Add label with "Feel"
       const label = document.createElement('span');
       label.classList.add('label');
       label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${feel}`;
       block.appendChild(label);
 
-      // Setup size, drag, and delete
       updateBlockSize(block);
       setupBlock(block);
-
-      // Append to timeline
       timeline.appendChild(block);
+
+      calculateTotalDuration(); // Update duration after adding
     }
 
-    // Initial blocks with "Feel"
+    // Initial blocks
     const initialBlocks = [
       { type: 'intro', measures: 4, key: 'C Major', tempo: 120, feel: 'Happiness' },
       { type: 'verse', measures: 8, key: 'C Major', tempo: 120, feel: 'Calmness' },
@@ -216,6 +239,9 @@
       setupBlock(block);
       timeline.appendChild(block);
     });
+
+    // Calculate initial duration
+    calculateTotalDuration();
   </script>
 </body>
 </html>
