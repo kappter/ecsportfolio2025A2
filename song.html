@@ -35,8 +35,8 @@
       border: 4px solid #000;
     }
     .song-block.transition {
-      background-color: #FFFFE0; /* Light yellow for transition */
-      width: 20px; /* Small width for timeline */
+      background-color: #FFFFE0;
+      width: 20px;
       height: 140px;
     }
     .intro { background-color: #87CEEB; }
@@ -176,6 +176,14 @@
       position: relative;
       transition: background-color 0.2s;
     }
+    .current-block-display.pulse {
+      animation: pulse 1s infinite; /* Default, updated dynamically */
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
     .current-block-display .label {
       font-size: 16px;
       padding: 10px 15px;
@@ -214,7 +222,7 @@
         border: 2pt solid #333;
       }
       .song-block.playing, .song-block.transition {
-        border: 2pt solid #333; /* No highlight in print */
+        border: 2pt solid #333;
       }
       .label {
         font-size: 9pt;
@@ -337,7 +345,7 @@
   </div>
 
   <div class="time-calculator" id="time-calculator">
-    Current Time: 0:00.0 / Total Duration: 0:00.0
+    Current Time: 0:00.0 / Total Duration: 0:00.0 | Beat: 0
   </div>
 
   <div class="current-block-display" id="current-block-display">
@@ -356,6 +364,7 @@
     let isPlaying = false;
     let playInterval = null;
     let currentTime = 0;
+    let currentBeat = 0;
 
     // Function to update document title and print header
     function updateTitle(songName) {
@@ -422,6 +431,7 @@
     function calculateTimings() {
       const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)'));
       let totalSeconds = 0;
+      let totalBeats = 0;
       const timings = [];
 
       blocks.forEach((block, index) => {
@@ -435,16 +445,20 @@
         // Add transition block before this block (except for the first block)
         if (index > 0) {
           const nextPart = formatPart(blocks[index].classList[1]);
-          const transitionBeats = beatsPerMeasure * 0.5; // Half measure
+          const transitionBeats = beatsPerMeasure * 0.5;
           const transitionSeconds = (transitionBeats / tempo) * 60;
           const transitionStart = totalSeconds - transitionSeconds;
           timings.push({
             isTransition: true,
-            block: null, // Virtual block, created during playback
+            block: null,
             start: transitionStart,
             duration: transitionSeconds,
-            label: `Transition to ${nextPart}`
+            label: `Transition to ${nextPart}`,
+            tempo,
+            beatsPerMeasure,
+            totalBeats: transitionBeats
           });
+          totalBeats += transitionBeats;
         }
 
         timings.push({
@@ -452,13 +466,17 @@
           block,
           start: totalSeconds,
           duration: seconds,
-          label: block.querySelector('.label').innerHTML
+          label: block.querySelector('.label').innerHTML,
+          tempo,
+          beatsPerMeasure,
+          totalBeats: beats
         });
         totalSeconds += seconds;
+        totalBeats += beats;
       });
 
-      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)}`;
-      return { timings, totalSeconds };
+      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat}`;
+      return { timings, totalSeconds, totalBeats };
     }
 
     // Function to load block data into form
@@ -639,25 +657,31 @@
         isPlaying = false;
         resetPlayback();
       } else {
-        const { timings, totalSeconds } = calculateTimings();
+        const { timings, totalSeconds, totalBeats } = calculateTimings();
         if (timings.length === 0) return;
         playBtn.textContent = 'Pause';
         isPlaying = true;
         currentTime = 0;
-        playSong(timings, totalSeconds);
+        currentBeat = 0;
+        playSong(timings, totalSeconds, totalBeats);
       }
     }
 
     // Function to play the song
-    function playSong(timings, totalSeconds) {
+    function playSong(timings, totalSeconds, totalBeats) {
       let currentIndex = 0;
       updateCurrentBlock(timings[0]);
 
       playInterval = setInterval(() => {
         currentTime += 0.1;
-        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)}`;
+        const currentTiming = timings[currentIndex];
+        const beatsPerSecond = currentTiming.tempo / 60;
+        const timeInBlock = currentTime - currentTiming.start;
+        currentBeat = Math.floor(timings.filter(t => t.start < currentTime).reduce((sum, t) => sum + t.totalBeats, 0));
 
-        if (currentIndex < timings.length && currentTime >= timings[currentIndex].start + timings[currentIndex].duration) {
+        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Beat: ${currentBeat}`;
+
+        if (currentIndex < timings.length && currentTime >= currentTiming.start + currentTiming.duration) {
           currentIndex++;
           if (currentIndex < timings.length) {
             updateCurrentBlock(timings[currentIndex]);
@@ -675,13 +699,12 @@
     function updateCurrentBlock(timing) {
       const previousBlock = timeline.querySelector('.playing');
       if (previousBlock) previousBlock.classList.remove('playing');
+      currentBlockDisplay.classList.remove('pulse');
 
       if (timing.isTransition) {
-        // Remove any existing transition block
         const existingTransition = timeline.querySelector('.transition');
         if (existingTransition) existingTransition.remove();
 
-        // Create and insert transition block in timeline
         const transitionBlock = document.createElement('div');
         transitionBlock.classList.add('song-block', 'transition');
         transitionBlock.innerHTML = '<span class="label">T</span>';
@@ -689,28 +712,33 @@
         if (nextBlock) nextBlock.before(transitionBlock);
         transitionBlock.classList.add('playing');
 
-        // Update display
         currentBlockDisplay.style.backgroundColor = '#FFFFE0';
         currentBlockDisplay.innerHTML = `<span class="label">${timing.label}</span>`;
       } else {
-        // Remove transition block if present
         const existingTransition = timeline.querySelector('.transition');
         if (existingTransition) existingTransition.remove();
 
-        // Highlight actual block
         timing.block.classList.add('playing');
         currentBlockDisplay.style.backgroundColor = window.getComputedStyle(timing.block).backgroundColor;
         currentBlockDisplay.innerHTML = `<span class="label">${timing.label}</span>`;
       }
+
+      // Add pulse animation based on tempo
+      const beatDuration = 60 / timing.tempo; // Seconds per beat
+      currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
+      currentBlockDisplay.classList.add('pulse');
     }
 
     // Function to reset playback state
     function resetPlayback() {
       currentTime = 0;
+      currentBeat = 0;
       const previousBlock = timeline.querySelector('.playing');
       if (previousBlock) previousBlock.classList.remove('playing');
       const transitionBlock = timeline.querySelector('.transition');
       if (transitionBlock) transitionBlock.remove();
+      currentBlockDisplay.classList.remove('pulse');
+      currentBlockDisplay.style.animation = '';
       currentBlockDisplay.style.backgroundColor = '';
       currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
       calculateTimings();
