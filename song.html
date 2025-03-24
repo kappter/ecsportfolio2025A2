@@ -38,20 +38,23 @@
       position: absolute;
       top: 5px;
       left: 5px;
-      font-size: 12px;
+      font-size: 13px; /* Increased for readability */
       color: black;
+      padding: 2px 5px; /* Added padding */
+      background: rgba(255, 255, 255, 0.7); /* Light backdrop for contrast */
+      border-radius: 3px;
     }
     .tooltip {
       visibility: hidden;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(26, 60, 52, 0.9); /* Dark teal */
       color: white;
-      border: 1px solid white;
+      border: 1px solid #A3D9C9; /* Light teal */
       padding: 8px;
       border-radius: 5px;
       position: absolute;
       z-index: 1;
-      top: -60px; /* Adjusted to appear above */
-      left: 10px; /* Slightly offset from label */
+      top: -60px;
+      left: 10px;
       font-size: 14px;
       white-space: nowrap;
       opacity: 0;
@@ -65,7 +68,7 @@
       margin-left: -5px;
       border-width: 5px;
       border-style: solid;
-      border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+      border-color: rgba(26, 60, 52, 0.9) transparent transparent transparent;
     }
     .song-block:hover .tooltip {
       visibility: visible;
@@ -130,6 +133,9 @@
       <option value="9/8">9/8 (9 beats per measure)</option>
       <option value="11/8">11/8 (11 beats per measure)</option>
       <option value="15/8">15/8 (15 beats per measure)</option>
+      <option value="13/8">13/8 (13 beats per measure)</option>
+      <option value="10/4">10/4 (10 beats per measure)</option>
+      <option value="8/8">8/8 (8 beats per measure)</option>
     </select><br>
     <select id="feel">
       <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
@@ -197,6 +203,9 @@
         case '9/8': return 9;
         case '11/8': return 11;
         case '15/8': return 15;
+        case '13/8': return 13;
+        case '10/4': return 10;
+        case '8/8': return 8;
         default: return 4; // Fallback
       }
     }
@@ -215,7 +224,7 @@
 
       blocks.forEach(block => {
         const measures = parseInt(block.getAttribute('data-measures'));
-        const labelParts = block.querySelector('.label').textContent.split(' ');
+        const labelParts = block.querySelector('.label').textContent.split('  ');
         const timeSignature = labelParts[1];
         const tempo = parseInt(labelParts[4].replace('b', ''));
         const feel = block.getAttribute('data-feel');
@@ -305,7 +314,7 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.textContent = `${abbreviatePart(partType)}:${timeSignature} ${measures}m ${abbreviateKey(key)} ${tempo}b`;
+      label.textContent = `${abbreviatePart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b`;
       block.appendChild(label);
 
       const tooltip = document.createElement('span');
@@ -332,7 +341,7 @@
       block.classList.add('song-block', type);
       block.setAttribute('data-measures', measures);
       block.setAttribute('data-feel', feel);
-      block.innerHTML = `<span class="label">${abbreviatePart(type)}:${timeSignature} ${measures}m ${abbreviateKey(key)} ${tempo}b</span><span class="tooltip">${feel}\nDuration: Calculating...</span>`;
+      block.innerHTML = `<span class="label">${abbreviatePart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b</span><span class="tooltip">${feel}\nDuration: Calculating...</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
