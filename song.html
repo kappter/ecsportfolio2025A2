@@ -41,6 +41,23 @@
       font-size: 12px;
       color: black;
     }
+    .tooltip {
+      visibility: hidden;
+      background: #333;
+      color: white;
+      padding: 5px;
+      border-radius: 3px;
+      position: absolute;
+      z-index: 1;
+      bottom: 105%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .song-block:hover .tooltip {
+      visibility: visible;
+    }
     .delete-btn {
       position: absolute;
       top: 5px;
@@ -94,6 +111,9 @@
       <option value="3/4">3/4 (3 beats per measure)</option>
       <option value="6/8">6/8 (6 beats per measure)</option>
       <option value="2/4">2/4 (2 beats per measure)</option>
+      <option value="5/4">5/4 (5 beats per measure)</option>
+      <option value="7/8">7/8 (7 beats per measure)</option>
+      <option value="12/8">12/8 (12 beats per measure)</option>
     </select><br>
     <select id="feel">
       <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
@@ -114,7 +134,7 @@
   </div>
 
   <div class="time-calculator" id="time-calculator">
-    Total Duration: 0:00
+    Total Duration: 0:00.0
   </div>
 
   <script>
@@ -136,11 +156,21 @@
         case '3/4': return 3;
         case '6/8': return 6;
         case '2/4': return 2;
+        case '5/4': return 5;
+        case '7/8': return 7;
+        case '12/8': return 12;
         default: return 4; // Fallback
       }
     }
 
-    // Function to calculate total duration
+    // Function to format seconds to minutes:seconds.tenths
+    function formatDuration(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = (seconds % 60).toFixed(1);
+      return `${minutes}:${remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds}`;
+    }
+
+    // Function to calculate total duration and per-block durations
     function calculateTotalDuration() {
       const blocks = timeline.querySelectorAll('.song-block');
       let totalSeconds = 0;
@@ -148,17 +178,20 @@
       blocks.forEach(block => {
         const measures = parseInt(block.getAttribute('data-measures'));
         const labelParts = block.querySelector('.label').innerHTML.split('<br>');
-        const tempo = parseInt(labelParts[3].replace(' BPM', ''));
-        const timeSignature = labelParts[4];
+        const tempo = parseInt(labelParts[1].split(' ')[2].replace('bpm', ''));
+        const timeSignature = labelParts[0].split(' (')[1].replace(')', '');
+        const feel = block.getAttribute('data-feel');
         const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
         const beats = measures * beatsPerMeasure;
         const seconds = (beats / tempo) * 60;
         totalSeconds += seconds;
+
+        // Update tooltip with duration and feel
+        const tooltip = block.querySelector('.tooltip');
+        tooltip.textContent = `${feel}\nDuration: ${formatDuration(seconds)}`;
       });
 
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = Math.round(totalSeconds % 60);
-      timeCalculator.textContent = `Total Duration: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+      timeCalculator.textContent = `Total Duration: ${formatDuration(totalSeconds)}`;
     }
 
     // Function to make a block draggable and deletable
@@ -231,11 +264,17 @@
       const block = document.createElement('div');
       block.classList.add('song-block', partType);
       block.setAttribute('data-measures', measures);
+      block.setAttribute('data-feel', feel); // Store feel for tooltip
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${timeSignature}<br>${feel}`;
+      label.innerHTML = `${partType.charAt(0).toUpperCase() + partType.slice(1)} (${timeSignature})<br>${measures}m ${key} ${tempo}bpm`;
       block.appendChild(label);
+
+      const tooltip = document.createElement('span');
+      tooltip.classList.add('tooltip');
+      tooltip.textContent = `${feel}\nDuration: Calculating...`; // Updated later
+      block.appendChild(tooltip);
 
       updateBlockSize(block);
       setupBlock(block);
@@ -248,14 +287,15 @@
     const initialBlocks = [
       { type: 'intro', measures: 4, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Happiness' },
       { type: 'verse', measures: 8, key: 'C Major', tempo: 120, timeSignature: '3/4', feel: 'Calmness' },
-      { type: 'chorus', measures: 8, key: 'D Major', tempo: 120, timeSignature: '4/4', feel: 'Euphoria' }
+      { type: 'chorus', measures: 8, key: 'D Major', tempo: 120, timeSignature: '6/8', feel: 'Euphoria' }
     ];
 
     initialBlocks.forEach(({ type, measures, key, tempo, timeSignature, feel }) => {
       const block = document.createElement('div');
       block.classList.add('song-block', type);
       block.setAttribute('data-measures', measures);
-      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)}<br>${measures} measures<br>${key}<br>${tempo} BPM<br>${timeSignature}<br>${feel}</span>`;
+      block.setAttribute('data-feel', feel);
+      block.innerHTML = `<span class="label">${type.charAt(0).toUpperCase() + type.slice(1)} (${timeSignature})<br>${measures}m ${key} ${tempo}bpm</span><span class="tooltip">${feel}\nDuration: Calculating...</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
