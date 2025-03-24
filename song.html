@@ -57,7 +57,7 @@
       position: absolute;
       top: 5px;
       left: 5px;
-      font-size: 11px;
+      font-size: 10px; /* Tweaked from 11px */
       color: black;
       padding: 4px 6px;
       background: rgba(255, 255, 255, 0.7);
@@ -157,36 +157,42 @@
       font-size: 16px;
       font-weight: bold;
     }
+    .print-header {
+      display: none; /* Hidden on screen */
+    }
     @media print {
       body {
         margin: 0;
       }
       .add-block-form, .button-group, .time-calculator {
-        display: none; /* Hide form, buttons, and calculator */
+        display: none;
+      }
+      .print-header {
+        display: block;
+        font-size: 18pt;
+        text-align: center;
+        margin: 36pt 36pt 18pt; /* Top margin 0.5in, sides 0.5in, bottom 0.25in */
       }
       .timeline {
         max-width: 100%;
-        width: 612pt; /* 8.5in in points */
+        width: 612pt; /* 8.5in */
         padding: 36pt; /* 0.5in margins */
         background: none;
-        display: block; /* Stack blocks vertically */
+        display: block;
       }
       .song-block {
-        width: 100% !important; /* Full width for print */
+        width: 100% !important;
         height: auto;
         margin-bottom: 10pt;
-        page-break-inside: avoid; /* Prevent block splitting across pages */
+        page-break-inside: avoid;
       }
       .label {
-        font-size: 10pt;
+        font-size: 9pt; /* Tweaked from 10pt */
         max-width: 90%;
         padding: 6pt;
       }
-      .tooltip {
-        display: none; /* Hide tooltips in print */
-      }
-      .delete-btn {
-        display: none; /* Hide delete buttons */
+      .tooltip, .delete-btn {
+        display: none;
       }
     }
   </style>
@@ -289,6 +295,8 @@
     </div>
   </div>
 
+  <h1 class="print-header" id="print-song-name">Echoes of Joy</h1>
+
   <div class="timeline" id="timeline">
     <!-- Initial blocks -->
   </div>
@@ -300,14 +308,16 @@
   <script>
     const timeline = document.getElementById('timeline');
     const timeCalculator = document.getElementById('time-calculator');
+    const printSongName = document.getElementById('print-song-name');
     let draggedBlock = null;
     let selectedBlock = null;
     let currentSongName = 'Echoes of Joy';
 
-    // Function to update document title
+    // Function to update document title and print header
     function updateTitle(songName) {
       currentSongName = songName || 'SongMaker';
       document.title = `${currentSongName} - SongMaker`;
+      printSongName.textContent = currentSongName; // Sync print header
     }
 
     // Function to capitalize part name
@@ -497,7 +507,7 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      label.innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
       block.appendChild(label);
 
       const tooltip = document.createElement('span');
@@ -540,7 +550,7 @@
       selectedBlock.setAttribute('data-feel', feel);
       selectedBlock.setAttribute('data-lyrics', lyrics);
       selectedBlock.setAttribute('data-key', key);
-      selectedBlock.querySelector('.label').textContent = `${formatPart(partType)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
+      selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}`;
       selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
       updateBlockSize(selectedBlock);
       clearSelection();
@@ -571,7 +581,7 @@
       block.setAttribute('data-feel', feel);
       block.setAttribute('data-lyrics', lyrics);
       block.setAttribute('data-key', key);
-      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m  ${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '  ' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
