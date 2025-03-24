@@ -182,19 +182,19 @@
       }
       .song-block {
         width: 100% !important;
-        height: 96pt; /* 1.33in, increased from 72pt */
+        height: 144pt; /* 2in, increased from 108pt */
         margin-bottom: 10pt;
         page-break-inside: avoid;
         color: white;
-        border: 1pt solid #000; /* Added border */
+        border: 2pt solid #333;
       }
       .label {
         font-size: 9pt;
         max-width: 90%;
-        padding: 6pt;
-        line-height: 1.4;
+        padding: 8pt 10pt; /* Increased padding */
+        line-height: 1.5; /* Adjusted for four lines */
         color: black;
-        background: rgba(255, 255, 255, 0.9); /* Increased opacity from 0.7 */
+        background: #fff;
         border-radius: 3px;
       }
       .tooltip, .delete-btn {
@@ -513,7 +513,7 @@
 
       const label = document.createElement('span');
       label.classList.add('label');
-      label.innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>' + truncateLyrics(lyrics) : ''}`;
+      label.innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
       block.appendChild(label);
 
       const tooltip = document.createElement('span');
@@ -556,7 +556,7 @@
       selectedBlock.setAttribute('data-feel', feel);
       selectedBlock.setAttribute('data-lyrics', lyrics);
       selectedBlock.setAttribute('data-key', key);
-      selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>' + truncateLyrics(lyrics) : ''}`;
+      selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
       selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
       updateBlockSize(selectedBlock);
       clearSelection();
@@ -587,7 +587,7 @@
       block.setAttribute('data-feel', feel);
       block.setAttribute('data-lyrics', lyrics);
       block.setAttribute('data-key', key);
-      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
       updateBlockSize(block);
       setupBlock(block);
       timeline.appendChild(block);
