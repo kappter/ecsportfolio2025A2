@@ -86,7 +86,7 @@ const pneumaSong = {
     },
     {
       type: "outro",
-      measures: 72,
+      measures: 82,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
