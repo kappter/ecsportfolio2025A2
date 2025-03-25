@@ -3,6 +3,7 @@ const timeCalculator = document.getElementById('time-calculator');
 const currentBlockDisplay = document.getElementById('current-block-display');
 const playBtn = document.getElementById('play-btn');
 const soundBtn = document.getElementById('sound-btn');
+const themeBtn = document.getElementById('theme-btn');
 const printSongName = document.getElementById('print-song-name');
 let draggedBlock = null;
 let selectedBlock = null;
@@ -15,6 +16,7 @@ let blockBeat = 0;
 let blockMeasure = 0;
 let lastBeatTime = 0;
 let soundEnabled = true;
+let isDarkMode = true;
 
 const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
 const tickSound = new Audio('tick.wav');
@@ -23,6 +25,12 @@ const tockSound = new Audio('tock.wav');
 function toggleSound() {
   soundEnabled = !soundEnabled;
   soundBtn.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
+}
+
+function toggleTheme() {
+  isDarkMode = !isDarkMode;
+  document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+  themeBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
 }
 
 function updateTitle(songName) {
@@ -176,7 +184,7 @@ function setupBlock(block) {
 
   block.addEventListener('dragenter', () => {
     if (block !== draggedBlock) {
-      block.style.border = '2px dashed #00c4b4';
+      block.style.border = '2px dashed var(--accent-color)';
     }
   });
 
@@ -312,7 +320,7 @@ function togglePlay() {
     currentBeat = 0;
     blockBeat = 0;
     blockMeasure = 0;
-    last reprisetime = 0;
+    lastBeatTime = 0;
     playLeadIn(timings, totalSeconds, totalBeats);
   }
 }
@@ -415,14 +423,16 @@ function updateCurrentBlock(timing) {
     if (nextBlock) nextBlock.before(transitionBlock);
     transitionBlock.classList.add('playing');
 
-    currentBlockDisplay.style.backgroundColor = '#636e72';
+    currentBlockDisplay.style.background = 'linear-gradient(135deg, var(--transition-bg-start), var(--timeline-bg))';
     currentBlockDisplay.innerHTML = `<span class="label">${timing.label}</span>`;
   } else {
     const existingTransition = timeline.querySelector('.transition');
     if (existingTransition) existingTransition.remove();
 
     timing.block.classList.add('playing');
-    currentBlockDisplay.style.backgroundColor = window.getComputedStyle(timing.block).backgroundColor.split(')')[0] + ', 0.8)';
+    const blockStyle = window.getComputedStyle(timing.block);
+    const bgGradient = blockStyle.backgroundImage || blockStyle.background;
+    currentBlockDisplay.style.background = bgGradient;
     currentBlockDisplay.innerHTML = `<span class="label">${timing.label}</span>`;
   }
 
@@ -443,7 +453,7 @@ function resetPlayback() {
   if (transitionBlock) transitionBlock.remove();
   currentBlockDisplay.classList.remove('pulse');
   currentBlockDisplay.style.animation = '';
-  currentBlockDisplay.style.backgroundColor = '#2d3436';
+  currentBlockDisplay.style.background = 'var(--form-bg)';
   currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
   calculateTimings();
 }
@@ -578,3 +588,4 @@ initialBlocks.forEach(({ type, measures, key, tempo, timeSignature, feel, lyrics
 
 updateTitle(currentSongName);
 calculateTimings();
+document.body.setAttribute('data-theme', 'dark'); // Default to dark mode
