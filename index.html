@@ -9,93 +9,98 @@
 </head>
 <body>
   <div class="add-block-form">
-    <h3>SongMaker</h3>
-    <div style="flex: 0 0 100%;">
-      <label for="song-name">Song Name</label>
-      <input type="text" id="song-name" placeholder="Enter song name" value="Echoes of Joy" oninput="updateTitle(this.value)">
+    <div class="form-header">
+      <h3>SongMaker</h3>
+      <button id="toggle-form-btn" onclick="toggleForm()">Hide Parameters</button>
     </div>
-    <div class="form-column">
-      <label for="part-type">Part Type</label>
-      <select id="part-type">
-        <option value="intro">Intro - The opening section, setting the tone or mood</option>
-        <option value="verse">Verse - Provides the narrative or main storytelling</option>
-        <option value="refrain">Refrain - A short, repeated line at the end of each verse</option>
-        <option value="pre-chorus">Pre-Chorus - Builds anticipation before the chorus</option>
-        <option value="chorus">Chorus - The main, memorable section with the hook</option>
-        <option value="post-chorus">Post-Chorus - Reinforces the chorus theme</option>
-        <option value="bridge">Bridge - A contrasting section for variety</option>
-        <option value="outro">Outro - The closing section, providing resolution</option>
-        <option value="elision">Elision - Overlaps sections for smooth transitions</option>
-        <option value="solo">Solo - Highlights an instrument’s melody or skill</option>
-        <option value="ad-lib">Ad Lib - Improvised vocals or instrumentals</option>
-        <option value="hook">Hook - The catchiest part to hook the listener</option>
-        <option value="interlude">Interlude - Brief instrumental or non-lyrical section</option>
-        <option value="breakdown">Breakdown - Instruments simplify for dynamic contrast</option>
-        <option value="drop">Drop - High-impact section, common in electronic music</option>
-        <option value="coda">Coda - Conclusive section reinforcing the ending</option>
-        <option value="modulation">Modulation - Key change to increase intensity</option>
-        <option value="tag">Tag - Repeated phrase emphasizing a theme</option>
-        <option value="chorus-reprise">Chorus Reprise - Shortened, modified chorus return</option>
-        <option value="countermelody">Countermelody - Secondary melody complementing the main</option>
-        <option value="instrumental-verse-chorus">Instrumental Verse/Chorus - No vocals, instruments lead</option>
-        <option value="false-ending">False Ending - Song seems to end but resumes</option>
-      </select>
-      <label for="measures">Measures</label>
-      <input type="number" id="measures" min="1" value="4" placeholder="Measures">
-      <label for="key">Key</label>
-      <input type="text" id="key" value="C Major" placeholder="Key">
-    </div>
-    <div class="form-column">
-      <label for="tempo">Tempo (BPM)</label>
-      <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)">
-      <label for="time-signature">Time Signature</label>
-      <select id="time-signature">
-        <option value="4/4">4/4 (4 beats per measure)</option>
-        <option value="3/4">3/4 (3 beats per measure)</option>
-        <option value="6/8">6/8 (6 beats per measure)</option>
-        <option value="2/4">2/4 (2 beats per measure)</option>
-        <option value="5/4">5/4 (5 beats per measure)</option>
-        <option value="7/8">7/8 (7 beats per measure)</option>
-        <option value="12/8">12/8 (12 beats per measure)</option>
-        <option value="9/8">9/8 (9 beats per measure)</option>
-        <option value="11/8">11/8 (11 beats per measure)</option>
-        <option value="15/8">15/8 (15 beats per measure)</option>
-        <option value="13/8">13/8 (13 beats per measure)</option>
-        <option value="10/4">10/4 (10 beats per measure)</option>
-        <option value="8/8">8/8 (8 beats per measure)</option>
-        <option value="14/8">14/8 (14 beats per measure)</option>
-        <option value="16/8">16/8 (16 beats per measure)</option>
-        <option value="7/4">7/4 (7 beats per measure)</option>
-      </select>
-      <label for="feel">Feel</label>
-      <select id="feel">
-        <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
-        <option value="Sadness">Sadness – Slow, minor key, melancholy tones</option>
-        <option value="Calmness">Calmness – Soft, slow, ambient, relaxing</option>
-        <option value="Anger">Anger – Aggressive, fast-paced, punk/metal vibes</option>
-        <option value="Romantic">Romantic – Smooth melodies, sentimental, love-themed</option>
-        <option value="Fear">Fear – Suspenseful, dissonant, anxious</option>
-        <option value="Empowerment">Empowerment – Anthemic, motivational, strong beat</option>
-        <option value="Nostalgia">Nostalgia – Familiar tunes, longing, reminiscence</option>
-        <option value="Euphoria">Euphoria – Upbeat, fast-tempo, dance/electronic</option>
-        <option value="Tension">Tension – High-energy, suspenseful, unresolved</option>
-        <option value="Dissonance">Dissonance – Harsh, clashing tones, unsettling</option>
-        <option value="Reluctance">Reluctance – Hesitant, restrained, uncertain</option>
-        <option value="Joy">Joy – Bright, cheerful, celebratory</option>
-        <option value="Melancholy">Melancholy – Deeply emotional, wistful, minor tones</option>
-        <option value="Excitement">Excitement – Fast, vibrant, thrilling</option>
-        <option value="Serenity">Serenity – Peaceful, gentle, calming</option>
-        <option value="Despair">Despair – Dark, hopeless, heavy</option>
-        <option value="Hope">Hope – Optimistic, uplifting, forward-looking</option>
-        <option value="Confusion">Confusion – Disorienting, chaotic, unpredictable</option>
-        <option value="Triumph">Triumph – Victorious, bold, triumphant</option>
-        <option value="Longing">Longing – Yearning, emotional, distant</option>
-        <option value="Awe">Awe – Majestic, wondrous, inspiring</option>
-        <option value="Frustration">Frustration – Tense, irritated, unresolved</option>
-        <option value="Bliss">Bliss – Pure, serene, joyful contentment</option>
-      </select>
-      <label for="lyrics">Lyrics</label>
-      <textarea id="lyrics" placeholder="Enter lyrics here"></textarea>
+    <div id="form-content" class="form-content">
+      <div style="flex: 0 0 100%;">
+        <label for="song-name">Song Name</label>
+        <input type="text" id="song-name" placeholder="Enter song name" value="Echoes of Joy" oninput="updateTitle(this.value)">
+      </div>
+      <div class="form-column">
+        <label for="part-type">Part Type</label>
+        <select id="part-type">
+          <option value="intro">Intro - The opening section, setting the tone or mood</option>
+          <option value="verse">Verse - Provides the narrative or main storytelling</option>
+          <option value="refrain">Refrain - A short, repeated line at the end of each verse</option>
+          <option value="pre-chorus">Pre-Chorus - Builds anticipation before the chorus</option>
+          <option value="chorus">Chorus - The main, memorable section with the hook</option>
+          <option value="post-chorus">Post-Chorus - Reinforces the chorus theme</option>
+          <option value="bridge">Bridge - A contrasting section for variety</option>
+          <option value="outro">Outro - The closing section, providing resolution</option>
+          <option value="elision">Elision - Overlaps sections for smooth transitions</option>
+          <option value="solo">Solo - Highlights an instrument’s melody or skill</option>
+          <option value="ad-lib">Ad Lib - Improvised vocals or instrumentals</option>
+          <option value="hook">Hook - The catchiest part to hook the listener</option>
+          <option value="interlude">Interlude - Brief instrumental or non-lyrical section</option>
+          <option value="breakdown">Breakdown - Instruments simplify for dynamic contrast</option>
+          <option value="drop">Drop - High-impact section, common in electronic music</option>
+          <option value="coda">Coda - Conclusive section reinforcing the ending</option>
+          <option value="modulation">Modulation - Key change to increase intensity</option>
+          <option value="tag">Tag - Repeated phrase emphasizing a theme</option>
+          <option value="chorus-reprise">Chorus Reprise - Shortened, modified chorus return</option>
+          <option value="countermelody">Countermelody - Secondary melody complementing the main</option>
+          <option value="instrumental-verse-chorus">Instrumental Verse/Chorus - No vocals, instruments lead</option>
+          <option value="false-ending">False Ending - Song seems to end but resumes</option>
+        </select>
+        <label for="measures">Measures</label>
+        <input type="number" id="measures" min="1" value="4" placeholder="Measures">
+        <label for="key">Key</label>
+        <input type="text" id="key" value="C Major" placeholder="Key">
+      </div>
+      <div class="form-column">
+        <label for="tempo">Tempo (BPM)</label>
+        <input type="number" id="tempo" min="1" value="120" placeholder="Tempo (BPM)">
+        <label for="time-signature">Time Signature</label>
+        <select id="time-signature">
+          <option value="4/4">4/4 (4 beats per measure)</option>
+          <option value="3/4">3/4 (3 beats per measure)</option>
+          <option value="6/8">6/8 (6 beats per measure)</option>
+          <option value="2/4">2/4 (2 beats per measure)</option>
+          <option value="5/4">5/4 (5 beats per measure)</option>
+          <option value="7/8">7/8 (7 beats per measure)</option>
+          <option value="12/8">12/8 (12 beats per measure)</option>
+          <option value="9/8">9/8 (9 beats per measure)</option>
+          <option value="11/8">11/8 (11 beats per measure)</option>
+          <option value="15/8">15/8 (15 beats per measure)</option>
+          <option value="13/8">13/8 (13 beats per measure)</option>
+          <option value="10/4">10/4 (10 beats per measure)</option>
+          <option value="8/8">8/8 (8 beats per measure)</option>
+          <option value="14/8">14/8 (14 beats per measure)</option>
+          <option value="16/8">16/8 (16 beats per measure)</option>
+          <option value="7/4">7/4 (7 beats per measure)</option>
+        </select>
+        <label for="feel">Feel</label>
+        <select id="feel">
+          <option value="Happiness">Happiness – Uplifting, energetic, fast tempos, major keys</option>
+          <option value="Sadness">Sadness – Slow, minor key, melancholy tones</option>
+          <option value="Calmness">Calmness – Soft, slow, ambient, relaxing</option>
+          <option value="Anger">Anger – Aggressive, fast-paced, punk/metal vibes</option>
+          <option value="Romantic">Romantic – Smooth melodies, sentimental, love-themed</option>
+          <option value="Fear">Fear – Suspenseful, dissonant, anxious</option>
+          <option value="Empowerment">Empowerment – Anthemic, motivational, strong beat</option>
+          <option value="Nostalgia">Nostalgia – Familiar tunes, longing, reminiscence</option>
+          <option value="Euphoria">Euphoria – Upbeat, fast-tempo, dance/electronic</option>
+          <option value="Tension">Tension – High-energy, suspenseful, unresolved</option>
+          <option value="Dissonance">Dissonance – Harsh, clashing tones, unsettling</option>
+          <option value="Reluctance">Reluctance – Hesitant, restrained, uncertain</option>
+          <option value="Joy">Joy – Bright, cheerful, celebratory</option>
+          <option value="Melancholy">Melancholy – Deeply emotional, wistful, minor tones</option>
+          <option value="Excitement">Excitement – Fast, vibrant, thrilling</option>
+          <option value="Serenity">Serenity – Peaceful, gentle, calming</option>
+          <option value="Despair">Despair – Dark, hopeless, heavy</option>
+          <option value="Hope">Hope – Optimistic, uplifting, forward-looking</option>
+          <option value="Confusion">Confusion – Disorienting, chaotic, unpredictable</option>
+          <option value="Triumph">Triumph – Victorious, bold, triumphant</option>
+          <option value="Longing">Longing – Yearning, emotional, distant</option>
+          <option value="Awe">Awe – Majestic, wondrous, inspiring</option>
+          <option value="Frustration">Frustration – Tense, irritated, unresolved</option>
+          <option value="Bliss">Bliss – Pure, serene, joyful contentment</option>
+        </select>
+        <label for="lyrics">Lyrics</label>
+        <textarea id="lyrics" placeholder="Enter lyrics here"></textarea>
+      </div>
     </div>
     <div class="button-group">
       <button onclick="addBlock()">Add Block</button>
