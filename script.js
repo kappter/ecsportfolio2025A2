@@ -99,7 +99,7 @@ function formatDuration(seconds) {
 }
 
 function calculateTimings() {
-  const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)'));
+  const blocks = Array.from(timeline.querySelectorAll('.song-block'));
   let totalSeconds = 0;
   let totalBeats = 0;
   const timings = [];
@@ -112,29 +112,7 @@ function calculateTimings() {
     const beats = measures * beatsPerMeasure;
     const seconds = (beats / tempo) * 60;
 
-    if (index > 0) {
-      const nextPart = formatPart(blocks[index].classList[1]);
-      const transitionBeats = beatsPerMeasure * 2;
-      const transitionSeconds = (transitionBeats / tempo) * 60;
-      const transitionStart = totalSeconds;
-      timings.push({
-        isTransition: true,
-        block: null,
-        start: transitionStart,
-        duration: transitionSeconds,
-        label: `Transition to ${nextPart}`,
-        tempo,
-        beatsPerMeasure,
-        totalBeats: transitionBeats,
-        totalMeasures: 2,
-        blockIndex: index
-      });
-      totalSeconds += transitionSeconds;
-      totalBeats += transitionBeats;
-    }
-
     timings.push({
-      isTransition: false,
       block,
       start: totalSeconds,
       duration: seconds,
@@ -208,7 +186,7 @@ function setupBlock(block) {
     e.preventDefault();
     block.style.border = 'none';
     if (draggedBlock && draggedBlock !== block) {
-      const allBlocks = [...timeline.querySelectorAll('.song-block:not(.transition)')];
+      const allBlocks = [...timeline.querySelectorAll('.song-block')];
       const draggedIndex = allBlocks.indexOf(draggedBlock);
       const dropIndex = allBlocks.indexOf(block);
       if (draggedIndex < dropIndex) {
@@ -386,7 +364,6 @@ function playSong(timings, totalSeconds, totalBeats) {
   blockMeasure = 1;
   lastBeatTime = currentTime;
 
-  // Initial block setup
   updateCurrentBlock(timings[currentIndex]);
 
   playInterval = setInterval(() => {
@@ -421,13 +398,12 @@ function playSong(timings, totalSeconds, totalBeats) {
     } else {
       blockBeat = Math.floor(beatInBlock);
       blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
-      const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
-      const blockNum = currentTiming.isTransition ? currentTiming.blockIndex : currentTiming.blockIndex + 1;
-      const totalBlockCount = totalBlocks + timings.filter(t => t.isTransition).length;
+      const totalBlocks = timings.length;
+      const blockNum = currentTiming.blockIndex + 1;
 
       currentBlockDisplay.innerHTML = `
         <span class="label">${currentTiming.label}</span>
-        <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
+        <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
       `;
     }
 
@@ -440,37 +416,18 @@ function updateCurrentBlock(timing) {
   if (previousBlock) previousBlock.classList.remove('playing');
   currentBlockDisplay.classList.remove('pulse');
 
-  const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
-  const blockNum = timing.isTransition ? timing.blockIndex : timing.blockIndex + 1;
-  const totalBlockCount = totalBlocks + Array.from(timeline.querySelectorAll('.transition')).length + 1;
+  const totalBlocks = Array.from(timeline.querySelectorAll('.song-block')).length;
+  const blockNum = timing.blockIndex + 1;
 
   currentBlockDisplay.innerHTML = `
     <span class="label">${timing.label}</span>
-    <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
+    <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
   `;
 
-  if (timing.isTransition) {
-    const existingTransition = timeline.querySelector('.transition');
-    if (existingTransition) existingTransition.remove();
-
-    const transitionBlock = document.createElement('div');
-    transitionBlock.classList.add('song-block', 'transition');
-    transitionBlock.innerHTML = '<span class="label">T</span>';
-    const nextBlockIndex = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).findIndex(b => parseFloat(b.getAttribute('data-start')) > timing.start);
-    const nextBlock = timeline.querySelectorAll('.song-block:not(.transition)')[nextBlockIndex >= 0 ? nextBlockIndex : 0];
-    if (nextBlock) nextBlock.before(transitionBlock);
-    transitionBlock.classList.add('playing');
-
-    currentBlockDisplay.style.background = 'linear-gradient(135deg, var(--transition-bg-start), var(--timeline-bg))';
-  } else {
-    const existingTransition = timeline.querySelector('.transition');
-    if (existingTransition) existingTransition.remove();
-
-    timing.block.classList.add('playing');
-    const blockStyle = window.getComputedStyle(timing.block);
-    const bgGradient = blockStyle.backgroundImage || blockStyle.background;
-    currentBlockDisplay.style.background = bgGradient;
-  }
+  timing.block.classList.add('playing');
+  const blockStyle = window.getComputedStyle(timing.block);
+  const bgGradient = blockStyle.backgroundImage || blockStyle.background;
+  currentBlockDisplay.style.background = bgGradient;
 
   const beatDuration = 60 / timing.tempo;
   currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
@@ -485,8 +442,6 @@ function resetPlayback() {
   lastBeatTime = 0;
   const previousBlock = timeline.querySelector('.playing');
   if (previousBlock) previousBlock.classList.remove('playing');
-  const transitionBlock = timeline.querySelector('.transition');
-  if (transitionBlock) transitionBlock.remove();
   currentBlockDisplay.classList.remove('pulse');
   currentBlockDisplay.style.animation = '';
   currentBlockDisplay.style.background = 'var(--form-bg)';
