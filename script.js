@@ -510,6 +510,8 @@ function resetPlayback() {
   calculateTimings();
 }
 
+// ... (Previous code remains unchanged up to exportSong) ...
+
 function exportSong() {
   const blocks = Array.from(timeline.querySelectorAll('.song-block')).map(block => ({
     type: block.classList[1],
@@ -560,22 +562,66 @@ function validateBlock(block) {
 
 function importSong(event) {
   const file = event.target.files[0];
-  if (!file || !file.name.endsWith('.json')) {
-    alert('Please select a valid .json file.');
-    return;
+  if (!file) return;
+  if (file.name.endsWith('.json')) {
+    loadSongFile(file);
+  } else if (file.name.endsWith('.js')) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        // Execute the JS content to define the song variable
+        eval(e.target.result);
+        if (typeof pneumaSong !== 'undefined') {
+          loadSongData(pneumaSong);
+        } else {
+          alert('Failed to load song: No valid song data found in .js file.');
+        }
+      } catch (error) {
+        alert(`Failed to load song: ${error.message}`);
+      }
+    };
+    reader.readAsText(file);
+  } else {
+    alert('Please select a valid .json or .js file.');
   }
-  loadSongFile(file);
 }
 
 function loadSongFromDropdown(filename) {
   if (!filename) return;
   if (filename === 'pneuma.js') {
-    loadPneuma();
+    // Ensure pneuma.js is loaded and defines loadPneuma()
+    if (typeof loadPneuma === 'function') {
+      loadPneuma();
+    } else {
+      fetch(filename)
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to fetch Pneuma file');
+          return response.text();
+        })
+        .then(text => {
+          eval(text); // Execute the JS to define pneumaSong and loadPneuma
+          loadPneuma();
+        })
+        .catch(error => alert(`Failed to load song: ${error.message}`));
+    }
   } else if (filename === 'satisfaction.js') {
-    loadSatisfaction();
+    if (typeof loadSatisfaction === 'function') {
+      loadSatisfaction();
+    } else {
+      fetch(filename)
+        .then(response => response.text())
+        .then(text => {
+          eval(text);
+          loadSatisfaction();
+        })
+        .catch(error => alert(`Failed to load song: ${error.message}`));
+    }
   } else {
     fetch(filename)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch song file');
+        return response.json();
+      })
       .then(data => loadSongData(data))
       .catch(error => alert(`Failed to load song: ${error.message}`));
   }
@@ -607,9 +653,8 @@ function loadSongData(songData) {
   }
 
   if (isPlaying) {
-    clearInterval(playInterval);
-    playBtn.textContent = 'Play';
     isPlaying = false;
+    playBtn.textContent = 'Play';
     resetPlayback();
   }
 
@@ -639,7 +684,7 @@ function loadSongData(songData) {
 
 function populateSongDropdown() {
   const availableSongs = [
-    'Pneuma.js', // Updated to .js
+    'pneuma.js', // Use .js extension
     'Echoes of Joy.json',
     'satisfaction.js'
   ];
@@ -650,6 +695,8 @@ function populateSongDropdown() {
     songDropdown.appendChild(option);
   });
 }
+
+// ... (Remaining code unchanged: initialBlocks, setup, etc.) ...
 
 const initialBlocks = [
   { type: 'intro', measures: 4, rootNote: 'C', mode: 'Ionian', tempo: 120, timeSignature: '4/4', feel: 'Happiness', lyrics: 'Here we go now' },
