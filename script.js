@@ -24,23 +24,24 @@ let isFormCollapsed = false;
 const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
 const tickSound = new Audio('tick.wav');
 const tockSound = new Audio('tock.wav');
+let activeSounds = []; // Track all playing audio instances
 
 // Time Manager Class
 class TimeManager {
   constructor(tempo, beatsPerMeasure, totalBeats, callback) {
-    this.tempo = tempo; // BPM
+    this.tempo = tempo;
     this.beatsPerMeasure = beatsPerMeasure;
     this.totalBeats = totalBeats;
-    this.callback = callback; // Function to call on each beat update
+    this.callback = callback;
     this.startTime = null;
     this.lastBeat = -1;
-    this.beatDuration = 60 / tempo; // Seconds per beat
+    this.beatDuration = 60 / tempo;
     this.running = false;
   }
 
   start() {
     this.running = true;
-    this.startTime = performance.now() / 1000; // Seconds
+    this.startTime = performance.now() / 1000;
     requestAnimationFrame(this.tick.bind(this));
   }
 
@@ -50,7 +51,7 @@ class TimeManager {
 
   tick(timestamp) {
     if (!this.running) return;
-    const currentTime = timestamp / 1000; // Seconds
+    const currentTime = timestamp / 1000;
     const elapsed = currentTime - this.startTime;
     const currentBeat = Math.floor(elapsed / this.beatDuration);
 
@@ -387,7 +388,9 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
   const timeManager = new TimeManager(firstBlock.tempo, 4, leadInBeats - 1, ({ elapsedTime, beat, isFirstBeat }) => {
     if (soundEnabled) {
-      (isFirstBeat && beat === 0 ? tockSound : tickSound).cloneNode().play();
+      const sound = (isFirstBeat && beat === 0 ? tockSound : tickSound).cloneNode();
+      sound.play();
+      activeSounds.push(sound); // Track the sound
     }
     currentBlockDisplay.innerHTML = `
       <span class="label">Lead-In</span>
@@ -402,7 +405,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
   setTimeout(() => {
     timeManager.stop();
     currentBlockDisplay.classList.remove('pulse');
-    currentTime = 0; // Reset for song start
+    currentTime = 0;
     playSong(timings, totalSeconds, totalBeats);
   }, leadInBeats * beatDuration * 1000);
 }
@@ -432,7 +435,9 @@ function playSong(timings, totalSeconds, totalBeats) {
         currentBeat = Math.floor(currentTime * beatsPerSecond);
 
         if (soundEnabled && (beat === 0 || elapsedTime - (lastBeatTime - blockStartTime) >= 1 / beatsPerSecond)) {
-          (isFirstBeat ? tockSound : tickSound).cloneNode().play();
+          const sound = (isFirstBeat ? tockSound : tickSound).cloneNode();
+          sound.play();
+          activeSounds.push(sound); // Track the sound
           lastBeatTime = blockStartTime + elapsedTime;
         }
 
@@ -501,6 +506,14 @@ function resetPlayback() {
   blockBeat = 0;
   blockMeasure = 0;
   lastBeatTime = 0;
+
+  // Stop all active sounds
+  activeSounds.forEach(sound => {
+    sound.pause();
+    sound.currentTime = 0; // Reset to start for reuse
+  });
+  activeSounds = []; // Clear the array
+
   const previousBlock = timeline.querySelector('.playing');
   if (previousBlock) previousBlock.classList.remove('playing');
   currentBlockDisplay.classList.remove('pulse');
