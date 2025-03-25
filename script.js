@@ -450,7 +450,7 @@ function resetPlayback() {
 }
 
 function exportSong() {
-  const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).map(block => ({
+  const blocks = Array.from(timeline.querySelectorAll('.song-block')).map(block => ({
     type: block.classList[1],
     measures: block.getAttribute('data-measures'),
     key: block.getAttribute('data-key'),
