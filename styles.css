@@ -1,0 +1,311 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  background: #24292e;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+  background: #2d3436;
+  border-radius: 8px;
+  max-width: 1200px;
+  margin: 16px auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.song-block {
+  height: 120px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: move;
+  position: relative;
+  border-radius: 6px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.song-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.song-block.selected {
+  border: 2px solid #00c4b4;
+}
+
+.song-block.playing {
+  border: 4px solid #00c4b4;
+}
+
+.song-block.transition {
+  background: linear-gradient(135deg, #636e72, #2d3436);
+  width: 16px;
+  height: 120px;
+}
+
+.intro { background: linear-gradient(135deg, #3498db, #2980b9); }
+.verse { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.refrain { background: linear-gradient(135deg, #f1c40f, #d4ac0d); }
+.pre-chorus { background: linear-gradient(135deg, #f7dc6f, #f4d03f); }
+.chorus { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.post-chorus { background: linear-gradient(135deg, #ff9999, #ff6666); }
+.bridge { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+.outro { background: linear-gradient(135deg, #bdc3c7, #95a5a6); }
+.elision { background: linear-gradient(135deg, #85d8ce, #4db6ac); }
+.solo { background: linear-gradient(135deg, #e67e22, #d35400); }
+.ad-lib { background: linear-gradient(135deg, #82e0aa, #52be80); }
+.hook { background: linear-gradient(135deg, #ff69b4, #ff1493); }
+.interlude { background: linear-gradient(135deg, #dcdcdc, #b0b0b0); }
+.breakdown { background: linear-gradient(135deg, #e67e22, #d35400); }
+.drop { background: linear-gradient(135deg, #ff4136, #e60000); }
+.coda { background: linear-gradient(135deg, #d3d3d3, #a9a9a9); }
+.modulation { background: linear-gradient(135deg, #ba55d3, #9932cc); }
+.tag { background: linear-gradient(135deg, #f4e19c, #e6d171); }
+.chorus-reprise { background: linear-gradient(135deg, #ff4500, #e63900); }
+.countermelody { background: linear-gradient(135deg, #dda0dd, #c77dff); }
+.instrumental-verse-chorus { background: linear-gradient(135deg, #20b2aa, #008080); }
+.false-ending { background: linear-gradient(135deg, #778899, #5f6f94); }
+
+.label {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 11px;
+  color: #fff;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  white-space: normal;
+  max-width: 80%;
+  line-height: 1.4;
+}
+
+.tooltip {
+  visibility: hidden;
+  background: #1a202c;
+  color: #fff;
+  border: 1px solid #00c4b4;
+  padding: 8px;
+  border-radius: 4px;
+  position: absolute;
+  z-index: 1;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  white-space: pre-wrap;
+  max-width: 300px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #1a202c transparent;
+}
+
+.song-block:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(231, 76, 60, 0.8);
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.delete-btn:hover {
+  background: #e74c3c;
+}
+
+.add-block-form {
+  margin: 16px auto;
+  padding: 16px;
+  background: #2d3436;
+  border-radius: 8px;
+  max-width: 1200px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.form-column {
+  flex: 1;
+  min-width: 200px;
+}
+
+.add-block-form h3 {
+  color: #00c4b4;
+  margin: 0 0 16px;
+  width: 100%;
+}
+
+.add-block-form label {
+  display: block;
+  margin: 4px 0;
+  font-size: 14px;
+  color: #dfe6e9;
+}
+
+.add-block-form select, .add-block-form input, .add-block-form textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 12px;
+  background: #3b4048;
+  border: 1px solid #4a5568;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.add-block-form select:focus, .add-block-form input:focus, .add-block-form textarea:focus {
+  border-color: #00c4b4;
+  outline: none;
+}
+
+.add-block-form textarea {
+  height: 80px;
+  resize: vertical;
+}
+
+.button-group {
+  flex: 0 0 100%;
+  display: flex;
+  gap: 8px;
+}
+
+.add-block-form button, .add-block-form label[for="import-file"] {
+  flex: 1;
+  padding: 10px;
+  background: #00c4b4;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-block-form button:hover, .add-block-form label[for="import-file"]:hover {
+  background: #00b39f;
+}
+
+.time-calculator {
+  margin: 16px auto;
+  max-width: 1200px;
+  font-size: 16px;
+  color: #b2bec3;
+  background: #2d3436;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.current-block-display {
+  width: 600px;
+  height: 180px;
+  margin: 16px auto;
+  border: 2px solid #4a5568;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2d3436;
+  transition: background 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.current-block-display.pulse {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+.current-block-display .label {
+  font-size: 16px;
+  padding: 12px 16px;
+  line-height: 1.5;
+  max-width: 90%;
+  color: #dfe6e9;
+}
+
+.print-header {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+    margin: 0;
+  }
+  .add-block-form, .button-group, .time-calculator, .current-block-display {
+    display: none;
+  }
+  .print-header {
+    display: block;
+    font-size: 24px;
+    text-align: center;
+    margin: 36pt 36pt 18pt;
+    color: #000;
+  }
+  .timeline {
+    max-width: 100%;
+    width: 612pt;
+    padding: 36pt;
+    background: #fff;
+    display: block;
+    box-shadow: none;
+  }
+  .song-block {
+    width: 100% !important;
+    height: 144pt;
+    margin-bottom: 10pt;
+    page-break-inside: avoid;
+    border: 2pt solid #333;
+    background: none !important;
+  }
+  .song-block.playing, .song-block.transition {
+    border: 2pt solid #333;
+  }
+  .label {
+    font-size: 10pt;
+    max-width: 90%;
+    padding: 8pt 10pt;
+    line-height: 1.5;
+    color: #000;
+    background: #fff;
+    border-radius: 3px;
+  }
+  .tooltip, .delete-btn {
+    display: none;
+  }
+}
