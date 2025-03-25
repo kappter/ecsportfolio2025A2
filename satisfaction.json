@@ -1,0 +1,77 @@
+{
+  "songName": "(I Can't Get No) Satisfaction",
+  "blocks": [
+    {
+      "type": "intro",
+      "measures": 4,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": ""
+    },
+    {
+      "type": "verse",
+      "measures": 8,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction\n'Cause I try and I try and I try and I try"
+    },
+    {
+      "type": "chorus",
+      "measures": 4,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction"
+    },
+    {
+      "type": "verse",
+      "measures": 8,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": "When I'm drivin' in my car\nAnd that man comes on the radio\nHe's tellin' me more and more\nAbout some useless information"
+    },
+    {
+      "type": "chorus",
+      "measures": 4,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction"
+    },
+    {
+      "type": "verse",
+      "measures": 8,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": "When I'm watchin' my TV\nAnd that man comes on to tell me\nHow white my shirts can be\nBut he can't be a man 'cause he doesn't smoke"
+    },
+    {
+      "type": "chorus",
+      "measures": 8,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction\n'Cause I try and I try and I try and I try\nI can't get no, I can't get no"
+    },
+    {
+      "type": "outro",
+      "measures": 8,
+      "key": "E Major",
+      "tempo": 136,
+      "timeSignature": "4/4",
+      "feel": "Excitement",
+      "lyrics": "I can't get no, oh no no no\nHey hey hey, that's what I say\nI can't get no satisfaction"
+    }
+  ]
+}
