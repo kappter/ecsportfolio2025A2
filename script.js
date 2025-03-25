@@ -589,39 +589,35 @@ function importSong(event) {
 function loadSongFromDropdown(filename) {
   if (!filename) return;
   if (filename === 'pneuma.js') {
-    // Ensure pneuma.js is loaded and defines loadPneuma()
     if (typeof loadPneuma === 'function') {
       loadPneuma();
     } else {
-      fetch(filename)
-        .then(response => {
-          if (!response.ok) throw new Error('Failed to fetch Pneuma file');
-          return response.text();
-        })
-        .then(text => {
-          eval(text); // Execute the JS to define pneumaSong and loadPneuma
-          loadPneuma();
-        })
-        .catch(error => alert(`Failed to load song: ${error.message}`));
+      fetch(filename).then(response => response.text()).then(text => {
+        eval(text);
+        loadPneuma();
+      }).catch(error => alert(`Failed to load song: ${error.message}`));
     }
   } else if (filename === 'satisfaction.js') {
     if (typeof loadSatisfaction === 'function') {
       loadSatisfaction();
     } else {
-      fetch(filename)
-        .then(response => response.text())
-        .then(text => {
-          eval(text);
-          loadSatisfaction();
-        })
-        .catch(error => alert(`Failed to load song: ${error.message}`));
+      fetch(filename).then(response => response.text()).then(text => {
+        eval(text);
+        loadSatisfaction();
+      }).catch(error => alert(`Failed to load song: ${error.message}`));
+    }
+  } else if (filename === 'dirtyLaundry.js') {
+    if (typeof loadDirtyLaundry === 'function') {
+      loadDirtyLaundry();
+    } else {
+      fetch(filename).then(response => response.text()).then(text => {
+        eval(text);
+        loadDirtyLaundry();
+      }).catch(error => alert(`Failed to load song: ${error.message}`));
     }
   } else {
     fetch(filename)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch song file');
-        return response.json();
-      })
+      .then(response => response.json())
       .then(data => loadSongData(data))
       .catch(error => alert(`Failed to load song: ${error.message}`));
   }
@@ -684,9 +680,10 @@ function loadSongData(songData) {
 
 function populateSongDropdown() {
   const availableSongs = [
-    'pneuma.js', // Use .js extension
+    'pneuma.js',
     'Echoes of Joy.json',
-    'satisfaction.js'
+    'satisfaction.js',
+    'dirtyLaundry.js' // Add this
   ];
   availableSongs.forEach(song => {
     const option = document.createElement('option');
