@@ -5,6 +5,8 @@ const playBtn = document.getElementById('play-btn');
 const soundBtn = document.getElementById('sound-btn');
 const themeBtn = document.getElementById('theme-btn');
 const songDropdown = document.getElementById('song-dropdown');
+const toggleFormBtn = document.getElementById('toggle-form-btn');
+const formContent = document.getElementById('form-content');
 const printSongName = document.getElementById('print-song-name');
 let draggedBlock = null;
 let selectedBlock = null;
@@ -18,6 +20,7 @@ let blockMeasure = 0;
 let lastBeatTime = 0;
 let soundEnabled = true;
 let isDarkMode = true;
+let isFormCollapsed = false;
 
 const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
 const tickSound = new Audio('tick.wav');
@@ -32,6 +35,12 @@ function toggleTheme() {
   isDarkMode = !isDarkMode;
   document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
   themeBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+}
+
+function toggleForm() {
+  isFormCollapsed = !isFormCollapsed;
+  formContent.classList.toggle('collapsed', isFormCollapsed);
+  toggleFormBtn.textContent = isFormCollapsed ? 'Show Parameters' : 'Hide Parameters';
 }
 
 function updateTitle(songName) {
@@ -255,7 +264,7 @@ function addBlock() {
 
   const label = document.createElement('span');
   label.classList.add('label');
-  label.innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+  label.innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
   block.appendChild(label);
 
   const tooltip = document.createElement('span');
@@ -297,7 +306,7 @@ function updateBlock() {
   selectedBlock.setAttribute('data-feel', feel);
   selectedBlock.setAttribute('data-lyrics', lyrics);
   selectedBlock.setAttribute('data-key', key);
-  selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+  selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
   selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
   updateBlockSize(selectedBlock);
   clearSelection();
@@ -328,10 +337,6 @@ function togglePlay() {
   }
 }
 
-// ... (rest of script.js remains unchanged until playLeadIn)
-
-// ... (rest of script.js remains unchanged until playLeadIn)
-
 function playLeadIn(timings, totalSeconds, totalBeats) {
   const firstBlock = timings[0];
   const tempo = firstBlock.tempo;
@@ -341,7 +346,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
   let leadInTime = 0;
   let leadInCount = 0;
 
-  currentBlockDisplay.style.backgroundColor = '#3b4048'; // Lead-in background
+  currentBlockDisplay.style.backgroundColor = '#3b4048';
   currentBlockDisplay.innerHTML = `
     <span class="label">Lead-In</span>
     <span class="info">Beat: ${leadInCount} of 4</span>
@@ -355,11 +360,8 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
     if (currentBeatTime >= leadInCount && leadInCount < leadInBeats) {
       if (soundEnabled) {
-        if (leadInCount === 0) {
-          tockSound.cloneNode().play();
-        } else {
-          tickSound.cloneNode().play();
-        }
+        if (leadInCount === 0) tockSound.cloneNode().play();
+        else tickSound.cloneNode().play();
       }
       leadInCount++;
       currentBlockDisplay.innerHTML = `
@@ -370,7 +372,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
     if (leadInTime >= leadInBeats * beatDuration) {
       clearInterval(playInterval);
-      currentBlockDisplay.classList.remove('pulse'); // Reset pulse for song start
+      currentBlockDisplay.classList.remove('pulse');
       playSong(timings, totalSeconds, totalBeats);
     }
 
@@ -380,10 +382,12 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
 function playSong(timings, totalSeconds, totalBeats) {
   let currentIndex = 0;
-  updateCurrentBlock(timings[currentIndex]); // Set initial block
   blockBeat = 0;
   blockMeasure = 1;
   lastBeatTime = currentTime;
+
+  // Initial block setup
+  updateCurrentBlock(timings[currentIndex]);
 
   playInterval = setInterval(() => {
     currentTime += 0.01;
@@ -404,7 +408,7 @@ function playSong(timings, totalSeconds, totalBeats) {
     if (currentTime >= currentTiming.start + currentTiming.duration) {
       currentIndex++;
       if (currentIndex < timings.length) {
-        updateCurrentBlock(timings[currentIndex]); // Full update for new block
+        updateCurrentBlock(timings[currentIndex]);
         blockBeat = 0;
         blockMeasure = 1;
       } else {
@@ -415,14 +419,12 @@ function playSong(timings, totalSeconds, totalBeats) {
         return;
       }
     } else {
-      // Update beat and measure within the current block
       blockBeat = Math.floor(beatInBlock);
       blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
       const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
       const blockNum = currentTiming.isTransition ? currentTiming.blockIndex : currentTiming.blockIndex + 1;
       const totalBlockCount = totalBlocks + timings.filter(t => t.isTransition).length;
 
-      // Update display info without resetting animation
       currentBlockDisplay.innerHTML = `
         <span class="label">${currentTiming.label}</span>
         <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
@@ -436,19 +438,17 @@ function playSong(timings, totalSeconds, totalBeats) {
 function updateCurrentBlock(timing) {
   const previousBlock = timeline.querySelector('.playing');
   if (previousBlock) previousBlock.classList.remove('playing');
-  currentBlockDisplay.classList.remove('pulse'); // Reset pulse to restart animation
+  currentBlockDisplay.classList.remove('pulse');
 
   const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
   const blockNum = timing.isTransition ? timing.blockIndex : timing.blockIndex + 1;
-  const totalBlockCount = totalBlocks + timings.filter(t => t.isTransition).length;
+  const totalBlockCount = totalBlocks + Array.from(timeline.querySelectorAll('.transition')).length + 1;
 
-  // Set content
   currentBlockDisplay.innerHTML = `
     <span class="label">${timing.label}</span>
     <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
   `;
 
-  // Set background and animation
   if (timing.isTransition) {
     const existingTransition = timeline.querySelector('.transition');
     if (existingTransition) existingTransition.remove();
@@ -456,8 +456,8 @@ function updateCurrentBlock(timing) {
     const transitionBlock = document.createElement('div');
     transitionBlock.classList.add('song-block', 'transition');
     transitionBlock.innerHTML = '<span class="label">T</span>';
-    const nextBlockIndex = Array.from(timings).filter(t => !t.isTransition).findIndex(t => t.start > timing.start);
-    const nextBlock = timeline.querySelectorAll('.song-block:not(.transition)')[nextBlockIndex];
+    const nextBlockIndex = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).findIndex(b => parseFloat(b.getAttribute('data-start')) > timing.start);
+    const nextBlock = timeline.querySelectorAll('.song-block:not(.transition)')[nextBlockIndex >= 0 ? nextBlockIndex : 0];
     if (nextBlock) nextBlock.before(transitionBlock);
     transitionBlock.classList.add('playing');
 
@@ -493,8 +493,6 @@ function resetPlayback() {
   currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
   calculateTimings();
 }
-
-// ... (rest of script.js remains unchanged)
 
 function exportSong() {
   const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).map(block => ({
@@ -613,7 +611,7 @@ function loadSongData(songData) {
     block.setAttribute('data-feel', feel || '');
     block.setAttribute('data-lyrics', lyrics || '');
     block.setAttribute('data-key', key);
-    block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel || ''}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+    block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel || ''}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
     updateBlockSize(block);
     setupBlock(block);
     timeline.appendChild(block);
@@ -623,7 +621,6 @@ function loadSongData(songData) {
 }
 
 function populateSongDropdown() {
-  // For local testing, manually list files (no filesystem access in browser)
   const availableSongs = ['Pneuma.json', 'Echoes of Joy.json']; // Add your JSON files here
   availableSongs.forEach(song => {
     const option = document.createElement('option');
@@ -631,21 +628,6 @@ function populateSongDropdown() {
     option.textContent = song.replace('.json', '');
     songDropdown.appendChild(option);
   });
-
-  // For a server-hosted solution, uncomment and configure:
-  /*
-  fetch('/songs') // Replace with your server endpoint
-    .then(response => response.json())
-    .then(files => {
-      files.filter(f => f.endsWith('.json')).forEach(song => {
-        const option = document.createElement('option');
-        option.value = song;
-        option.textContent = song.replace('.json', '');
-        songDropdown.appendChild(option);
-      });
-    })
-    .catch(error => console.error('Error fetching song list:', error));
-  */
 }
 
 const initialBlocks = [
@@ -666,7 +648,7 @@ initialBlocks.forEach(({ type, measures, key, tempo, timeSignature, feel, lyrics
   block.setAttribute('data-feel', feel);
   block.setAttribute('data-lyrics', lyrics);
   block.setAttribute('data-key', key);
-  block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature}  ${measures}m<br>${abbreviateKey(key)}  ${tempo}b  ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+  block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
   updateBlockSize(block);
   setupBlock(block);
   timeline.appendChild(block);
