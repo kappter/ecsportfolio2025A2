@@ -1,77 +1,95 @@
-{
-  "songName": "(I Can't Get No) Satisfaction",
-  "blocks": [
+// satisfaction.js
+const satisfactionSong = {
+  songName: "(I Can't Get No) Satisfaction",
+  blocks: [
     {
-      "type": "intro",
-      "measures": 4,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": ""
+      type: "intro",
+      measures: 4,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Rebellion",
+      lyrics: "" // Instrumental riff
     },
     {
-      "type": "verse",
-      "measures": 8,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction\n'Cause I try and I try and I try and I try"
+      type: "verse",
+      measures: 8,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Frustration",
+      lyrics: "When I'm drivin' in my car, and a man comes on the radio"
     },
     {
-      "type": "chorus",
-      "measures": 4,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction"
+      type: "chorus",
+      measures: 8,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Rebellion",
+      lyrics: "I can't get no satisfaction, 'cause I try and I try"
     },
     {
-      "type": "verse",
-      "measures": 8,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": "When I'm drivin' in my car\nAnd that man comes on the radio\nHe's tellin' me more and more\nAbout some useless information"
+      type: "verse",
+      measures: 8,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Frustration",
+      lyrics: "When I'm watchin' my TV, and a man comes on and tells me"
     },
     {
-      "type": "chorus",
-      "measures": 4,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction"
+      type: "chorus",
+      measures: 8,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Rebellion",
+      lyrics: "I can't get no satisfaction, 'cause I try and I try"
     },
     {
-      "type": "verse",
-      "measures": 8,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": "When I'm watchin' my TV\nAnd that man comes on to tell me\nHow white my shirts can be\nBut he can't be a man 'cause he doesn't smoke"
+      type: "verse",
+      measures: 8,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Frustration",
+      lyrics: "When I'm ridin' round the world, and I'm doin' this and I'm signin' that"
     },
     {
-      "type": "chorus",
-      "measures": 8,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": "I can't get no satisfaction\nI can't get no satisfaction\n'Cause I try and I try and I try and I try\nI can't get no, I can't get no"
+      type: "chorus",
+      measures: 8,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Rebellion",
+      lyrics: "I can't get no satisfaction, 'cause I try and I try"
     },
     {
-      "type": "outro",
-      "measures": 8,
-      "key": "E Major",
-      "tempo": 136,
-      "timeSignature": "4/4",
-      "feel": "Excitement",
-      "lyrics": "I can't get no, oh no no no\nHey hey hey, that's what I say\nI can't get no satisfaction"
+      type: "outro",
+      measures: 8,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Rebellion",
+      lyrics: "I can't get no, oh no no no, hey hey hey"
     }
   ]
+};
+
+// Function to load the song into SongMaker
+function loadSatisfaction() {
+  loadSongData(satisfactionSong);
 }
+
+// Call this function to load the song when the script is included
+// Uncomment the line below if you want it to load automatically
+// loadSatisfaction();
