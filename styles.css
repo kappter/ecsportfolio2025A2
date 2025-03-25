@@ -13,7 +13,6 @@
   --delete-btn: rgba(231, 76, 60, 0.8);
   --delete-hover: #e74c3c;
   --tooltip-bg: #1a202c;
-  --transition-bg-start: #636e72;
   --shadow: rgba(0, 0, 0, 0.3);
 }
 
@@ -32,7 +31,6 @@
   --delete-btn: rgba(231, 76, 60, 0.8);
   --delete-hover: #d32f2f;
   --tooltip-bg: #fff;
-  --transition-bg-start: #b0bec5;
   --shadow: rgba(0, 0, 0, 0.1);
 }
 
@@ -81,12 +79,6 @@ body {
 
 .song-block.playing {
   border: 4px solid var(--accent-color);
-}
-
-.song-block.transition {
-  background: linear-gradient(135deg, var(--transition-bg-start), var(--timeline-bg));
-  width: 16px;
-  height: 120px;
 }
 
 .intro { background: linear-gradient(135deg, #3498db, #2980b9); }
@@ -223,7 +215,7 @@ body {
   flex-wrap: wrap;
   gap: 24px;
   width: 100%;
-  max-height: 500px; /* Adjust as needed */
+  max-height: 500px;
   overflow: hidden;
   transition: max-height 0.3s ease-in-out;
 }
@@ -385,7 +377,7 @@ body {
     border: 2pt solid #333;
     background: none !important;
   }
-  .song-block.playing, .song-block.transition {
+  .song-block.playing {
     border: 2pt solid #333;
   }
   .label {
