@@ -523,17 +523,14 @@ function importSong(event) {
 
 function loadSongFromDropdown(filename) {
   if (!filename) return;
-  fetch(filename)
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to fetch song file');
-      return response.text();
-    })
-    .then(data => {
-      loadSongData(JSON.parse(data));
-    })
-    .catch(error => {
-      alert(`Failed to load song: ${error.message}`);
-    });
+  if (filename === 'satisfaction.js') {
+    loadSatisfaction();
+  } else {
+    fetch(filename)
+      .then(response => response.json())
+      .then(data => loadSongData(data))
+      .catch(error => alert(`Failed to load song: ${error.message}`));
+  }
 }
 
 function loadSongFile(file) {
@@ -593,11 +590,15 @@ function loadSongData(songData) {
 }
 
 function populateSongDropdown() {
-  const availableSongs = ['Pneuma.json', 'Echoes of Joy.json', 'satisfaction.json']; // Add your JSON files here
+  const availableSongs = [
+    'Pneuma.json',
+    'Echoes of Joy.json',
+    'satisfaction.js' // Add this
+  ];
   availableSongs.forEach(song => {
     const option = document.createElement('option');
     option.value = song;
-    option.textContent = song.replace('.json', '');
+    option.textContent = song.replace('.json', '').replace('.js', '');
     songDropdown.appendChild(option);
   });
 }
