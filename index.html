@@ -105,6 +105,9 @@
       <button id="play-btn" onclick="togglePlay()">Play</button>
       <button id="sound-btn" onclick="toggleSound()">Sound On</button>
       <button id="theme-btn" onclick="toggleTheme()">Light Mode</button>
+      <select id="song-dropdown" onchange="loadSongFromDropdown(this.value)">
+        <option value="">Load Song...</option>
+      </select>
       <button onclick="exportSong()">Export</button>
       <label for="import-file">Import</label>
       <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importSong(event)">
