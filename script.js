@@ -330,6 +330,8 @@ function togglePlay() {
 
 // ... (rest of script.js remains unchanged until playLeadIn)
 
+// ... (rest of script.js remains unchanged until playLeadIn)
+
 function playLeadIn(timings, totalSeconds, totalBeats) {
   const firstBlock = timings[0];
   const tempo = firstBlock.tempo;
@@ -368,7 +370,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
     if (leadInTime >= leadInBeats * beatDuration) {
       clearInterval(playInterval);
-      currentBlockDisplay.classList.remove('pulse'); // Reset pulse before song starts
+      currentBlockDisplay.classList.remove('pulse'); // Reset pulse for song start
       playSong(timings, totalSeconds, totalBeats);
     }
 
@@ -378,7 +380,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
 function playSong(timings, totalSeconds, totalBeats) {
   let currentIndex = 0;
-  updateCurrentBlock(timings[currentIndex]); // Initial block update
+  updateCurrentBlock(timings[currentIndex]); // Set initial block
   blockBeat = 0;
   blockMeasure = 1;
   lastBeatTime = currentTime;
@@ -402,7 +404,7 @@ function playSong(timings, totalSeconds, totalBeats) {
     if (currentTime >= currentTiming.start + currentTiming.duration) {
       currentIndex++;
       if (currentIndex < timings.length) {
-        updateCurrentBlock(timings[currentIndex]);
+        updateCurrentBlock(timings[currentIndex]); // Full update for new block
         blockBeat = 0;
         blockMeasure = 1;
       } else {
@@ -413,12 +415,14 @@ function playSong(timings, totalSeconds, totalBeats) {
         return;
       }
     } else {
+      // Update beat and measure within the current block
       blockBeat = Math.floor(beatInBlock);
       blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
-      // Update block display without resetting animation unnecessarily
       const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
       const blockNum = currentTiming.isTransition ? currentTiming.blockIndex : currentTiming.blockIndex + 1;
       const totalBlockCount = totalBlocks + timings.filter(t => t.isTransition).length;
+
+      // Update display info without resetting animation
       currentBlockDisplay.innerHTML = `
         <span class="label">${currentTiming.label}</span>
         <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
@@ -438,13 +442,13 @@ function updateCurrentBlock(timing) {
   const blockNum = timing.isTransition ? timing.blockIndex : timing.blockIndex + 1;
   const totalBlockCount = totalBlocks + timings.filter(t => t.isTransition).length;
 
-  // Update content
+  // Set content
   currentBlockDisplay.innerHTML = `
     <span class="label">${timing.label}</span>
     <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
   `;
 
-  // Update background and playback styling
+  // Set background and animation
   if (timing.isTransition) {
     const existingTransition = timeline.querySelector('.transition');
     if (existingTransition) existingTransition.remove();
@@ -452,7 +456,8 @@ function updateCurrentBlock(timing) {
     const transitionBlock = document.createElement('div');
     transitionBlock.classList.add('song-block', 'transition');
     transitionBlock.innerHTML = '<span class="label">T</span>';
-    const nextBlock = timeline.querySelectorAll('.song-block:not(.transition)')[Array.from(timings).filter(t => !t.isTransition).findIndex(t => t.start > timing.start)];
+    const nextBlockIndex = Array.from(timings).filter(t => !t.isTransition).findIndex(t => t.start > timing.start);
+    const nextBlock = timeline.querySelectorAll('.song-block:not(.transition)')[nextBlockIndex];
     if (nextBlock) nextBlock.before(transitionBlock);
     transitionBlock.classList.add('playing');
 
