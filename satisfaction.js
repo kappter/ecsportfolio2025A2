@@ -1,20 +1,42 @@
 // satisfaction.js
+console.log("Loading Satisfaction script...");
+
 const satisfactionSong = {
   songName: "(I Can't Get No) Satisfaction",
   blocks: [
     {
       type: "intro",
-      measures: 4,
+      measures: 8,
       rootNote: "E",
       mode: "Ionian",
       tempo: 136,
       timeSignature: "4/4",
       feel: "Rebellion",
-      lyrics: "" // Instrumental riff
+      lyrics: "" // Extended riff
     },
     {
       type: "verse",
-      measures: 8,
+      measures: 12,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Frustration",
+      lyrics: "I can't get no satisfaction, I can't get no satisfaction"
+    },
+    {
+      type: "chorus",
+      measures: 12,
+      rootNote: "E",
+      mode: "Ionian",
+      tempo: 136,
+      timeSignature: "4/4",
+      feel: "Rebellion",
+      lyrics: "'Cause I try and I try and I try and I try"
+    },
+    {
+      type: "verse",
+      measures: 12,
       rootNote: "E",
       mode: "Ionian",
       tempo: 136,
@@ -24,17 +46,17 @@ const satisfactionSong = {
     },
     {
       type: "chorus",
-      measures: 8,
+      measures: 12,
       rootNote: "E",
       mode: "Ionian",
       tempo: 136,
       timeSignature: "4/4",
       feel: "Rebellion",
-      lyrics: "I can't get no satisfaction, 'cause I try and I try"
+      lyrics: "I can't get no, oh no no no"
     },
     {
       type: "verse",
-      measures: 8,
+      measures: 12,
       rootNote: "E",
       mode: "Ionian",
       tempo: 136,
@@ -44,52 +66,38 @@ const satisfactionSong = {
     },
     {
       type: "chorus",
-      measures: 8,
+      measures: 16,
       rootNote: "E",
       mode: "Ionian",
       tempo: 136,
       timeSignature: "4/4",
       feel: "Rebellion",
-      lyrics: "I can't get no satisfaction, 'cause I try and I try"
+      lyrics: "I can't get no satisfaction, hey hey hey"
     },
     {
-      type: "verse",
-      measures: 8,
+      type: "interlude",
+      measures: 24,
       rootNote: "E",
       mode: "Ionian",
       tempo: 136,
       timeSignature: "4/4",
-      feel: "Frustration",
-      lyrics: "When I'm ridin' round the world, and I'm doin' this and I'm signin' that"
-    },
-    {
-      type: "chorus",
-      measures: 8,
-      rootNote: "E",
-      mode: "Ionian",
-      tempo: 136,
-      timeSignature: "4/4",
-      feel: "Rebellion",
-      lyrics: "I can't get no satisfaction, 'cause I try and I try"
+      feel: "Tension",
+      lyrics: "" // Instrumental break
     },
     {
       type: "outro",
-      measures: 8,
+      measures: 12,
       rootNote: "E",
       mode: "Ionian",
       tempo: 136,
       timeSignature: "4/4",
       feel: "Rebellion",
-      lyrics: "I can't get no, oh no no no, hey hey hey"
+      lyrics: "I can't get no, satisfaction fades"
     }
   ]
 };
 
-// Function to load the song into SongMaker
-function loadSatisfaction() {
+window.loadSatisfaction = function() {
+  console.log("Executing loadSatisfaction...");
   loadSongData(satisfactionSong);
-}
-
-// Call this function to load the song when the script is included
-// Uncomment the line below if you want it to load automatically
-// loadSatisfaction();
+};
