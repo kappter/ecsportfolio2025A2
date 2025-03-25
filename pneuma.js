@@ -6,7 +6,7 @@ const pneumaSong = {
   blocks: [
     {
       type: "intro",
-      measures: 20,
+      measures: 36,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -16,7 +16,7 @@ const pneumaSong = {
     },
     {
       type: "verse",
-      measures: 24,
+      measures: 36,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -26,7 +26,7 @@ const pneumaSong = {
     },
     {
       type: "interlude",
-      measures: 24,
+      measures: 36,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -36,7 +36,7 @@ const pneumaSong = {
     },
     {
       type: "verse",
-      measures: 24,
+      measures: 36,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -56,7 +56,7 @@ const pneumaSong = {
     },
     {
       type: "interlude",
-      measures: 24,
+      measures: 36,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -66,7 +66,7 @@ const pneumaSong = {
     },
     {
       type: "bridge",
-      measures: 24,
+      measures: 36,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -76,7 +76,7 @@ const pneumaSong = {
     },
     {
       type: "bridge",
-      measures: 24,
+      measures: 36,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -86,7 +86,7 @@ const pneumaSong = {
     },
     {
       type: "outro",
-      measures: 20,
+      measures: 38,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
