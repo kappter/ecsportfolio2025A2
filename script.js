@@ -251,7 +251,7 @@ function addBlock() {
 
   const label = document.createElement('span');
   label.classList.add('label');
-  label.innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+  label.innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
   block.appendChild(label);
 
   const tooltip = document.createElement('span');
@@ -295,7 +295,7 @@ function updateBlock() {
   selectedBlock.setAttribute('data-lyrics', lyrics);
   selectedBlock.setAttribute('data-root-note', rootNote);
   selectedBlock.setAttribute('data-mode', mode);
-  selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+  selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
   selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
   updateBlockSize(selectedBlock);
   clearSelection();
@@ -411,9 +411,11 @@ function playSong(timings, totalSeconds, totalBeats) {
       blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
       const totalBlocks = timings.length;
       const blockNum = currentTiming.blockIndex + 1;
+      const rootNote = currentTiming.block.getAttribute('data-root-note');
+      const mode = currentTiming.block.getAttribute('data-mode');
 
       currentBlockDisplay.innerHTML = `
-        <span class="label">${currentTiming.label}</span>
+        <span class="label">${formatPart(currentTiming.block.classList[1])}: ${currentTiming.block.getAttribute('data-time-signature')} ${currentTiming.totalMeasures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${currentTiming.tempo}b ${currentTiming.block.getAttribute('data-feel')}</span>
         <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
       `;
     }
@@ -429,9 +431,11 @@ function updateCurrentBlock(timing) {
 
   const totalBlocks = Array.from(timeline.querySelectorAll('.song-block')).length;
   const blockNum = timing.blockIndex + 1;
+  const rootNote = timing.block.getAttribute('data-root-note');
+  const mode = timing.block.getAttribute('data-mode');
 
   currentBlockDisplay.innerHTML = `
-    <span class="label">${timing.label}</span>
+    <span class="label">${formatPart(timing.block.classList[1])}: ${timing.block.getAttribute('data-time-signature')} ${timing.totalMeasures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${timing.tempo}b ${timing.block.getAttribute('data-feel')}</span>
     <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
   `;
 
@@ -569,7 +573,7 @@ function loadSongData(songData) {
 
   updateTitle(songData.songName);
 
-  songData.blocks.forEach(({ type, measures, key, tempo, timeSignature, feel, lyrics }) => {
+  songData.blocks.forEach(({ type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics }) => {
     const block = document.createElement('div');
     block.classList.add('song-block', type);
     block.setAttribute('data-measures', measures);
@@ -577,8 +581,9 @@ function loadSongData(songData) {
     block.setAttribute('data-time-signature', timeSignature);
     block.setAttribute('data-feel', feel || '');
     block.setAttribute('data-lyrics', lyrics || '');
-    block.setAttribute('data-key', key);
-    block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel || ''}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+    block.setAttribute('data-root-note', rootNote);
+    block.setAttribute('data-mode', mode);
+    block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${tempo}b ${feel || ''}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
     updateBlockSize(block);
     setupBlock(block);
     timeline.appendChild(block);
@@ -598,15 +603,15 @@ function populateSongDropdown() {
 }
 
 const initialBlocks = [
-  { type: 'intro', measures: 4, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Happiness', lyrics: 'Here we go now' },
-  { type: 'verse', measures: 8, key: 'C Major', tempo: 120, timeSignature: '3/4', feel: 'Calmness', lyrics: 'The wind blows soft and low' },
-  { type: 'chorus', measures: 8, key: 'D Major', tempo: 120, timeSignature: '6/8', feel: 'Euphoria', lyrics: 'Rise up, feel the beat' },
-  { type: 'bridge', measures: 4, key: 'G Minor', tempo: 100, timeSignature: '7/8', feel: 'Tension', lyrics: 'Hold your breath' },
-  { type: 'solo', measures: 16, key: 'G Minor', tempo: 100, timeSignature: '4/4', feel: 'Triumph', lyrics: '' },
-  { type: 'outro', measures: 8, key: 'C Major', tempo: 120, timeSignature: '4/4', feel: 'Bliss', lyrics: 'Fade into the light' }
+  { type: 'intro', measures: 4, rootNote: 'C', mode: 'Ionian', tempo: 120, timeSignature: '4/4', feel: 'Happiness', lyrics: 'Here we go now' },
+  { type: 'verse', measures: 8, rootNote: 'C', mode: 'Ionian', tempo: 120, timeSignature: '3/4', feel: 'Calmness', lyrics: 'The wind blows soft and low' },
+  { type: 'chorus', measures: 8, rootNote: 'D', mode: 'Mixolydian', tempo: 120, timeSignature: '6/8', feel: 'Euphoria', lyrics: 'Rise up, feel the beat' },
+  { type: 'bridge', measures: 4, rootNote: 'G', mode: 'Aeolian', tempo: 100, timeSignature: '7/8', feel: 'Tension', lyrics: 'Hold your breath' },
+  { type: 'solo', measures: 16, rootNote: 'G', mode: 'Aeolian', tempo: 100, timeSignature: '4/4', feel: 'Triumph', lyrics: '' },
+  { type: 'outro', measures: 8, rootNote: 'C', mode: 'Ionian', tempo: 120, timeSignature: '4/4', feel: 'Bliss', lyrics: 'Fade into the light' }
 ];
 
-initialBlocks.forEach(({ type, measures, key, tempo, timeSignature, feel, lyrics }) => {
+initialBlocks.forEach(({ type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics }) => {
   const block = document.createElement('div');
   block.classList.add('song-block', type);
   block.setAttribute('data-measures', measures);
@@ -614,8 +619,9 @@ initialBlocks.forEach(({ type, measures, key, tempo, timeSignature, feel, lyrics
   block.setAttribute('data-time-signature', timeSignature);
   block.setAttribute('data-feel', feel);
   block.setAttribute('data-lyrics', lyrics);
-  block.setAttribute('data-key', key);
-  block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+  block.setAttribute('data-root-note', rootNote);
+  block.setAttribute('data-mode', mode);
+  block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
   updateBlockSize(block);
   setupBlock(block);
   timeline.appendChild(block);
