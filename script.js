@@ -54,8 +54,13 @@ function formatPart(part) {
   return part.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-function abbreviateKey(key) {
-  return key.replace(' Major', '').replace(' Minor', 'm');
+function formatKey(rootNote, mode) {
+  return `${rootNote} ${mode.split(' ')[0]}`; // e.g., "C Ionian", "A Aeolian"
+}
+
+function abbreviateKey(rootNote, mode) {
+  const modeShort = mode === 'Aeolian' ? 'm' : mode === 'Ionian' ? '' : mode.charAt(0);
+  return `${rootNote}${modeShort}`; // e.g., "C" (Ionian), "Am" (Aeolian), "DD" (Dorian)
 }
 
 function truncateLyrics(lyrics) {
@@ -134,7 +139,8 @@ function calculateTimings() {
 function loadBlockIntoForm(block) {
   document.getElementById('part-type').value = block.classList[1];
   document.getElementById('measures').value = block.getAttribute('data-measures');
-  document.getElementById('key').value = block.getAttribute('data-key') || 'C Major';
+  document.getElementById('root-note').value = block.getAttribute('data-root-note') || 'C';
+  document.getElementById('mode').value = block.getAttribute('data-mode') || 'Ionian';
   document.getElementById('tempo').value = block.getAttribute('data-tempo');
   document.getElementById('time-signature').value = block.getAttribute('data-time-signature');
   document.getElementById('feel').value = block.getAttribute('data-feel');
@@ -148,7 +154,8 @@ function clearSelection() {
   }
   document.getElementById('part-type').value = 'intro';
   document.getElementById('measures').value = '4';
-  document.getElementById('key').value = 'C Major';
+  document.getElementById('root-note').value = 'C';
+  document.getElementById('mode').value = 'Ionian';
   document.getElementById('tempo').value = '120';
   document.getElementById('time-signature').value = '4/4';
   document.getElementById('feel').value = 'Happiness';
@@ -220,7 +227,8 @@ function setupBlock(block) {
 function addBlock() {
   const partType = document.getElementById('part-type').value;
   const measures = document.getElementById('measures').value;
-  const key = document.getElementById('key').value;
+  const rootNote = document.getElementById('root-note').value;
+  const mode = document.getElementById('mode').value;
   const tempo = document.getElementById('tempo').value;
   const timeSignature = document.getElementById('time-signature').value;
   const feel = document.getElementById('feel').value;
@@ -238,11 +246,12 @@ function addBlock() {
   block.setAttribute('data-time-signature', timeSignature);
   block.setAttribute('data-feel', feel);
   block.setAttribute('data-lyrics', lyrics);
-  block.setAttribute('data-key', key);
+  block.setAttribute('data-root-note', rootNote);
+  block.setAttribute('data-mode', mode);
 
   const label = document.createElement('span');
   label.classList.add('label');
-  label.innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+  label.innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
   block.appendChild(label);
 
   const tooltip = document.createElement('span');
@@ -266,7 +275,8 @@ function updateBlock() {
 
   const partType = document.getElementById('part-type').value;
   const measures = document.getElementById('measures').value;
-  const key = document.getElementById('key').value;
+  const rootNote = document.getElementById('root-note').value;
+  const mode = document.getElementById('mode').value;
   const tempo = document.getElementById('tempo').value;
   const timeSignature = document.getElementById('time-signature').value;
   const feel = document.getElementById('feel').value;
@@ -283,8 +293,9 @@ function updateBlock() {
   selectedBlock.setAttribute('data-time-signature', timeSignature);
   selectedBlock.setAttribute('data-feel', feel);
   selectedBlock.setAttribute('data-lyrics', lyrics);
-  selectedBlock.setAttribute('data-key', key);
-  selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(key)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+  selectedBlock.setAttribute('data-root-note', rootNote);
+  selectedBlock.setAttribute('data-mode', mode);
+  selectedBlock.querySelector('.label').innerHTML = `${formatPart(partType)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote, mode)} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
   selectedBlock.querySelector('.tooltip').textContent = lyrics || 'No lyrics';
   updateBlockSize(selectedBlock);
   clearSelection();
@@ -453,7 +464,8 @@ function exportSong() {
   const blocks = Array.from(timeline.querySelectorAll('.song-block')).map(block => ({
     type: block.classList[1],
     measures: block.getAttribute('data-measures'),
-    key: block.getAttribute('data-key'),
+    rootNote: block.getAttribute('data-root-note'),
+    mode: block.getAttribute('data-mode'),
     tempo: block.getAttribute('data-tempo'),
     timeSignature: block.getAttribute('data-time-signature'),
     feel: block.getAttribute('data-feel'),
@@ -476,7 +488,7 @@ function exportSong() {
 }
 
 function validateBlock(block) {
-  const requiredFields = ['type', 'measures', 'key', 'tempo', 'timeSignature'];
+  const requiredFields = ['type', 'measures', 'rootNote', 'mode', 'tempo', 'timeSignature'];
   for (const field of requiredFields) {
     if (!block[field] || block[field] === '') {
       return `Missing or empty required field: ${field}`;
