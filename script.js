@@ -523,7 +523,9 @@ function importSong(event) {
 
 function loadSongFromDropdown(filename) {
   if (!filename) return;
-  if (filename === 'satisfaction.js') {
+  if (filename === 'pneuma.js') {
+    loadPneuma();
+  } else if (filename === 'satisfaction.js') {
     loadSatisfaction();
   } else {
     fetch(filename)
@@ -591,9 +593,9 @@ function loadSongData(songData) {
 
 function populateSongDropdown() {
   const availableSongs = [
-    'Pneuma.json',
+    'Pneuma.js', // Updated to .js
     'Echoes of Joy.json',
-    'satisfaction.js' // Add this
+    'satisfaction.js'
   ];
   availableSongs.forEach(song => {
     const option = document.createElement('option');
