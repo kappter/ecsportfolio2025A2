@@ -6,17 +6,17 @@ const dirtyLaundrySong = {
   blocks: [
     {
       type: "intro",
-      measures: 8,
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
       timeSignature: "4/4",
       feel: "Cynical",
-      lyrics: "" // Instrumental
+      lyrics: "" // Extended instrumental
     },
     {
       type: "verse",
-      measures: 8,
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -26,7 +26,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "chorus",
-      measures: 8,
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -36,7 +36,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "verse",
-      measures: 8,
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -46,7 +46,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "chorus",
-      measures: 8, // Fixed typo from previous "G" to 8
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -56,7 +56,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "verse",
-      measures: 8,
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -66,7 +66,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "bridge",
-      measures: 8,
+      measures: 16,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -75,8 +75,18 @@ const dirtyLaundrySong = {
       lyrics: "Can we film the operation? Is the head dead yet?"
     },
     {
+      type: "interlude",
+      measures: 12,
+      rootNote: "G",
+      mode: "Ionian",
+      tempo: 98,
+      timeSignature: "4/4",
+      feel: "Cynical",
+      lyrics: "" // Instrumental break
+    },
+    {
       type: "verse",
-      measures: 8,
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -86,7 +96,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "chorus",
-      measures: 12,
+      measures: 20,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -96,7 +106,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "outro",
-      measures: 4,
+      measures: 12,
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -107,11 +117,7 @@ const dirtyLaundrySong = {
   ]
 };
 
-// Ensure global access
 window.loadDirtyLaundry = function() {
   console.log("Executing loadDirtyLaundry...");
   loadSongData(dirtyLaundrySong);
 };
-
-// Optional: Auto-load for testing
-// window.loadDirtyLaundry();
