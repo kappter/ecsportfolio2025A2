@@ -328,6 +328,8 @@ function togglePlay() {
   }
 }
 
+// ... (rest of script.js remains unchanged until playLeadIn)
+
 function playLeadIn(timings, totalSeconds, totalBeats) {
   const firstBlock = timings[0];
   const tempo = firstBlock.tempo;
@@ -337,7 +339,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
   let leadInTime = 0;
   let leadInCount = 0;
 
-  currentBlockDisplay.style.backgroundColor = '#3b4048';
+  currentBlockDisplay.style.backgroundColor = '#3b4048'; // Set lead-in background
   currentBlockDisplay.innerHTML = `
     <span class="label">Lead-In</span>
     <span class="info">Beat: ${leadInCount} of 4</span>
@@ -424,7 +426,15 @@ function updateCurrentBlock(timing) {
 
   const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
   const blockNum = timing.isTransition ? timing.blockIndex : timing.blockIndex + 1;
+  const totalBlockCount = totalBlocks + timings.filter(t => t.isTransition).length;
 
+  // Update content
+  currentBlockDisplay.innerHTML = `
+    <span class="label">${timing.label}</span>
+    <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
+  `;
+
+  // Update background and playback styling
   if (timing.isTransition) {
     const existingTransition = timeline.querySelector('.transition');
     if (existingTransition) existingTransition.remove();
@@ -437,10 +447,6 @@ function updateCurrentBlock(timing) {
     transitionBlock.classList.add('playing');
 
     currentBlockDisplay.style.background = 'linear-gradient(135deg, var(--transition-bg-start), var(--timeline-bg))';
-    currentBlockDisplay.innerHTML = `
-      <span class="label">${timing.label}</span>
-      <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlocks + timings.filter(t => t.isTransition).length}</span>
-    `;
   } else {
     const existingTransition = timeline.querySelector('.transition');
     if (existingTransition) existingTransition.remove();
@@ -449,10 +455,6 @@ function updateCurrentBlock(timing) {
     const blockStyle = window.getComputedStyle(timing.block);
     const bgGradient = blockStyle.backgroundImage || blockStyle.background;
     currentBlockDisplay.style.background = bgGradient;
-    currentBlockDisplay.innerHTML = `
-      <span class="label">${timing.label}</span>
-      <span class="info">Beat: ${blockBeat} of ${timing.totalBeats} | Measure: ${blockMeasure} of ${timing.totalMeasures} | Block: ${blockNum} of ${totalBlocks + timings.filter(t => t.isTransition).length}</span>
-    `;
   }
 
   const beatDuration = 60 / timing.tempo;
@@ -476,6 +478,8 @@ function resetPlayback() {
   currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
   calculateTimings();
 }
+
+// ... (rest of script.js remains unchanged)
 
 function exportSong() {
   const blocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).map(block => ({
