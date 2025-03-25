@@ -339,11 +339,13 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
   let leadInTime = 0;
   let leadInCount = 0;
 
-  currentBlockDisplay.style.backgroundColor = '#3b4048'; // Set lead-in background
+  currentBlockDisplay.style.backgroundColor = '#3b4048'; // Lead-in background
   currentBlockDisplay.innerHTML = `
     <span class="label">Lead-In</span>
     <span class="info">Beat: ${leadInCount} of 4</span>
   `;
+  currentBlockDisplay.classList.add('pulse');
+  currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
 
   playInterval = setInterval(() => {
     leadInTime += 0.01;
@@ -366,6 +368,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
     if (leadInTime >= leadInBeats * beatDuration) {
       clearInterval(playInterval);
+      currentBlockDisplay.classList.remove('pulse'); // Reset pulse before song starts
       playSong(timings, totalSeconds, totalBeats);
     }
 
@@ -375,7 +378,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
 
 function playSong(timings, totalSeconds, totalBeats) {
   let currentIndex = 0;
-  updateCurrentBlock(timings[currentIndex]);
+  updateCurrentBlock(timings[currentIndex]); // Initial block update
   blockBeat = 0;
   blockMeasure = 1;
   lastBeatTime = currentTime;
@@ -412,7 +415,14 @@ function playSong(timings, totalSeconds, totalBeats) {
     } else {
       blockBeat = Math.floor(beatInBlock);
       blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
-      updateCurrentBlock(timings[currentIndex]); // Update display with new beat/measure
+      // Update block display without resetting animation unnecessarily
+      const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
+      const blockNum = currentTiming.isTransition ? currentTiming.blockIndex : currentTiming.blockIndex + 1;
+      const totalBlockCount = totalBlocks + timings.filter(t => t.isTransition).length;
+      currentBlockDisplay.innerHTML = `
+        <span class="label">${currentTiming.label}</span>
+        <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlockCount}</span>
+      `;
     }
 
     timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${currentTiming.totalBeats} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
@@ -422,7 +432,7 @@ function playSong(timings, totalSeconds, totalBeats) {
 function updateCurrentBlock(timing) {
   const previousBlock = timeline.querySelector('.playing');
   if (previousBlock) previousBlock.classList.remove('playing');
-  currentBlockDisplay.classList.remove('pulse');
+  currentBlockDisplay.classList.remove('pulse'); // Reset pulse to restart animation
 
   const totalBlocks = Array.from(timeline.querySelectorAll('.song-block:not(.transition)')).length;
   const blockNum = timing.isTransition ? timing.blockIndex : timing.blockIndex + 1;
