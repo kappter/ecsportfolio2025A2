@@ -593,7 +593,7 @@ function loadSongData(songData) {
 }
 
 function populateSongDropdown() {
-  const availableSongs = ['Pneuma.json', 'Echoes of Joy.json']; // Add your JSON files here
+  const availableSongs = ['Pneuma.json', 'Echoes of Joy.json', 'satisfaction.json']; // Add your JSON files here
   availableSongs.forEach(song => {
     const option = document.createElement('option');
     option.value = song;
