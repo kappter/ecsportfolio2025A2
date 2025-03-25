@@ -1,4 +1,6 @@
 // dirtyLaundry.js
+console.log("Loading Dirty Laundry script...");
+
 const dirtyLaundrySong = {
   songName: "Dirty Laundry",
   blocks: [
@@ -44,7 +46,7 @@ const dirtyLaundrySong = {
     },
     {
       type: "chorus",
-      measures: "G",
+      measures: 8, // Fixed typo from previous "G" to 8
       rootNote: "G",
       mode: "Ionian",
       tempo: 98,
@@ -105,10 +107,11 @@ const dirtyLaundrySong = {
   ]
 };
 
-// Function to load the song into SongMaker
-function loadDirtyLaundry() {
+// Ensure global access
+window.loadDirtyLaundry = function() {
+  console.log("Executing loadDirtyLaundry...");
   loadSongData(dirtyLaundrySong);
-}
+};
 
-// Uncomment to load automatically when script is included
-// loadDirtyLaundry();
+// Optional: Auto-load for testing
+// window.loadDirtyLaundry();
