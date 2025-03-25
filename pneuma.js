@@ -6,17 +6,17 @@ const pneumaSong = {
   blocks: [
     {
       type: "intro",
-      measures: 12,
+      measures: 20,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
       timeSignature: "7/4",
       feel: "Atmospheric",
-      lyrics: "" // Instrumental riff
+      lyrics: "" // Extended intro riff
     },
     {
       type: "verse",
-      measures: 16,
+      measures: 24,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -26,17 +26,17 @@ const pneumaSong = {
     },
     {
       type: "interlude",
-      measures: 16,
+      measures: 24,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
       timeSignature: "7/4",
       feel: "Trippy",
-      lyrics: "" // Middle Eastern drumming
+      lyrics: "" // Extended drumming
     },
     {
       type: "verse",
-      measures: 16,
+      measures: 24,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -56,17 +56,17 @@ const pneumaSong = {
     },
     {
       type: "interlude",
-      measures: 16,
+      measures: 24,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
       timeSignature: "7/4",
       feel: "Intense",
-      lyrics: "" // Instrumental build
+      lyrics: "" // Extended build
     },
     {
       type: "bridge",
-      measures: 16,
+      measures: 24,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -76,17 +76,17 @@ const pneumaSong = {
     },
     {
       type: "bridge",
-      measures: 16,
+      measures: 24,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
       timeSignature: "7/4",
       feel: "Climactic",
-      lyrics: "" // Guitar solo
+      lyrics: "" // Extended solo
     },
     {
       type: "outro",
-      measures: 14,
+      measures: 20,
       rootNote: "D",
       mode: "Dorian",
       tempo: 124,
@@ -102,6 +102,3 @@ window.loadPneuma = function() {
   console.log("Executing loadPneuma...");
   loadSongData(pneumaSong);
 };
-
-// Optional: Auto-load for testing
-// window.loadPneuma();
