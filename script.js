@@ -12,7 +12,6 @@ let draggedBlock = null;
 let selectedBlock = null;
 let currentSongName = 'Echoes of Joy';
 let isPlaying = false;
-let playInterval = null;
 let currentTime = 0;
 let currentBeat = 0;
 let blockBeat = 0;
@@ -25,6 +24,54 @@ let isFormCollapsed = false;
 const validTimeSignatures = ['4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4'];
 const tickSound = new Audio('tick.wav');
 const tockSound = new Audio('tock.wav');
+
+// Time Manager Class
+class TimeManager {
+  constructor(tempo, beatsPerMeasure, totalBeats, callback) {
+    this.tempo = tempo; // BPM
+    this.beatsPerMeasure = beatsPerMeasure;
+    this.totalBeats = totalBeats;
+    this.callback = callback; // Function to call on each beat update
+    this.startTime = null;
+    this.lastBeat = -1;
+    this.beatDuration = 60 / tempo; // Seconds per beat
+    this.running = false;
+  }
+
+  start() {
+    this.running = true;
+    this.startTime = performance.now() / 1000; // Seconds
+    requestAnimationFrame(this.tick.bind(this));
+  }
+
+  stop() {
+    this.running = false;
+  }
+
+  tick(timestamp) {
+    if (!this.running) return;
+    const currentTime = timestamp / 1000; // Seconds
+    const elapsed = currentTime - this.startTime;
+    const currentBeat = Math.floor(elapsed / this.beatDuration);
+
+    if (currentBeat <= this.totalBeats && currentBeat !== this.lastBeat) {
+      this.lastBeat = currentBeat;
+      const isFirstBeatOfMeasure = currentBeat % this.beatsPerMeasure === 0;
+      this.callback({
+        elapsedTime: elapsed,
+        beat: currentBeat,
+        measure: Math.floor(currentBeat / this.beatsPerMeasure) + 1,
+        isFirstBeat: isFirstBeatOfMeasure
+      });
+    }
+
+    if (currentBeat <= this.totalBeats) {
+      requestAnimationFrame(this.tick.bind(this));
+    } else {
+      this.stop();
+    }
+  }
+}
 
 function toggleSound() {
   soundEnabled = !soundEnabled;
@@ -308,9 +355,8 @@ function printSong() {
 
 function togglePlay() {
   if (isPlaying) {
-    clearInterval(playInterval);
-    playBtn.textContent = 'Play';
     isPlaying = false;
+    playBtn.textContent = 'Play';
     resetPlayback();
   } else {
     const { timings, totalSeconds, totalBeats } = calculateTimings();
@@ -328,100 +374,100 @@ function togglePlay() {
 
 function playLeadIn(timings, totalSeconds, totalBeats) {
   const firstBlock = timings[0];
-  const tempo = firstBlock.tempo;
-  const beatsPerSecond = tempo / 60;
-  const beatDuration = 1 / beatsPerSecond;
+  const beatDuration = 60 / firstBlock.tempo;
   const leadInBeats = 4;
-  let leadInTime = 0;
-  let leadInCount = 0;
 
   currentBlockDisplay.style.backgroundColor = '#3b4048';
   currentBlockDisplay.innerHTML = `
     <span class="label">Lead-In</span>
-    <span class="info">Beat: ${leadInCount} of 4</span>
+    <span class="info">Beat: 0 of ${leadInBeats}</span>
   `;
   currentBlockDisplay.classList.add('pulse');
   currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
 
-  playInterval = setInterval(() => {
-    leadInTime += 0.01;
-    const currentBeatTime = leadInTime * beatsPerSecond;
-
-    if (currentBeatTime >= leadInCount && leadInCount < leadInBeats) {
-      if (soundEnabled) {
-        if (leadInCount === 0) tockSound.cloneNode().play();
-        else tickSound.cloneNode().play();
-      }
-      leadInCount++;
-      currentBlockDisplay.innerHTML = `
-        <span class="label">Lead-In</span>
-        <span class="info">Beat: ${leadInCount} of 4</span>
-      `;
+  const timeManager = new TimeManager(firstBlock.tempo, 4, leadInBeats - 1, ({ elapsedTime, beat, isFirstBeat }) => {
+    if (soundEnabled) {
+      (isFirstBeat && beat === 0 ? tockSound : tickSound).cloneNode().play();
     }
-
-    if (leadInTime >= leadInBeats * beatDuration) {
-      clearInterval(playInterval);
-      currentBlockDisplay.classList.remove('pulse');
-      playSong(timings, totalSeconds, totalBeats);
-    }
-
+    currentBlockDisplay.innerHTML = `
+      <span class="label">Lead-In</span>
+      <span class="info">Beat: ${beat + 1} of ${leadInBeats}</span>
+    `;
+    currentTime = elapsedTime;
     timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of 0 (Measure: ${blockMeasure} of 0)`;
-  }, 10);
+  });
+
+  timeManager.start();
+
+  setTimeout(() => {
+    timeManager.stop();
+    currentBlockDisplay.classList.remove('pulse');
+    currentTime = 0; // Reset for song start
+    playSong(timings, totalSeconds, totalBeats);
+  }, leadInBeats * beatDuration * 1000);
 }
 
 function playSong(timings, totalSeconds, totalBeats) {
   let currentIndex = 0;
   blockBeat = 0;
   blockMeasure = 1;
-  lastBeatTime = currentTime;
+  let blockStartTime = 0;
 
   updateCurrentBlock(timings[currentIndex]);
 
-  playInterval = setInterval(() => {
-    currentTime += 0.01;
+  const runBlock = () => {
     const currentTiming = timings[currentIndex];
     const beatsPerSecond = currentTiming.tempo / 60;
-    const songBeat = Math.floor(currentTime * beatsPerSecond);
-    const timeInBlock = currentTime - currentTiming.start;
-    const beatInBlock = timeInBlock * beatsPerSecond;
+    const blockDuration = currentTiming.duration;
+    const totalBlockBeats = currentTiming.totalBeats;
 
-    if (soundEnabled && currentTime - lastBeatTime >= 1 / beatsPerSecond) {
-      const isFirstBeatOfMeasure = blockBeat % currentTiming.beatsPerMeasure === 0;
-      (isFirstBeatOfMeasure ? tockSound : tickSound).cloneNode().play();
-      lastBeatTime = currentTime;
-    }
+    const timeManager = new TimeManager(
+      currentTiming.tempo,
+      currentTiming.beatsPerMeasure,
+      totalBlockBeats - 1,
+      ({ elapsedTime, beat, measure, isFirstBeat }) => {
+        blockBeat = beat;
+        blockMeasure = measure;
+        currentTime = blockStartTime + elapsedTime;
+        currentBeat = Math.floor(currentTime * beatsPerSecond);
 
-    currentBeat = songBeat;
+        if (soundEnabled && (beat === 0 || elapsedTime - (lastBeatTime - blockStartTime) >= 1 / beatsPerSecond)) {
+          (isFirstBeat ? tockSound : tickSound).cloneNode().play();
+          lastBeatTime = blockStartTime + elapsedTime;
+        }
 
-    if (currentTime >= currentTiming.start + currentTiming.duration) {
+        const totalBlocks = timings.length;
+        const blockNum = currentTiming.blockIndex + 1;
+        const rootNote = currentTiming.block.getAttribute('data-root-note');
+        const mode = currentTiming.block.getAttribute('data-mode');
+
+        currentBlockDisplay.innerHTML = `
+          <span class="label">${formatPart(currentTiming.block.classList[1])}: ${currentTiming.block.getAttribute('data-time-signature')} ${currentTiming.totalMeasures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${currentTiming.tempo}b ${currentTiming.block.getAttribute('data-feel')}</span>
+          <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
+        `;
+
+        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${currentTiming.totalBeats} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
+      }
+    );
+
+    timeManager.start();
+
+    setTimeout(() => {
+      timeManager.stop();
       currentIndex++;
       if (currentIndex < timings.length) {
+        blockStartTime += blockDuration;
         updateCurrentBlock(timings[currentIndex]);
-        blockBeat = 0;
-        blockMeasure = 1;
+        runBlock();
       } else {
-        clearInterval(playInterval);
         playBtn.textContent = 'Play';
         isPlaying = false;
         resetPlayback();
-        return;
       }
-    } else {
-      blockBeat = Math.floor(beatInBlock);
-      blockMeasure = Math.floor(blockBeat / currentTiming.beatsPerMeasure) + 1;
-      const totalBlocks = timings.length;
-      const blockNum = currentTiming.blockIndex + 1;
-      const rootNote = currentTiming.block.getAttribute('data-root-note');
-      const mode = currentTiming.block.getAttribute('data-mode');
+    }, blockDuration * 1000);
+  };
 
-      currentBlockDisplay.innerHTML = `
-        <span class="label">${formatPart(currentTiming.block.classList[1])}: ${currentTiming.block.getAttribute('data-time-signature')} ${currentTiming.totalMeasures}m<br>${abbreviateKey(rootNote, mode)} ${mode} ${currentTiming.tempo}b ${currentTiming.block.getAttribute('data-feel')}</span>
-        <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
-      `;
-    }
-
-    timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${currentTiming.totalBeats} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
-  }, 10);
+  runBlock();
 }
 
 function updateCurrentBlock(timing) {
