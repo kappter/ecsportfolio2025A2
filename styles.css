@@ -23,7 +23,7 @@
   --tooltip-bg: #333;
   --tooltip-text: #fff;
   --footer-bg: #d0d0d0;
-  --highlight-green: #00cc00; /* Slightly darker green for light mode */
+  --highlight-green: #00cc00;
 }
 
 body {
@@ -163,7 +163,7 @@ main {
   flex: 0 0 auto;
 }
 
-/* Current Block Display */
+/* Current Block Display (Reference Clock) */
 #current-block-display {
   text-align: center;
   padding: 12px;
@@ -172,6 +172,16 @@ main {
   margin: 0 auto 20px;
   max-width: 600px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.1s ease-in-out; /* Fast transition for blink */
+}
+
+#current-block-display.one-count {
+  background-color: var(--highlight-green); /* Green blink on "one" count */
+  color: #000; /* Ensure text is readable */
+}
+
+#current-block-display.pulse {
+  animation: pulse 1s infinite; /* Beat-based duration set by JS */
 }
 
 #current-block-display .label {
@@ -213,7 +223,7 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: transform 0.2s, border-color 0.1s ease-in-out;
+  transition: transform 0.2s, border-color 0.2s;
 }
 
 .song-block:hover {
@@ -221,15 +231,7 @@ main {
 }
 
 .song-block.playing {
-  /* No static border-color */
-}
-
-.song-block.one-count {
-  border-color: var(--highlight-green); /* Green only on "one" count */
-}
-
-.song-block.playing.pulse {
-  animation: pulse 1s infinite; /* Beat-based duration set by JS */
+  border-color: var(--highlight-green); /* Solid green outline for duration */
 }
 
 .song-block .label {
