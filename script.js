@@ -63,7 +63,7 @@ class TimeManager {
 
   start() {
     this.running = true;
-    this.startTime = performance.now() / 1000 - (this.lastBeat + 1) * this.beatDuration; // Adjust for continuity
+    this.startTime = performance.now() / 1000 - (this.lastBeat + 1) * this.beatDuration;
     requestAnimationFrame(this.tick.bind(this));
   }
 
@@ -458,13 +458,14 @@ function togglePlay() {
 function playLeadIn(timings, totalSeconds, totalBeats) {
   const firstBlock = timings[0];
   const beatDuration = 60 / firstBlock.tempo;
-  const leadInBeats = firstBlock.beatsPerMeasure; // Match lead-in to time signature
+  const leadInBeats = firstBlock.beatsPerMeasure;
 
   const useShortSounds = firstBlock.tempo > TEMPO_THRESHOLD;
   const currentTickBuffer = useShortSounds ? tickShortBuffer : tickBuffer;
   const currentTockBuffer = useShortSounds ? tockShortBuffer : tockBuffer;
 
-  currentBlockDisplay.style.backgroundColor = '#3b4048';
+  currentBlockDisplay.classList.add('pulse');
+  currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
   currentBlockDisplay.innerHTML = `
     <span class="label">Lead-In (${firstBlock.block.getAttribute('data-time-signature')})</span>
     <span class="info">Beat: 0 of ${leadInBeats}</span>
@@ -476,13 +477,19 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
     playSound(beat === 0 ? currentTockBuffer : currentTickBuffer, soundTime);
   }
 
-  activeTimeManager = new TimeManager(firstBlock.tempo, leadInBeats, leadInBeats - 1, ({ elapsedTime, beat }) => {
+  activeTimeManager = new TimeManager(firstBlock.tempo, leadInBeats, leadInBeats - 1, ({ elapsedTime, beat, isFirstBeat }) => {
     currentBlockDisplay.innerHTML = `
       <span class="label">Lead-In (${firstBlock.block.getAttribute('data-time-signature')})</span>
       <span class="info">Beat: ${beat + 1} of ${leadInBeats}</span>
     `;
     currentTime = elapsedTime;
     timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${timings.length} (Measure: ${blockMeasure} of 0)`;
+
+    if (isFirstBeat) {
+      currentBlockDisplay.classList.add('one-count');
+    } else {
+      currentBlockDisplay.classList.remove('one-count');
+    }
   });
 
   activeTimeManager.start();
@@ -516,7 +523,9 @@ function playSong(timings, totalSeconds, totalBeats) {
     const currentTickBuffer = useShortSounds ? tickShortBuffer : tickBuffer;
     const currentTockBuffer = useShortSounds ? tockShortBuffer : tockBuffer;
 
-    // Schedule sounds: tock on "one" count, tick on others
+    currentBlockDisplay.classList.add('pulse');
+    currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
+
     const startTime = audioContext.currentTime + blockStartTime;
     for (let beat = 0; beat < totalBlockBeats; beat++) {
       const soundTime = startTime + (beat * beatDuration);
@@ -548,11 +557,10 @@ function playSong(timings, totalSeconds, totalBeats) {
 
         timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockNum} of ${totalBlocks} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
 
-        // Green blink on "one" count
         if (isFirstBeat) {
-          currentTiming.block.classList.add('one-count');
+          currentBlockDisplay.classList.add('one-count');
         } else {
-          currentTiming.block.classList.remove('one-count');
+          currentBlockDisplay.classList.remove('one-count');
         }
       }
     );
@@ -571,7 +579,7 @@ function playSong(timings, totalSeconds, totalBeats) {
       } else {
         resetPlayback();
       }
-    }, blockDuration * 1000 + 50); // Small buffer for precision
+    }, blockDuration * 1000 + 50);
   };
 
   runBlock();
@@ -580,12 +588,11 @@ function playSong(timings, totalSeconds, totalBeats) {
 function updateCurrentBlock(timing) {
   const previousBlock = timeline.querySelector('.playing');
   if (previousBlock) {
-    previousBlock.classList.remove('playing', 'pulse', 'one-count');
-    previousBlock.style.animation = 'none';
+    previousBlock.classList.remove('playing');
   }
-  timing.block.classList.add('playing', 'pulse');
+  timing.block.classList.add('playing');
   const beatDuration = 60 / timing.tempo;
-  timing.block.style.animation = `pulse ${beatDuration}s infinite`;
+  currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
 }
 
 function resetPlayback() {
@@ -604,9 +611,10 @@ function resetPlayback() {
 
   const previousBlock = timeline.querySelector('.playing');
   if (previousBlock) {
-    previousBlock.classList.remove('playing', 'pulse', 'one-count');
-    previousBlock.style.animation = 'none';
+    previousBlock.classList.remove('playing');
   }
+  currentBlockDisplay.classList.remove('pulse', 'one-count');
+  currentBlockDisplay.style.animation = 'none';
   currentBlockDisplay.style.background = 'var(--form-bg)';
   currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
 
