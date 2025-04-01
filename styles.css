@@ -60,11 +60,15 @@ h2 {
   color: #bbb;
 }
 
-/* Navigation */
 nav {
-  padding: 10px;
-  background: var(--form-bg);
-  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Vertically center the items */
+  gap: 10px;
+  margin: 0 auto 20px; /* Center the nav itself and add bottom margin */
+  flex-wrap: wrap;
+  width: 100%; /* Ensure it takes the full width of the parent */
+  max-width: 1200px; /* Optional: Limit the max width for larger screens */
 }
 
 .controls {
