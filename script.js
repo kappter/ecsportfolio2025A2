@@ -443,22 +443,24 @@ function updateTimeDisplay() {
     timeCalculator.textContent = `Current Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds} / Total Duration: ${Math.floor(totalDuration / 60)}:${Math.floor(totalDuration % 60) < 10 ? '0' : ''}${Math.floor(totalDuration % 60)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${currentBlockIndex} of ${blocks.length} (Measure: ${currentMeasure} of ${totalMeasures})`;
   }
 }
-
-// Play song
 function playSong() {
+  console.log('Play button clicked, isPlaying:', isPlaying);
   if (isPlaying) {
     isPlaying = false;
     const playBtn = document.getElementById('play-btn');
     if (playBtn) playBtn.textContent = 'Play';
+    console.log('Playback paused');
     return;
   }
 
   isPlaying = true;
   const playBtn = document.getElementById('play-btn');
   if (playBtn) playBtn.textContent = 'Pause';
+  console.log('Playback started');
 
   const blocks = document.querySelectorAll('.song-block');
   if (blocks.length === 0) {
+    console.warn('No blocks to play');
     resetPlayback();
     return;
   }
@@ -466,6 +468,7 @@ function playSong() {
   const playInterval = setInterval(() => {
     if (!isPlaying) {
       clearInterval(playInterval);
+      console.log('Playback interval cleared');
       return;
     }
 
@@ -473,6 +476,7 @@ function playSong() {
     if (currentTime >= totalDuration) {
       resetPlayback();
       clearInterval(playInterval);
+      console.log('Playback finished');
       return;
     }
 
