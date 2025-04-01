@@ -338,7 +338,15 @@ main {
 .song-block.vibrant { background: linear-gradient(45deg, #ff6b6b, #feca57); color: #000; }
 .song-block.pastel { background: linear-gradient(45deg, #a0c4ff, #c4f5c7); color: #000; }
 .song-block.monochrome { background: linear-gradient(45deg, #666, #999); color: #fff; }
-
+.form-content {
+  display: none; /* Ensure it’s hidden by default */
+  background: #2a2a2a;
+  padding: 20px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  margin: 0 auto 20px; /* Center the form */
+  max-width: 500px;
+}
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
