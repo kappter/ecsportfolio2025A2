@@ -32,7 +32,7 @@ body {
   color: var(--text-color);
   margin: 0;
   padding: 20px;
-  padding-bottom: 60px; /* Add padding to account for the fixed footer height */
+  padding-bottom: 70px; /* Add padding to account for the fixed footer height */
   line-height: 1.6;
   min-height: 100vh;
   display: flex;
@@ -511,22 +511,22 @@ body.light-mode .song-block.outro {
     display: none;
   }
 
-  /* Update the .info-box styles in styles.css */
 .info-box {
-  position: fixed; /* Fix to the bottom */
+  position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
-  margin: 0 auto; /* Center horizontally */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  width: 100%;
+  max-width: 1200px; /* Match nav max-width for consistency */
   padding: 10px;
   background: #2a2a2a;
   border: 1px solid #555;
-  border-radius: 4px 4px 0 0; /* Rounded top corners */
+  border-radius: 4px 4px 0 0;
   font-size: 14px;
   text-align: center;
   color: #d3d3d3;
-  width: 100%; /* Full width */
   box-sizing: border-box;
+  z-index: 1000; /* Ensure it’s above other content */
 }
 
   @page {
