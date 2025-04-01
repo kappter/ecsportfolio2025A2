@@ -436,7 +436,6 @@ function toggleTheme() {
   document.body.classList.toggle('light-mode');
 }
 
-// Event listeners
 document.addEventListener('DOMContentLoaded', async () => {
   // Populate the dropdown
   const songsLoaded = await populateSongDropdown();
@@ -483,8 +482,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const toggleFormBtn = document.getElementById('toggle-form-btn');
   const formContent = document.getElementById('form-content');
   if (toggleFormBtn && formContent) {
+    // Ensure the form starts hidden
+    formContent.style.display = 'none';
+    toggleFormBtn.textContent = 'SHOW PARAMETERS';
+
     toggleFormBtn.addEventListener('click', () => {
-      const isHidden = formContent.style.display === 'none' || formContent.style.display === '';
+      const isHidden = formContent.style.display === 'none';
+      console.log('Toggling form: isHidden =', isHidden);
       formContent.style.display = isHidden ? 'block' : 'none';
       toggleFormBtn.textContent = isHidden ? 'HIDE PARAMETERS' : 'SHOW PARAMETERS';
     });
