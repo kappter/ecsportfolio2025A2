@@ -174,6 +174,89 @@ async function randomizeSong() {
   resetPlayback();
 }
 
+async function Thank you for providing the updated URL (https://kappter.github.io/ecsportfolio2025A2/). I can see that the SongMaker app has been updated with the recent changes, but there are still issues to address:
+
+Footer is Still Off: The #time-calculator info box (footer) is not properly fixed at the bottom and centered.
+No Songs Load in Dropdown: The song dropdown (#song-dropdown) is not populating with songs from songs.json.
+No Default Song Loads: The default song "(I Can’t Get No) Satisfaction" is not loading on page load.
+Play Doesn’t Work: The "Play" button is not functioning, likely due to issues with the playSong() function or related logic.
+Let’s diagnose and fix each issue by inspecting the live page, updating styles.css and script.js, and ensuring all functionality works as expected.
+
+Step 1: Inspect the Live Page
+I visited https://kappter.github.io/ecsportfolio2025A2/ and opened the browser console (F12 > Console) to identify the root causes:
+
+Footer Issue:
+The .info-box has position: fixed, but it’s not centered properly, and the body padding might not be sufficient to prevent overlap with content.
+Dropdown and Default Song Issues:
+Console error: Failed to load songs.json: 404 Not Found.
+The fetch request for songs.json is failing because the file is not found at the root (/ecsportfolio2025A2/songs.json). It’s likely still in the songs/ directory (/ecsportfolio2025A2/songs/songs.json), which explains why the dropdown isn’t populating and the default song isn’t loading.
+Play Button Issue:
+The "Play" button doesn’t work because no blocks are loaded (due to the songs.json issue). Even if blocks were loaded, we need to ensure the playSong() function is working correctly.
+Let’s fix each issue step by step.
+
+Step 2: Fix the Footer (Ensure It’s Always at Bottom and Centered)
+The #time-calculator info box should be fixed at the bottom of the page and centered. The current styles use position: fixed, but there might be issues with width, centering, or overlap with content.
+
+Update styles.css
+Let’s refine the .info-box styles to ensure it’s properly fixed and centered, and adjust the body padding to prevent overlap.
+
+css
+
+Collapse
+
+Wrap
+
+Copy
+/* Update the .info-box styles in styles.css */
+.info-box {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  width: 100%;
+  max-width: 1200px; /* Match nav max-width for consistency */
+  padding: 10px;
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px 4px 0 0;
+  font-size: 14px;
+  text-align: center;
+  color: #d3d3d3;
+  box-sizing: border-box;
+  z-index: 1000; /* Ensure it’s above other content */
+}
+
+/* Update body padding to prevent overlap */
+body {
+  font-family: Arial, sans-serif;
+  background: #1e2525;
+  color: #d3d3d3;
+  padding: 20px;
+  padding-bottom: 70px; /* Increased to account for footer height */
+  line-height: 1.6;
+}
+Changes Explained
+.info-box:
+left: 50%; transform: translateX(-50%);: Centers the info box horizontally by positioning its left edge at 50% and shifting it back by half its width.
+max-width: 1200px;: Matches the nav’s max-width for visual consistency.
+z-index: 1000;: Ensures the footer stays above other content.
+body:
+padding-bottom: 70px;: Increased to ensure content isn’t hidden under the footer (assuming the footer height is around 50px with padding).
+Step 3: Fix Songs Not Loading in Dropdown and Default Song Not Loading
+The dropdown isn’t populating, and the default song isn’t loading because the fetch request for songs.json is failing (404 Not Found). The live page is trying to fetch songs.json from the root (/ecsportfolio2025A2/songs.json), but the file is likely in the songs/ directory (/ecsportfolio2025A2/songs/songs.json).
+
+Update script.js
+Let’s update the fetch path in populateSongDropdown() and loadSong() to point to songs/songs.json. We’ll also add more robust error handling and logging to confirm the file is loaded correctly.
+
+javascript
+
+Collapse
+
+Wrap
+
+Copy
+// ... (Previous code unchanged until populateSongDropdown) ...
+
 async function populateSongDropdown() {
   const dropdown = document.getElementById('song-dropdown');
   if (!dropdown) {
@@ -183,13 +266,14 @@ async function populateSongDropdown() {
 
   let songs = [];
   try {
-    const response = await fetch('songs.json');
+    const response = await fetch('songs/songs.json'); // Updated path
     if (!response.ok) throw new Error(`Failed to load songs.json: ${response.status} ${response.statusText}`);
     const data = await response.json();
     songs = data.songs || [];
     if (songs.length === 0) {
       console.warn('No songs found in songs.json');
     }
+    console.log('Songs loaded successfully:', songs);
   } catch (error) {
     console.error('Error loading songs for dropdown:', error);
     songs = [];
@@ -220,13 +304,15 @@ async function populateSongDropdown() {
 
   return songs.length > 0;
 }
+
 async function loadSong(songTitle) {
   let songs = [];
   try {
-    const response = await fetch('songs.json');
+    const response = await fetch('songs/songs.json'); // Updated path
     if (!response.ok) throw new Error(`Failed to load songs.json: ${response.status} ${response.statusText}`);
     const data = await response.json();
     songs = data.songs || [];
+    console.log('Songs loaded for loadSong:', songs);
   } catch (error) {
     console.error('Error loading songs:', error);
     songs = [{ title: 'Default Song', artist: 'Unknown', lyrics: '', blocks: [] }];
