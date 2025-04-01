@@ -207,23 +207,15 @@ main {
   justify-content: center;
 }
 
-/* Song Block */
 .song-block {
-  position: relative;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  padding: 10px;
-  background: var(--block-bg);
-  color: var(--text-color);
-  cursor: move;
-  height: 100px;
   flex: 0 0 auto;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  transition: transform 0.2s, border-color 0.2s;
+  width: 200px;
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #555;
+  color: #d3d3d3;
+  position: relative;
+  overflow: hidden; /* Prevent content from spilling out */
 }
 
 .song-block:hover {
@@ -235,11 +227,15 @@ main {
 }
 
 .song-block .label {
-  font-size: 0.85em;
+  font-size: 12px;
   line-height: 1.2;
-  text-align: center;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  margin: 0;
+  padding: 0;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
 }
 
 .song-block .tooltip {
