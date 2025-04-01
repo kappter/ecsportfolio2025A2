@@ -355,6 +355,64 @@ footer {
   color: #bbb;
 }
 
+/* ... (previous styles) ... */
+
+/* Light mode styles */
+body.light-mode {
+  background: #f0f0f0;
+  color: #333;
+}
+
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode .form-content label,
+body.light-mode .info-box,
+body.light-mode .song-block,
+body.light-mode .controls #current-block-display {
+  color: #333;
+}
+
+body.light-mode button,
+body.light-mode select,
+body.light-mode .form-content,
+body.light-mode .info-box,
+body.light-mode .controls #current-block-display {
+  background: #ddd;
+  border-color: #aaa;
+}
+
+body.light-mode .form-content input,
+body.light-mode .form-content textarea,
+body.light-mode select {
+  background: #fff;
+  color: #333;
+  border-color: #aaa;
+}
+
+body.light-mode .song-block {
+  border-color: #aaa;
+}
+
+body.light-mode .song-block.intro {
+  background: #4e6d6d;
+}
+
+body.light-mode .song-block.verse {
+  background: #4e5e6d;
+}
+
+body.light-mode .song-block.chorus {
+  background: #6d5e4e;
+}
+
+body.light-mode .song-block.interlude {
+  background: #4e6d5e;
+}
+
+body.light-mode .song-block.outro {
+  background: #5e6d4e;
+}
+
 /* Print-specific styles */
 @media print {
   body {
@@ -370,7 +428,7 @@ footer {
   }
 
   h1 {
-    display: none; /* Hide the "SongMaker" title in print view */
+    display: none;
   }
 
   #print-song-name {
@@ -407,11 +465,11 @@ footer {
     color: #000;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
-    overflow: hidden; /* Prevent content from spilling out in print */
+    overflow: hidden;
   }
 
   .song-block .label {
-    font-size: 11pt; /* Slightly larger for print readability */
+    font-size: 11pt;
     line-height: 1.4;
     margin: 0;
     padding: 0;
@@ -424,14 +482,13 @@ footer {
   }
 
   .song-block .label br {
-    display: none; /* Remove line breaks for print */
+    display: none;
   }
 
   .song-block .label::after {
-    content: " "; /* Ensure spacing after the label */
+    content: " ";
   }
 
-  /* Hide navigation bar and other UI elements */
   nav,
   .controls,
   .form-content,
