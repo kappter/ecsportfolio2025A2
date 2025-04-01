@@ -31,11 +31,12 @@ body {
   background: var(--background);
   color: var(--text-color);
   margin: 0;
-  padding: 0;
+  padding: 20px;
+  padding-bottom: 60px; /* Add padding to account for the fixed footer height */
+  line-height: 1.6;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  line-height: 1.5;
 }
 
 /* Header */
@@ -497,6 +498,24 @@ body.light-mode .song-block.outro {
   .song-block .delete-btn {
     display: none;
   }
+
+  /* Update the .info-box styles in styles.css */
+.info-box {
+  position: fixed; /* Fix to the bottom */
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto; /* Center horizontally */
+  padding: 10px;
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 4px 4px 0 0; /* Rounded top corners */
+  font-size: 14px;
+  text-align: center;
+  color: #d3d3d3;
+  width: 100%; /* Full width */
+  box-sizing: border-box;
+}
 
   @page {
     @bottom-center {
