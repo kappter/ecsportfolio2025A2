@@ -174,7 +174,6 @@ async function randomizeSong() {
   resetPlayback();
 }
 
-// Populate song dropdown
 async function populateSongDropdown() {
   const dropdown = document.getElementById('song-dropdown');
   if (!dropdown) {
@@ -221,8 +220,6 @@ async function populateSongDropdown() {
 
   return songs.length > 0;
 }
-
-// Load a song
 async function loadSong(songTitle) {
   let songs = [];
   try {
@@ -441,12 +438,13 @@ function toggleTheme() {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', async () => {
-  // Populate the dropdown and load the default song
+  // Populate the dropdown
   const songsLoaded = await populateSongDropdown();
 
   // Load the default song "(I Can’t Get No) Satisfaction"
   const defaultSongTitle = "(I Can’t Get No) Satisfaction";
   if (songsLoaded) {
+    console.log('Songs loaded successfully, loading default song:', defaultSongTitle);
     await loadSong(defaultSongTitle);
   } else {
     console.error('Failed to load songs; cannot load default song');
