@@ -423,65 +423,68 @@ footer {
   color: #bbb;
 }
 
-/* Print-specific styles */
 @media print {
   body {
     margin: 0;
-    padding: 0.5in;
+    padding: 0.25in; /* Reduced from 0.5in */
     font-family: 'Helvetica', 'Arial', sans-serif;
     color: #000;
     background: #fff;
+    font-size: 10pt; /* Base font size for compactness */
   }
 
   header {
-    margin-bottom: 20px;
+    margin-bottom: 10px; /* Reduced from 20px */
   }
 
   h1 {
-    display: none;
+    display: none; /* Still hidden */
   }
 
   #print-song-name {
-    font-size: 28pt;
+    font-size: 18pt; /* Slightly smaller for space, still prominent */
     font-weight: bold;
     text-align: center;
-    margin: 15px 0;
-    padding-bottom: 5px;
-    color: #1a1a1a !important;
+    margin: 10px 0 5px; /* Tightened spacing */
+    padding-bottom: 3px;
+    color: #000 !important; /* Full black for print */
     font-family: 'Georgia', 'Times New Roman', serif;
-    border-bottom: 2px solid #333;
-    letter-spacing: 1px;
+    border-bottom: 1px solid #333; /* Thinner border */
+    letter-spacing: 0.5px;
   }
 
   .timeline {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid; /* Switch to grid for tighter packing */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Flexible columns */
+    gap: 5px; /* Reduced from 10px */
     width: 100%;
     padding: 0;
-    margin: 0;
-    margin-bottom: 40px;
+    margin: 0 0 20px; /* Reduced from 40px */
   }
 
   .song-block {
-    break-inside: avoid;
+    break-inside: avoid; /* Prevent splitting blocks across pages */
     page-break-inside: avoid;
-    flex: 0 0 auto;
-    width: 200px;
+    min-width: 150px; /* Smaller base width */
+    max-width: 200px; /* Cap to prevent overflow */
     margin: 0;
-    padding: 10px;
+    padding: 8px; /* Slightly reduced from 10px */
     box-sizing: border-box;
-    border: 1px solid #ccc;
+    border: 1px solid #999; /* Slightly darker border */
     background: #fff;
     color: #000;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: none; /* Remove shadow for cleaner print */
     position: relative;
     overflow: hidden;
+    height: auto; /* Allow height to adjust to content */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .song-block .label {
-    font-size: 11pt;
-    line-height: 1.4;
+    font-size: 9pt; /* Smaller for compactness */
+    line-height: 1.2; /* Tighter line spacing */
     margin: 0;
     padding: 0;
     white-space: normal;
@@ -489,35 +492,35 @@ footer {
     text-overflow: ellipsis;
     max-width: 100%;
     box-sizing: border-box;
-    display: block;
   }
 
   .song-block .label br {
-    display: none;
+    display: none; /* Still remove line breaks */
   }
 
   .song-block .label::after {
-    content: " ";
+    content: ""; /* Simplified */
   }
 
-  .song-block .resize-handle {
-    display: none; /* Hide resize handle in print view */
+  .song-block .resize-handle,
+  .song-block .delete-btn,
+  .song-block .tooltip {
+    display: none; /* Hide all interactive elements */
   }
 
-  /* Show the info box in print view, styled and positioned below the timeline */
   .info-box {
     display: block;
     position: static;
-    margin: 20px auto 0;
-    padding: 10px;
+    margin: 10px auto 0; /* Reduced from 20px */
+    padding: 8px;
     background: #fff;
     border: 1px solid #ccc;
     border-radius: 0;
-    font-size: 11pt;
+    font-size: 9pt; /* Match block size */
     text-align: center;
     color: #000;
     width: 100%;
-    max-width: 1200px;
+    max-width: 100%; /* Full width for summary */
     box-sizing: border-box;
   }
 
@@ -525,24 +528,31 @@ footer {
   nav,
   .controls,
   .form-content,
-  .song-block .tooltip,
-  .song-block .delete-btn {
-    display: none;
+  footer {
+    display: none; /* Hide footer in favor of @page */
   }
 
   @page {
-    @bottom-center {
-      content: "© 2025 SongMaker by kappter. All rights reserved.";
-      font-size: 9pt;
-      font-style: italic;
-      color: #555 !important;
-      font-family: 'Helvetica', 'Arial', sans-serif;
+    margin: 0.25in; /* Reduced margins */
+    @top-center {
+      content: counter(page) " of " counter(pages); /* Page numbers */
+      font-size: 8pt;
+      color: #555;
     }
-    margin-top: 0;
-    margin-bottom: 0;
+    @bottom-center {
+      content: "© 2025 SongMaker by kappter. All rights reserved."; /* Moved from footer */
+      font-size: 8pt;
+      font-style: italic;
+      color: #555;
+    }
   }
 
   .timeline::before {
     content: none;
+  }
+
+  /* Ensure blocks don’t split across pages if possible */
+  .timeline {
+    page-break-before: always; /* Start on new page if needed */
   }
 }
