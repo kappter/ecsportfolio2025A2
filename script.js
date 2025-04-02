@@ -769,38 +769,40 @@ function loadSongFromDropdown(filename) {
     return;
   }
 
-  console.log(`Attempting to load: ${filename}`);
+  // Prepend 'songs/' to the filename for fetching
+  const fullPath = filename.startsWith('songs/') ? filename : `songs/${filename}`;
+  console.log(`Attempting to load: ${fullPath}`);
   try {
     if (filename.endsWith('.js')) {
-      fetch(filename)
+      fetch(fullPath)
         .then(response => {
-          if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
+          if (!response.ok) throw new Error(`Failed to fetch ${fullPath}: ${response.statusText}`);
           return response.text();
         })
         .then(text => {
           eval(text); // Load the script into the global scope
-          if (filename === 'pneuma.js' && typeof loadPneuma === 'function') loadPneuma();
-          else if (filename === 'satisfaction.js' && typeof loadSatisfaction === 'function') loadSatisfaction();
-          else if (filename === 'dirtyLaundry.js' && typeof loadDirtyLaundry === 'function') loadDirtyLaundry();
-          else if (filename === 'invincible.js' && typeof loadInvincible === 'function') loadInvincible();
-          else if (filename === 'astroworld.js' && typeof loadAstroworld === 'function') loadAstroworld();
-          else if (filename === 'astrothunder.js' && typeof loadAstrothunder === 'function') loadAstrothunder();
-          else if (filename === 'jambi.js' && typeof loadJambi === 'function') loadJambi();
+          if (filename === 'songs/pneuma.js' && typeof loadPneuma === 'function') loadPneuma();
+          else if (filename === 'songs/satisfaction.js' && typeof loadSatisfaction === 'function') loadSatisfaction();
+          else if (filename === 'songs/dirtyLaundry.js' && typeof loadDirtyLaundry === 'function') loadDirtyLaundry();
+          else if (filename === 'songs/invincible.js' && typeof loadInvincible === 'function') loadInvincible();
+          else if (filename === 'songs/astroworld.js' && typeof loadAstroworld === 'function') loadAstroworld();
+          else if (filename === 'songs/astrothunder.js' && typeof loadAstrothunder === 'function') loadAstrothunder();
+          else if (filename === 'songs/jambi.js' && typeof loadJambi === 'function') loadJambi();
           else throw new Error(`No load function found for ${filename}`);
         })
         .catch(error => {
-          console.error(`Error loading ${filename}:`, error);
+          console.error(`Error loading ${fullPath}:`, error);
           alert(`Failed to load song: ${error.message}`);
         });
     } else if (filename.endsWith('.json')) {
-      fetch(filename)
+      fetch(fullPath)
         .then(response => {
-          if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
+          if (!response.ok) throw new Error(`Failed to fetch ${fullPath}: ${response.statusText}`);
           return response.json();
         })
         .then(data => loadSongData(data))
         .catch(error => {
-          console.error(`Error loading ${filename}:`, error);
+          console.error(`Error loading ${fullPath}:`, error);
           alert(`Failed to load song: ${error.message}`);
         });
     } else {
@@ -815,13 +817,13 @@ function loadSongFromDropdown(filename) {
 
 function populateSongDropdown() {
   const availableSongs = [
-    'new-song', 'Echoes of Joy.json', 'pneuma.js', 'satisfaction.js',
-    'dirtyLaundry.js', 'invincible.js', 'astroworld.js', 'astrothunder.js', 'jambi.js'
+    'new-song', 'songs/Echoes of Joy.json', 'songs/pneuma.js', 'songs/satisfaction.js',
+    'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js', 'songs/jambi.js'
   ];
   availableSongs.forEach(song => {
     const option = document.createElement('option');
     option.value = song;
-    option.textContent = song === 'new-song' ? 'New Song' : song.replace('.json', '').replace('.js', '');
+    option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.json', '').replace('.js', '');
     songDropdown.appendChild(option);
   });
 }
@@ -831,4 +833,4 @@ function printSong() {
 }
 
 populateSongDropdown();
-loadSongFromDropdown('satisfaction.js');
+loadSongFromDropdown('songs/satisfaction.js');
