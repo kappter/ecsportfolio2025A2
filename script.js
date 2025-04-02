@@ -41,9 +41,7 @@ function loadAudioBuffers() {
   ]).catch(error => console.error('Failed to load audio files:', error));
 }
 
-loadAudioBuffers();
-
-const audioBufferPromise = loadAudioBuffers();
+const audioBufferPromise = loadAudioBuffers(); // Single call, stored as promise
 
 function playSound(buffer, time) {
   if (!buffer || !soundEnabled) return null;
