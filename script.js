@@ -156,7 +156,7 @@ function randomizeSong() {
     const measures = Math.floor(Math.random() * (16 - 1 + 1)) + 1;
     const rootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
     const mode = modes[Math.floor(Math.random() * modes.length)];
-    const tempo = Math.floor(Math.random() * (180 - 60 + 1)) + 60;
+    const tempo = edinMath.floor(Math.random() * (180 - 60 + 1)) + 60;
     const timeSignature = validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)];
     const feel = feels[Math.floor(Math.random() * feels.length)];
     const lyrics = possibleLyrics[Math.floor(Math.random() * possibleLyrics.length)];
@@ -219,7 +219,6 @@ function validateBlock(block) {
 }
 
 function updateBlockSize(block) {
-  // Only set width if not already manually resized
   if (!block.style.width) {
     const measures = parseInt(block.getAttribute('data-measures'));
     const baseWidth = 120;
@@ -231,7 +230,13 @@ function updateBlockSize(block) {
 
 function setupBlock(block) {
   block.draggable = true;
+
   block.addEventListener('dragstart', (e) => {
+    // Prevent dragstart if the target is the resize handle
+    if (e.target.classList.contains('resize-handle')) {
+      e.preventDefault();
+      return;
+    }
     draggedBlock = block;
     e.dataTransfer.setData('text/plain', '');
     block.style.opacity = '0.5';
@@ -270,7 +275,7 @@ function setupBlock(block) {
     document.getElementById('root-note').value = block.getAttribute('data-root-note');
     document.getElementById('mode').value = block.getAttribute('data-mode');
     document.getElementById('tempo').value = block.getAttribute('data-tempo');
-    document.getElementById('time-signature').value = block.getAttribute('data-time-signature HIST');
+    document.getElementById('time-signature').value = block.getAttribute('data-time-signature');
     document.getElementById('feel').value = block.getAttribute('data-feel') || '';
     document.getElementById('lyrics').value = block.getAttribute('data-lyrics') || '';
   });
@@ -292,7 +297,8 @@ function setupBlock(block) {
 
   let startX, startWidth;
   resizeHandle.addEventListener('mousedown', (e) => {
-    e.stopPropagation();
+    e.preventDefault(); // Prevent text selection or drag initiation
+    e.stopPropagation(); // Stop event from bubbling up to block
     startX = e.pageX;
     startWidth = block.offsetWidth;
     document.addEventListener('mousemove', resize);
@@ -301,9 +307,9 @@ function setupBlock(block) {
 
   function resize(e) {
     const snapWidth = 30; // 1 measure = 30px (baseWidth / 4)
-    const newWidth = Math.min(480, Math.max(120, Math.round((startWidth + (e.pageX - startX)) / snapWidth) * snapWidth)); // Min 120px, max 480px
+    const newWidth = Math.min(480, Math.max(120, Math.round((startWidth + (e.pageX - startX)) / snapWidth) * snapWidth));
     block.style.width = `${newWidth}px`;
-    const measures = Math.round((newWidth / 120) * 4); // 120px = 4 measures
+    const measures = Math.round((newWidth / 120) * 4);
     block.setAttribute('data-measures', measures);
     const type = block.classList[1];
     const tempo = block.getAttribute('data-tempo');
