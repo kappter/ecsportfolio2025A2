@@ -43,6 +43,8 @@ function loadAudioBuffers() {
 
 loadAudioBuffers();
 
+const audioBufferPromise = loadAudioBuffers();
+
 function playSound(buffer, time) {
   if (!buffer || !soundEnabled) return null;
   const source = audioContext.createBufferSource();
@@ -497,8 +499,9 @@ function togglePlay() {
     currentBeat = 0;
     blockBeat = 0;
     blockMeasure = 0;
-    audioContext.resume();
-    playLeadIn(timings, totalSeconds, totalBeats);
+    audioContext.resume().then(() => {
+      audioBufferPromise.then(() => playLeadIn(timings, totalSeconds, totalBeats));
+    });
   }
 }
 
@@ -521,7 +524,8 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
   const startTime = audioContext.currentTime;
   for (let beat = 0; beat < leadInBeats; beat++) {
     const soundTime = startTime + (beat * beatDuration);
-    const source = playSound(beat === 0 ? currentTockBuffer : currentTickBuffer, soundTime);
+    const isFirstBeat = beat === 0; // First beat of the lead-in measure
+    const source = playSound(isFirstBeat ? currentTickBuffer : currentTockBuffer, soundTime);
     if (source) scheduledSources.push(source);
   }
 
@@ -572,7 +576,7 @@ function playSong(timings, totalSeconds, totalBeats) {
     for (let beat = 0; beat < totalBlockBeats; beat++) {
       const soundTime = blockStartTime + (beat * beatDuration);
       const isFirstBeatOfMeasure = beat % currentTiming.beatsPerMeasure === 0;
-      const source = playSound(isFirstBeatOfMeasure ? currentTockBuffer : currentTickBuffer, soundTime);
+      const source = playSound(isFirstBeatOfMeasure ? currentTickBuffer : currentTockBuffer, soundTime);
       if (source) scheduledSources.push(source);
     }
 
@@ -649,7 +653,10 @@ function resetPlayback() {
 
   audioContext.close().then(() => {
     audioContext = new AudioContext();
-    loadAudioBuffers();
+    // Reload buffers after creating new context
+    audioBufferPromise.then(() => {
+      console.log('Audio buffers reloaded after reset');
+    }).catch(error => console.error('Failed to reload audio buffers:', error));
   });
 
   currentTime = 0;
