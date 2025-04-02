@@ -156,7 +156,7 @@ function randomizeSong() {
     const measures = Math.floor(Math.random() * (16 - 1 + 1)) + 1;
     const rootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
     const mode = modes[Math.floor(Math.random() * modes.length)];
-    const tempo = edinMath.floor(Math.random() * (180 - 60 + 1)) + 60;
+    const tempo = Math.floor(Math.random() * (180 - 60 + 1)) + 60;
     const timeSignature = validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)];
     const feel = feels[Math.floor(Math.random() * feels.length)];
     const lyrics = possibleLyrics[Math.floor(Math.random() * possibleLyrics.length)];
@@ -232,7 +232,6 @@ function setupBlock(block) {
   block.draggable = true;
 
   block.addEventListener('dragstart', (e) => {
-    // Prevent dragstart if the target is the resize handle
     if (e.target.classList.contains('resize-handle')) {
       e.preventDefault();
       return;
@@ -297,8 +296,8 @@ function setupBlock(block) {
 
   let startX, startWidth;
   resizeHandle.addEventListener('mousedown', (e) => {
-    e.preventDefault(); // Prevent text selection or drag initiation
-    e.stopPropagation(); // Stop event from bubbling up to block
+    e.preventDefault();
+    e.stopPropagation();
     startX = e.pageX;
     startWidth = block.offsetWidth;
     document.addEventListener('mousemove', resize);
@@ -306,7 +305,7 @@ function setupBlock(block) {
   });
 
   function resize(e) {
-    const snapWidth = 30; // 1 measure = 30px (baseWidth / 4)
+    const snapWidth = 30;
     const newWidth = Math.min(480, Math.max(120, Math.round((startWidth + (e.pageX - startX)) / snapWidth) * snapWidth));
     block.style.width = `${newWidth}px`;
     const measures = Math.round((newWidth / 120) * 4);
@@ -772,31 +771,40 @@ function loadSongFromDropdown(filename) {
 
   console.log(`Attempting to load: ${filename}`);
   try {
-    if (filename === 'pneuma.js') {
-      if (typeof loadPneuma === 'function') loadPneuma();
-      else fetch(filename).then(response => response.text()).then(text => { eval(text); loadPneuma(); });
-    } else if (filename === 'satisfaction.js') {
-      if (typeof loadSatisfaction === 'function') loadSatisfaction();
-      else fetch(filename).then(response => response.text()).then(text => { eval(text); loadSatisfaction(); });
-    } else if (filename === 'dirtyLaundry.js') {
-      if (typeof loadDirtyLaundry === 'function') loadDirtyLaundry();
-      else fetch(filename).then(response => response.text()).then(text => { eval(text); loadDirtyLaundry(); });
-    } else if (filename === 'invincible.js') {
-      if (typeof loadInvincible === 'function') loadInvincible();
-      else fetch(filename).then(response => response.text()).then(text => { eval(text); loadInvincible(); });
-    } else if (filename === 'astroworld.js') {
-      if (typeof loadAstroworld === 'function') loadAstroworld();
-      else fetch(filename).then(response => response.text()).then(text => { eval(text); loadAstroworld(); });
-    } else if (filename === 'astrothunder.js') {
-      if (typeof loadAstrothunder === 'function') loadAstrothunder();
-      else fetch(filename).then(response => response.text()).then(text => { eval(text); loadAstrothunder(); });
-    } else if (filename === 'jambi.js') {
-      if (typeof loadJambi === 'function') loadJambi();
-      else fetch(filename).then(response => response.text()).then(text => { eval(text); loadJambi(); });
-    } else if (filename === 'Echoes of Joy.json') {
-      fetch(filename).then(response => response.text()).then(text => loadSongData(JSON.parse(text)));
+    if (filename.endsWith('.js')) {
+      fetch(filename)
+        .then(response => {
+          if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
+          return response.text();
+        })
+        .then(text => {
+          eval(text); // Load the script into the global scope
+          if (filename === 'pneuma.js' && typeof loadPneuma === 'function') loadPneuma();
+          else if (filename === 'satisfaction.js' && typeof loadSatisfaction === 'function') loadSatisfaction();
+          else if (filename === 'dirtyLaundry.js' && typeof loadDirtyLaundry === 'function') loadDirtyLaundry();
+          else if (filename === 'invincible.js' && typeof loadInvincible === 'function') loadInvincible();
+          else if (filename === 'astroworld.js' && typeof loadAstroworld === 'function') loadAstroworld();
+          else if (filename === 'astrothunder.js' && typeof loadAstrothunder === 'function') loadAstrothunder();
+          else if (filename === 'jambi.js' && typeof loadJambi === 'function') loadJambi();
+          else throw new Error(`No load function found for ${filename}`);
+        })
+        .catch(error => {
+          console.error(`Error loading ${filename}:`, error);
+          alert(`Failed to load song: ${error.message}`);
+        });
+    } else if (filename.endsWith('.json')) {
+      fetch(filename)
+        .then(response => {
+          if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.statusText}`);
+          return response.json();
+        })
+        .then(data => loadSongData(data))
+        .catch(error => {
+          console.error(`Error loading ${filename}:`, error);
+          alert(`Failed to load song: ${error.message}`);
+        });
     } else {
-      fetch(filename).then(response => response.json()).then(data => loadSongData(data));
+      throw new Error(`Unsupported file type: ${filename}`);
     }
     songDropdown.value = filename;
   } catch (error) {
