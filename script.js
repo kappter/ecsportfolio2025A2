@@ -778,19 +778,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function populateSongDropdown() {
-    console.log('Populating song dropdown');
-    const availableSongs = ['new-song', 'songs/satisfaction.js'];
-    songDropdown.innerHTML = '';
-    availableSongs.forEach(song => {
-      const option = document.createElement('option');
-      option.value = song;
-      option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
-      songDropdown.appendChild(option);
-      console.log('Added option:', option.outerHTML);
-    });
-    console.log('Dropdown after population:', songDropdown.innerHTML);
-  }
+ function populateSongDropdown() {
+  console.log('Populating song dropdown');
+  const availableSongs = ['new-song', 'songs/satisfaction.js']; // Ensure this includes all songs
+  songDropdown.innerHTML = ''; // Clear existing options
+  availableSongs.forEach((song, index) => {
+    const option = document.createElement('option');
+    option.value = song;
+    option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
+    songDropdown.appendChild(option);
+    console.log(`Added option ${index + 1}:`, option.outerHTML);
+  });
+  console.log('Dropdown final HTML:', songDropdown.innerHTML);
+}
 
   function randomizeSong() {
     try {
