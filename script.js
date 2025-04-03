@@ -1,4 +1,3 @@
-// Wait for DOM to load
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded');
 
@@ -12,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const toggleFormBtn = document.getElementById('toggle-form-btn');
   const formContent = document.getElementById('form-content');
   const printSongName = document.getElementById('print-song-name');
-  const songTitleInput = document.querySelector('#form-content #song-title-input'); // Use the one in form-content
+  const songTitleInput = document.querySelector('#form-content #song-title-input');
   let draggedBlock = null;
   let selectedBlock = null;
   let currentSongName = '(I Can’t Get No) Satisfaction';
@@ -139,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateTitle(title) {
     currentSongName = title;
-    printSongName.textContent = title; // Only update print-song-name since song-name doesn’t exist
+    printSongName.textContent = title;
     songTitleInput.value = title;
   }
 
@@ -707,72 +706,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isPlaying) resetPlayback();
 
-    if (filename === 'new-song') {
+    try {
+      if (filename === 'new-song') {
+        console.log('Loading new song');
+        timeline.innerHTML = '';
+        if (selectedBlock) clearSelection();
+        isFormCollapsed = false;
+        formContent.classList.remove('collapsed');
+        toggleFormBtn.textContent = 'Hide Parameters';
+        currentSongName = 'New Song';
+        updateTitle(currentSongName);
+        calculateTimings();
+        const styleDropdown = document.getElementById('style-dropdown');
+        styleDropdown.value = '';
+        console.log('New song loaded, timeline:', timeline.innerHTML);
+        return;
+      }
+
+      const songs = {
+        'songs/satisfaction.js': [
+          { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
+          { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
+          { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' }
+        ]
+      };
+
+      const songKey = filename;
+      const songData = songs[songKey];
+
+      if (!songData) {
+        console.error(`Song ${songKey} not found in static songs object`);
+        return;
+      }
+
+      console.log('Clearing timeline and loading song:', songKey);
       timeline.innerHTML = '';
       if (selectedBlock) clearSelection();
-      isFormCollapsed = false;
-      formContent.classList.remove('collapsed');
-      toggleFormBtn.textContent = 'Hide Parameters';
-      currentSongName = 'New Song';
-      updateTitle(currentSongName);
+
+      updateTitle('(I Can’t Get No) Satisfaction');
+
+      songData.forEach(blockData => {
+        console.log('Creating block with data:', blockData);
+        const block = document.createElement('div');
+        block.classList.add('song-block', blockData.type);
+        block.setAttribute('data-measures', blockData.measures);
+        block.setAttribute('data-tempo', blockData.tempo);
+        block.setAttribute('data-time-signature', blockData.timeSignature);
+        block.setAttribute('data-feel', blockData.feel);
+        block.setAttribute('data-lyrics', blockData.lyrics || '');
+        block.setAttribute('data-root-note', blockData.rootNote);
+        block.setAttribute('data-mode', blockData.mode);
+        block.innerHTML = `
+          <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+          <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+        `;
+        updateBlockSize(block);
+        setupBlock(block);
+        console.log('Appending block to timeline:', block.outerHTML);
+        timeline.appendChild(block);
+      });
+
+      console.log('Timeline after load:', timeline.innerHTML);
       calculateTimings();
-      const styleDropdown = document.getElementById('style-dropdown');
-      styleDropdown.value = '';
-      return;
+      songDropdown.value = filename;
+    } catch (error) {
+      console.error('loadSongFromDropdown failed:', error);
     }
-
-    const songs = {
-      'songs/satisfaction.js': [
-        { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
-        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
-        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' }
-      ]
-    };
-
-    const songKey = filename;
-    const songData = songs[songKey];
-
-    if (!songData) {
-      console.error(`Song ${songKey} not found in static songs object`);
-      return;
-    }
-
-    console.log('Clearing timeline and loading song:', songKey);
-    timeline.innerHTML = '';
-    if (selectedBlock) clearSelection();
-
-    updateTitle('(I Can’t Get No) Satisfaction');
-
-    songData.forEach(blockData => {
-      console.log('Creating block with data:', blockData);
-      const block = document.createElement('div');
-      block.classList.add('song-block', blockData.type);
-      block.setAttribute('data-measures', blockData.measures);
-      block.setAttribute('data-tempo', blockData.tempo);
-      block.setAttribute('data-time-signature', blockData.timeSignature);
-      block.setAttribute('data-feel', blockData.feel);
-      block.setAttribute('data-lyrics', blockData.lyrics || '');
-      block.setAttribute('data-root-note', blockData.rootNote);
-      block.setAttribute('data-mode', blockData.mode);
-      block.innerHTML = `
-        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
-        <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
-      `;
-      updateBlockSize(block);
-      setupBlock(block);
-      console.log('Appending block to timeline:', block.outerHTML);
-      timeline.appendChild(block);
-    });
-
-    console.log('Timeline after load:', timeline.innerHTML);
-    calculateTimings();
-    songDropdown.value = filename;
   }
 
   function populateSongDropdown() {
     console.log('Populating song dropdown');
     const availableSongs = ['new-song', 'songs/satisfaction.js'];
-    console.log('Available songs:', availableSongs);
+    songDropdown.innerHTML = '';
     availableSongs.forEach(song => {
       const option = document.createElement('option');
       option.value = song;
@@ -784,55 +789,59 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function randomizeSong() {
-    console.log('Randomize song called');
-    timeline.innerHTML = '';
-    if (selectedBlock) clearSelection();
+    try {
+      console.log('Randomize song called');
+      timeline.innerHTML = '';
+      if (selectedBlock) clearSelection();
 
-    const titleAdjectives = ['Cosmic', 'Silent', 'Electric'];
-    const titleNouns = ['Echo', 'Pulse', 'Wave'];
-    const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
-    const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
-    const newTitle = `${randomAdj} ${randomNoun}`;
-    updateTitle(newTitle);
+      const titleAdjectives = ['Cosmic', 'Silent', 'Electric'];
+      const titleNouns = ['Echo', 'Pulse', 'Wave'];
+      const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
+      const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
+      const newTitle = `${randomAdj} ${randomNoun}`;
+      updateTitle(newTitle);
 
-    const partTypes = ['intro', 'verse', 'chorus'];
-    const rootNotes = ['C', 'D', 'E'];
-    const modes = ['Ionian', 'Dorian', 'Mixolydian'];
-    const feels = ['Happiness', 'Sadness', 'Tension'];
+      const partTypes = ['intro', 'verse', 'chorus'];
+      const rootNotes = ['C', 'D', 'E'];
+      const modes = ['Ionian', 'Dorian', 'Mixolydian'];
+      const feels = ['Happiness', 'Sadness', 'Tension'];
 
-    const blockData = {
-      type: partTypes[Math.floor(Math.random() * partTypes.length)],
-      measures: 4,
-      rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
-      mode: modes[Math.floor(Math.random() * modes.length)],
-      tempo: 120,
-      timeSignature: '4/4',
-      feel: feels[Math.floor(Math.random() * feels.length)],
-      lyrics: 'Random song lyrics...'
-    };
+      const blockData = {
+        type: partTypes[Math.floor(Math.random() * partTypes.length)],
+        measures: 4,
+        rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
+        mode: modes[Math.floor(Math.random() * modes.length)],
+        tempo: 120,
+        timeSignature: '4/4',
+        feel: feels[Math.floor(Math.random() * feels.length)],
+        lyrics: 'Random song lyrics...'
+      };
 
-    console.log('Random block data:', blockData);
+      console.log('Random block data:', blockData);
 
-    const block = document.createElement('div');
-    block.classList.add('song-block', blockData.type);
-    block.setAttribute('data-measures', blockData.measures);
-    block.setAttribute('data-tempo', blockData.tempo);
-    block.setAttribute('data-time-signature', blockData.timeSignature);
-    block.setAttribute('data-feel', blockData.feel);
-    block.setAttribute('data-lyrics', blockData.lyrics);
-    block.setAttribute('data-root-note', blockData.rootNote);
-    block.setAttribute('data-mode', blockData.mode);
-    block.innerHTML = `
-      <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}<br>-<br>${truncateLyrics(blockData.lyrics)}</span>
-      <span class="tooltip">${blockData.lyrics}</span>
-    `;
-    updateBlockSize(block);
-    setupBlock(block);
-    console.log('Appending random block:', block.outerHTML);
-    timeline.appendChild(block);
+      const block = document.createElement('div');
+      block.classList.add('song-block', blockData.type);
+      block.setAttribute('data-measures', blockData.measures);
+      block.setAttribute('data-tempo', blockData.tempo);
+      block.setAttribute('data-time-signature', blockData.timeSignature);
+      block.setAttribute('data-feel', blockData.feel);
+      block.setAttribute('data-lyrics', blockData.lyrics);
+      block.setAttribute('data-root-note', blockData.rootNote);
+      block.setAttribute('data-mode', blockData.mode);
+      block.innerHTML = `
+        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}<br>-<br>${truncateLyrics(blockData.lyrics)}</span>
+        <span class="tooltip">${blockData.lyrics}</span>
+      `;
+      updateBlockSize(block);
+      setupBlock(block);
+      console.log('Appending random block:', block.outerHTML);
+      timeline.appendChild(block);
 
-    console.log('Timeline after randomize:', timeline.innerHTML);
-    calculateTimings();
+      console.log('Timeline after randomize:', timeline.innerHTML);
+      calculateTimings();
+    } catch (error) {
+      console.error('Randomize failed:', error);
+    }
   }
 
   function printSong() {
@@ -852,6 +861,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentBlockDisplay.innerHTML = originalContent;
   }
+
+  // Expose functions globally for onclick
+  window.togglePlay = togglePlay;
+  window.toggleSound = toggleSound;
+  window.toggleTheme = toggleTheme;
+  window.exportSong = exportSong;
+  window.importSong = importSong;
+  window.loadSongFromDropdown = loadSongFromDropdown;
+  window.changeBlockStyle = changeBlockStyle;
+  window.randomizeSong = randomizeSong;
+  window.printSong = printSong;
+  window.toggleForm = toggleForm;
+  window.addBlock = addBlock;
+  window.updateBlock = updateBlock;
 
   // Initial setup
   console.log('Starting initial setup');
