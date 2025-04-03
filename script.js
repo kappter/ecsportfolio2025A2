@@ -143,7 +143,7 @@ function randomizeSong() {
   const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
   const newTitle = `${randomAdj} ${randomNoun}`;
   updateTitle(newTitle);
-  songTitleInput.value = newTitle; // Sync with input
+  songTitleInput.value = currentSongName;
 
   const partTypes = [/* unchanged */];
   const rootNotes = [/* unchanged */];
