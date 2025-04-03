@@ -42,7 +42,7 @@ function loadAudioBuffers() {
   ]).catch(error => console.error('Failed to load audio files:', error));
 }
 
-const audioBufferPromise = loadAudioBuffers(); // Single call, stored as promise
+const audioBufferPromise = loadAudioBuffers();
 
 function playSound(buffer, time) {
   if (!buffer || !soundEnabled) return null;
@@ -131,116 +131,11 @@ songTitleInput.addEventListener('input', (e) => {
   updateTitle(e.target.value || 'Untitled');
 });
 
-function loadSong(songName) {
-  const songs = {
-    'satisfaction': [/* unchanged */],
-    'pneuma': [/* unchanged */],
-    'jambi': [/* unchanged */],
-    'bohemian': [/* unchanged */],
-    'master': [/* unchanged */],
-    'sweet': [/* unchanged */],
-    'hotel': [/* unchanged */],
-    'stairway': [/* unchanged */]
-  };
-
-  timeline.innerHTML = '';
-  if (selectedBlock) selectedBlock.classList.remove('selected');
-  selectedBlock = null;
-
-  updateTitle(songName === 'satisfaction' ? '(I Can’t Get No) Satisfaction' : formatPart(songName));
-
-  songs[songName].forEach(blockData => {
-    const block = document.createElement('div');
-    block.classList.add('song-block', blockData.type);
-    block.setAttribute('data-measures', blockData.measures);
-    block.setAttribute('data-tempo', blockData.tempo);
-    block.setAttribute('data-time-signature', blockData.timeSignature);
-    block.setAttribute('data-lyrics', blockData.lyrics || '');
-    block.innerHTML = `
-      <span class="label">${formatPart(blockData.type)} ${blockData.timeSignature} ${blockData.measures}m ${blockData.tempo}bpm${blockData.lyrics ? '<br>' + blockData.lyrics : ''}</span>
-      <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
-      <span class="resize-handle"></span>
-      <button class="delete-btn" onclick="deleteBlock(this.parentElement)">X</button>
-    `;
-    updateBlockSize(block);
-    setupBlock(block);
-    timeline.appendChild(block);
-  });
-
-  calculateTimings();
-}
-
-function randomizeSong() {
-  timeline.innerHTML = '';
-  if (selectedBlock) selectedBlock.classList.remove('selected');
-  selectedBlock = null;
-
-  const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Fading', 'Raging', 'Dreamy', 'Wild', 'Mystic'];
-  const titleNouns = ['Echo', 'Pulse', 'Wave', 'Night', 'Fire', 'Journey', 'Sky', 'Dream'];
-  const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
-  const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
-  const newTitle = `${randomAdj} ${randomNoun}`;
-  updateTitle(newTitle);
-
-  const partTypes = [
-    'intro', 'verse', 'chorus', 'bridge', 'outro', 'solo', 'breakdown', 'pre-chorus', 'post-chorus',
-    'refrain', 'hook', 'interlude', 'ad-lib', 'elision', 'coda', 'drop', 'modulation', 'tag'
-  ];
-  const possibleLyrics = [
-    'La la la, here we go again...', 'Feel the rhythm, let it flow...', 
-    'Shadows dancing in the moonlight...', 'Break free, let your spirit soar...', 
-    'Echoes of a forgotten dream...', ''
-  ];
-
-  const numBlocks = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
-
-  for (let i = 0; i < numBlocks; i++) {
-    const type = partTypes[Math.floor(Math.random() * partTypes.length)];
-    const measures = Math.floor(Math.random() * (16 - 1 + 1)) + 1;
-    const tempo = Math.floor(Math.random() * (180 - 60 + 1)) + 60;
-    const timeSignature = validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)];
-    const lyrics = possibleLyrics[Math.floor(Math.random() * possibleLyrics.length)];
-
-    const blockData = { type, measures, tempo, timeSignature, lyrics };
-    const error = validateBlock(blockData);
-    if (error) {
-      console.error(`Generated block failed validation: ${error}`);
-      continue;
-    }
-
-    const block = document.createElement('div');
-    block.classList.add('song-block', type);
-    block.setAttribute('data-measures', measures);
-    block.setAttribute('data-tempo', tempo);
-    block.setAttribute('data-time-signature', timeSignature);
-    block.setAttribute('data-lyrics', lyrics);
-    block.innerHTML = `
-      <span class="label">${formatPart(type)} ${timeSignature} ${measures}m ${tempo}bpm${lyrics ? '<br>' + lyrics : ''}</span>
-      <span class="tooltip">${lyrics || 'No lyrics'}</span>
-      <span class="resize-handle"></span>
-      <button class="delete-btn" onclick="deleteBlock(this.parentElement)">X</button>
-    `;
-    updateBlockSize(block);
-    setupBlock(block);
-    timeline.appendChild(block);
-  }
-
-  calculateTimings();
-}
-
-function printSong() {
-  window.print(); // No need to modify #current-block-display since footer handles copyright
-}
-
-// Initial setup
-songTitleInput.value = currentSongName;
-updateTitle(currentSongName);
-
 function updateTitle(title) {
   currentSongName = title;
   document.getElementById('song-name').textContent = title;
   document.getElementById('print-song-name').textContent = title;
-  songTitleInput.value = title; // Sync input
+  songTitleInput.value = title;
 }
 
 function formatPart(part) {
@@ -319,8 +214,8 @@ function setupBlock(block) {
 
     document.getElementById('part-type').value = block.classList[1];
     document.getElementById('measures').value = block.getAttribute('data-measures');
-    document.getElementById('root-note').value = block.getAttribute('data-root-note');
-    document.getElementById('mode').value = block.getAttribute('data-mode');
+    document.getElementById('root-note').value = block.getAttribute('data-root-note') || 'C';
+    document.getElementById('mode').value = block.getAttribute('data-mode') || 'Ionian';
     document.getElementById('tempo').value = block.getAttribute('data-tempo');
     document.getElementById('time-signature').value = block.getAttribute('data-time-signature');
     document.getElementById('feel').value = block.getAttribute('data-feel') || '';
@@ -483,10 +378,8 @@ function clearSelection() {
 
 function getBeatsPerMeasure(timeSignature) {
   const [numerator, denominator] = timeSignature.split('/').map(Number);
-  if (timeSignature === '6/4') {
-    return 6; // Special case for 6/4
-  }
-  return numerator; // 9/8 returns 9, 4/4 returns 4, etc.
+  if (timeSignature === '6/4') return 6;
+  return numerator;
 }
 
 function calculateTimings() {
@@ -567,7 +460,7 @@ function playLeadIn(timings, totalSeconds, totalBeats) {
   const startTime = audioContext.currentTime;
   for (let beat = 0; beat < leadInBeats; beat++) {
     const soundTime = startTime + (beat * beatDuration);
-    const isFirstBeat = beat === 0; // First beat of the lead-in measure
+    const isFirstBeat = beat === 0;
     const source = playSound(isFirstBeat ? currentTickBuffer : currentTockBuffer, soundTime);
     if (source) scheduledSources.push(source);
   }
@@ -618,7 +511,6 @@ function playSong(timings, totalSeconds, totalBeats) {
 
     for (let beat = 0; beat < totalBlockBeats; beat++) {
       const soundTime = blockStartTime + (beat * beatDuration);
-      // Play "tick" on the first beat of every measure
       const isFirstBeatOfMeasure = beat % currentTiming.beatsPerMeasure === 0;
       const source = playSound(isFirstBeatOfMeasure ? currentTickBuffer : currentTockBuffer, soundTime);
       if (source) scheduledSources.push(source);
@@ -689,15 +581,12 @@ function resetPlayback() {
   scheduledSources.forEach(source => {
     try {
       source.stop();
-    } catch (e) {
-      // Ignore if already stopped
-    }
+    } catch (e) {}
   });
   scheduledSources = [];
 
   audioContext.close().then(() => {
     audioContext = new AudioContext();
-    // Reload buffers after creating new context
     audioBufferPromise.then(() => {
       console.log('Audio buffers reloaded after reset');
     }).catch(error => console.error('Failed to reload audio buffers:', error));
@@ -820,73 +709,174 @@ function loadSongFromDropdown(filename) {
     return;
   }
 
-  // Prepend 'songs/' to the filename for fetching
-  const fullPath = filename.startsWith('songs/') ? filename : `songs/${filename}`;
-  console.log(`Attempting to load: ${fullPath}`);
-  try {
-    if (filename.endsWith('.js')) {
-      fetch(fullPath)
-        .then(response => {
-          if (!response.ok) throw new Error(`Failed to fetch ${fullPath}: ${response.statusText}`);
-          return response.text();
-        })
-        .then(text => {
-          eval(text); // Load the script into the global scope
-          if (filename === 'songs/pneuma.js' && typeof loadPneuma === 'function') loadPneuma();
-          else if (filename === 'songs/satisfaction.js' && typeof loadSatisfaction === 'function') loadSatisfaction();
-          else if (filename === 'songs/dirtyLaundry.js' && typeof loadDirtyLaundry === 'function') loadDirtyLaundry();
-          else if (filename === 'songs/invincible.js' && typeof loadInvincible === 'function') loadInvincible();
-          else if (filename === 'songs/astroworld.js' && typeof loadAstroworld === 'function') loadAstroworld();
-          else if (filename === 'songs/astrothunder.js' && typeof loadAstrothunder === 'function') loadAstrothunder();
-          else if (filename === 'songs/jambi.js' && typeof loadJambi === 'function') loadJambi();
-          else throw new Error(`No load function found for ${filename}`);
-        })
-        .catch(error => {
-          console.error(`Error loading ${fullPath}:`, error);
-          alert(`Failed to load song: ${error.message}`);
-        });
-    } else if (filename.endsWith('.json')) {
-      fetch(fullPath)
-        .then(response => {
-          if (!response.ok) throw new Error(`Failed to fetch ${fullPath}: ${response.statusText}`);
-          return response.json();
-        })
-        .then(data => loadSongData(data))
-        .catch(error => {
-          console.error(`Error loading ${fullPath}:`, error);
-          alert(`Failed to load song: ${error.message}`);
-        });
-    } else {
-      throw new Error(`Unsupported file type: ${filename}`);
-    }
-    songDropdown.value = filename;
-  } catch (error) {
-    console.error(`Error in loadSongFromDropdown: ${error.message}`);
-    alert(`Error loading song: ${error.message}`);
+  const songs = {
+    'songs/satisfaction.js': [
+      { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
+      { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
+      { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+      { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'When I’m drivin’ in my car...', rootNote: 'E', mode: 'Mixolydian' },
+      { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+      { type: 'outro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' }
+    ],
+    'songs/pneuma.js': [
+      { type: 'intro', measures: 6, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: '', rootNote: 'F#', mode: 'Dorian' },
+      { type: 'verse', measures: 8, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: 'We are spirit bound to this flesh...', rootNote: 'F#', mode: 'Dorian' },
+      { type: 'chorus', measures: 8, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: 'Pneuma, reach beyond...', rootNote: 'F#', mode: 'Dorian' },
+      { type: 'bridge', measures: 6, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: '', rootNote: 'F#', mode: 'Dorian' },
+      { type: 'outro', measures: 8, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: 'Wake and breathe...', rootNote: 'F#', mode: 'Dorian' }
+    ],
+    'songs/jambi.js': [
+      { type: 'intro', measures: 4, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: '', rootNote: 'D', mode: 'Phrygian' },
+      { type: 'verse', measures: 8, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: 'Woe to you, oh earth and sea...', rootNote: 'D', mode: 'Phrygian' },
+      { type: 'chorus', measures: 8, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: 'If I could wish it all away...', rootNote: 'D', mode: 'Phrygian' },
+      { type: 'solo', measures: 6, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: '', rootNote: 'D', mode: 'Phrygian' },
+      { type: 'outro', measures: 4, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: '', rootNote: 'D', mode: 'Phrygian' }
+    ],
+    'songs/dirtyLaundry.js': [
+      { type: 'intro', measures: 4, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'A', mode: 'Aeolian' },
+      { type: 'verse', measures: 8, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: 'Kickin’ down the doors...', rootNote: 'A', mode: 'Aeolian' },
+      { type: 'chorus', measures: 8, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: 'Dirty laundry...', rootNote: 'A', mode: 'Aeolian' },
+      { type: 'outro', measures: 4, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'A', mode: 'Aeolian' }
+    ],
+    'songs/invincible.js': [
+      { type: 'intro', measures: 8, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: '', rootNote: 'C', mode: 'Ionian' },
+      { type: 'verse', measures: 8, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: 'Keep your eyes on the horizon...', rootNote: 'C', mode: 'Ionian' },
+      { type: 'chorus', measures: 8, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: 'We are invincible...', rootNote: 'C', mode: 'Ionian' },
+      { type: 'outro', measures: 4, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: '', rootNote: 'C', mode: 'Ionian' }
+    ],
+    'songs/astroworld.js': [
+      { type: 'intro', measures: 4, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'G', mode: 'Aeolian' },
+      { type: 'verse', measures: 8, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'It’s lit, straight up...', rootNote: 'G', mode: 'Aeolian' },
+      { type: 'chorus', measures: 8, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'Astroworld, take me home...', rootNote: 'G', mode: 'Aeolian' },
+      { type: 'outro', measures: 4, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'G', mode: 'Aeolian' }
+    ],
+    'songs/astrothunder.js': [
+      { type: 'intro', measures: 4, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'F', mode: 'Dorian' },
+      { type: 'verse', measures: 8, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'Seems like the life I lead...', rootNote: 'F', mode: 'Dorian' },
+      { type: 'chorus', measures: 8, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'Astrothunder, feel the vibe...', rootNote: 'F', mode: 'Dorian' },
+      { type: 'outro', measures: 4, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'F', mode: 'Dorian' }
+    ]
+  };
+
+  const songKey = filename;
+  const songData = songs[songKey];
+
+  if (!songData) {
+    console.error(`Song ${songKey} not found in static songs object`);
+    return;
   }
+
+  timeline.innerHTML = '';
+  if (selectedBlock) clearSelection();
+
+  updateTitle(songKey === 'songs/satisfaction.js' ? '(I Can’t Get No) Satisfaction' : formatPart(songKey.replace('songs/', '').replace('.js', '')));
+
+  songData.forEach(blockData => {
+    const block = document.createElement('div');
+    block.classList.add('song-block', blockData.type);
+    block.setAttribute('data-measures', blockData.measures);
+    block.setAttribute('data-tempo', blockData.tempo);
+    block.setAttribute('data-time-signature', blockData.timeSignature);
+    block.setAttribute('data-feel', blockData.feel);
+    block.setAttribute('data-lyrics', blockData.lyrics || '');
+    block.setAttribute('data-root-note', blockData.rootNote);
+    block.setAttribute('data-mode', blockData.mode);
+    block.innerHTML = `
+      <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+      <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+    `;
+    updateBlockSize(block);
+    setupBlock(block);
+    timeline.appendChild(block);
+  });
+
+  calculateTimings();
+  songDropdown.value = filename;
 }
 
 function populateSongDropdown() {
   const availableSongs = [
-    'new-song', 'songs/Echoes of Joy.json', 'songs/pneuma.js', 'songs/satisfaction.js',
-    'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js', 'songs/jambi.js'
+    'new-song', 'songs/satisfaction.js', 'songs/pneuma.js', 'songs/jambi.js',
+    'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js'
   ];
   availableSongs.forEach(song => {
     const option = document.createElement('option');
     option.value = song;
-    option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.json', '').replace('.js', '');
+    option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
     songDropdown.appendChild(option);
   });
+}
+
+function randomizeSong() {
+  timeline.innerHTML = '';
+  if (selectedBlock) clearSelection();
+
+  const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Fading', 'Raging', 'Dreamy', 'Wild', 'Mystic'];
+  const titleNouns = ['Echo', 'Pulse', 'Wave', 'Night', 'Fire', 'Journey', 'Sky', 'Dream'];
+  const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
+  const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
+  const newTitle = `${randomAdj} ${randomNoun}`;
+  updateTitle(newTitle);
+
+  const partTypes = [
+    'intro', 'verse', 'chorus', 'bridge', 'outro', 'solo', 'breakdown', 'pre-chorus', 'post-chorus',
+    'refrain', 'hook', 'interlude', 'ad-lib', 'elision', 'coda', 'drop', 'modulation', 'tag'
+  ];
+  const rootNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const modes = ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
+  const feels = ['Happiness', 'Sadness', 'Tension', 'Euphoria', 'Calmness', 'Anger', 'Mystical'];
+  const possibleLyrics = [
+    'La la la, here we go again...', 'Feel the rhythm, let it flow...', 
+    'Shadows dancing in the moonlight...', 'Break free, let your spirit soar...', 
+    'Echoes of a forgotten dream...', ''
+  ];
+
+  const numBlocks = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
+
+  for (let i = 0; i < numBlocks; i++) {
+    const type = partTypes[Math.floor(Math.random() * partTypes.length)];
+    const measures = Math.floor(Math.random() * (16 - 1 + 1)) + 1;
+    const rootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
+    const mode = modes[Math.floor(Math.random() * modes.length)];
+    const tempo = Math.floor(Math.random() * (180 - 60 + 1)) + 60;
+    const timeSignature = validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)];
+    const feel = feels[Math.floor(Math.random() * feels.length)];
+    const lyrics = possibleLyrics[Math.floor(Math.random() * possibleLyrics.length)];
+
+    const blockData = { type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics };
+    const error = validateBlock(blockData);
+    if (error) {
+      console.error(`Generated block failed validation: ${error}`);
+      continue;
+    }
+
+    const block = document.createElement('div');
+    block.classList.add('song-block', type);
+    block.setAttribute('data-measures', measures);
+    block.setAttribute('data-tempo', tempo);
+    block.setAttribute('data-time-signature', timeSignature);
+    block.setAttribute('data-feel', feel);
+    block.setAttribute('data-lyrics', lyrics);
+    block.setAttribute('data-root-note', rootNote);
+    block.setAttribute('data-mode', mode);
+    block.innerHTML = `
+      <span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span>
+      <span class="tooltip">${lyrics || 'No lyrics'}</span>
+    `;
+    updateBlockSize(block);
+    setupBlock(block);
+    timeline.appendChild(block);
+  }
+
+  calculateTimings();
 }
 
 function printSong() {
   const { totalSeconds, totalBeats } = calculateTimings();
   const blockCount = timeline.children.length;
 
-  // Store original content to restore later
   const originalContent = currentBlockDisplay.innerHTML;
 
-  // Populate current-block-display with song info and copyright
   currentBlockDisplay.innerHTML = `
     <span class="label">
       Total Duration: ${formatDuration(totalSeconds)} | Beats: ${totalBeats} | Blocks: ${blockCount}<br>
@@ -896,9 +886,11 @@ function printSong() {
 
   window.print();
 
-  // Restore original content after printing
   currentBlockDisplay.innerHTML = originalContent;
 }
 
+// Initial setup
 populateSongDropdown();
+songTitleInput.value = currentSongName;
+updateTitle(currentSongName);
 loadSongFromDropdown('songs/satisfaction.js');
