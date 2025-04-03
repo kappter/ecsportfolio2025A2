@@ -453,6 +453,33 @@ footer {
     letter-spacing: 0.5px;
   }
 
+  /* Hide the form container entirely */
+  .form-container {
+    display: none;
+  }
+
+  /* Repurpose current-block-display for song info */
+  #current-block-display {
+    display: block; /* Ensure it’s visible */
+    text-align: center;
+    padding: 8px; /* Slightly reduced from 12px */
+    background: #fff;
+    border: 1px solid #999; /* Match block borders */
+    border-radius: 0;
+    margin: 0 auto 10px; /* Reduced from 20px */
+    max-width: 100%; /* Full width */
+    box-shadow: none;
+    font-size: 9pt; /* Match block text size */
+  }
+
+  #current-block-display .label {
+    display: block;
+    font-weight: normal; /* Less bold for info */
+    font-size: 9pt;
+    line-height: 1.2;
+    margin: 0;
+  }
+
   .timeline {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -471,7 +498,7 @@ footer {
     padding: 8px;
     box-sizing: border-box;
     border: 1px solid #999;
-    color: #000; /* Black text for all blocks */
+    color: #000;
     box-shadow: none;
     position: relative;
     overflow: hidden;
@@ -481,35 +508,33 @@ footer {
     justify-content: center;
   }
 
-  /* Lightened fill colors for each block type */
-  .song-block.intro { background: #e6f0e6; } /* Pale green */
-  .song-block.verse { background: #e6ebf0; } /* Pale blue */
-  .song-block.refrain { background: #f0e6eb; } /* Pale pink */
-  .song-block.pre-chorus { background: #e6f0e0; } /* Pale lime */
-  .song-block.chorus { background: #f0ebe6; } /* Pale peach */
-  .song-block.post-chorus { background: #e6f0ea; } /* Pale teal */
-  .song-block.bridge { background: #ebe6f0; } /* Pale purple */
-  .song-block.outro { background: #f0f0e6; } /* Pale yellow */
-  .song-block.elision { background: #e6e6e6; } /* Pale gray */
-  .song-block.solo { background: #f0e6f0; } /* Pale magenta */
-  .song-block.ad-lib { background: #e6f0f0; } /* Pale cyan */
-  .song-block.hook { background: #f0e6e6; } /* Pale red */
-  .song-block.interlude { background: #e6f0e2; } /* Pale mint */
-  .song-block.breakdown { background: #e6e6f0; } /* Pale indigo */
-  .song-block.drop { background: #f0e6e4; } /* Pale coral */
-  .song-block.coda { background: #e6f0e8; } /* Pale aqua */
-  .song-block.modulation { background: #f0f0e8; } /* Pale gold */
-  .song-block.tag { background: #e6e6ea; } /* Pale slate */
-  .song-block.chorus-reprise { background: #e6f0ee; } /* Pale turquoise */
-  .song-block.countermelody { background: #f0e6ee; } /* Pale violet */
-  .song-block.instrumental-verse-chorus { background: #e6f0e6; } /* Pale green (reused) */
-  .song-block.false-ending { background: #f0e6ea; } /* Pale rose */
-
-  /* Override style variations to ensure lightened colors */
-  .song-block.default { background: #f0f0f0; } /* Very pale gray */
-  .song-block.vibrant { background: #fff0f0; } /* Very pale red-orange */
-  .song-block.pastel { background: #f0f5f0; } /* Very pale green-blue */
-  .song-block.monochrome { background: #f5f5f5; } /* Very pale gray */
+  /* Lightened fill colors (unchanged) */
+  .song-block.intro { background: #e6f0e6; }
+  .song-block.verse { background: #e6ebf0; }
+  .song-block.refrain { background: #f0e6eb; }
+  .song-block.pre-chorus { background: #e6f0e0; }
+  .song-block.chorus { background: #f0ebe6; }
+  .song-block.post-chorus { background: #e6f0ea; }
+  .song-block.bridge { background: #ebe6f0; }
+  .song-block.outro { background: #f0f0e6; }
+  .song-block.elision { background: #e6e6e6; }
+  .song-block.solo { background: #f0e6f0; }
+  .song-block.ad-lib { background: #e6f0f0; }
+  .song-block.hook { background: #f0e6e6; }
+  .song-block.interlude { background: #e6f0e2; }
+  .song-block.breakdown { background: #e6e6f0; }
+  .song-block.drop { background: #f0e6e4; }
+  .song-block.coda { background: #e6f0e8; }
+  .song-block.modulation { background: #f0f0e8; }
+  .song-block.tag { background: #e6e6ea; }
+  .song-block.chorus-reprise { background: #e6f0ee; }
+  .song-block.countermelody { background: #f0e6ee; }
+  .song-block.instrumental-verse-chorus { background: #e6f0e6; }
+  .song-block.false-ending { background: #f0e6ea; }
+  .song-block.default { background: #f0f0f0; }
+  .song-block.vibrant { background: #fff0f0; }
+  .song-block.pastel { background: #f0f5f0; }
+  .song-block.monochrome { background: #f5f5f5; }
 
   .song-block .label {
     font-size: 9pt;
@@ -521,7 +546,7 @@ footer {
     text-overflow: ellipsis;
     max-width: 100%;
     box-sizing: border-box;
-    color: #000; /* Ensure black text */
+    color: #000;
   }
 
   .song-block .label br {
@@ -538,20 +563,9 @@ footer {
     display: none;
   }
 
+  /* Hide info-box since we’re using current-block-display */
   .info-box {
-    display: block;
-    position: static;
-    margin: 10px auto 0;
-    padding: 8px;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 0;
-    font-size: 9pt;
-    text-align: center;
-    color: #000;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
+    display: none;
   }
 
   nav,
@@ -564,16 +578,11 @@ footer {
   @page {
     margin: 0.25in;
     @top-center {
-      content: counter(page) " of " counter(pages);
+      content: counter(page) " of " counter(pages); /* Page numbers only */
       font-size: 8pt;
       color: #555;
     }
-    @bottom-center {
-      content: "© 2025 SongMaker by kappter. All rights reserved.";
-      font-size: 8pt;
-      font-style: italic;
-      color: #555;
-    }
+    /* Remove bottom-center since copyright moves to current-block-display */
   }
 
   .timeline::before {
