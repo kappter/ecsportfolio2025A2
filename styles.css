@@ -425,19 +425,10 @@ main {
   100% { transform: scale(1); }
 }
 
-/* Footer */
 footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 10px;
-  background: var(--footer-bg);
-  border-top: 1px solid var(--border-color);
+  display: block;
   text-align: center;
-  z-index: 1000;
-  font-size: 0.9em;
-  color: #bbb;
+  padding: 10px;
 }
 
 @media print {
