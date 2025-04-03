@@ -1,850 +1,864 @@
-const timeline = document.getElementById('timeline');
-const timeCalculator = document.getElementById('time-calculator');
-const currentBlockDisplay = document.getElementById('current-block-display');
-const playBtn = document.getElementById('play-btn');
-const soundBtn = document.getElementById('sound-btn');
-const themeBtn = document.getElementById('theme-btn');
-const songDropdown = document.getElementById('song-dropdown');
-const toggleFormBtn = document.getElementById('toggle-form-btn');
-const formContent = document.getElementById('form-content');
-const printSongName = document.getElementById('print-song-name');
-const songTitleInput = document.getElementById('song-title-input');
-let draggedBlock = null;
-let selectedBlock = null;
-let currentSongName = '(I Can’t Get No) Satisfaction';
-let isPlaying = false;
-let currentTime = 0;
-let currentBeat = 0;
-let blockBeat = 0;
-let blockMeasure = 0;
-let soundEnabled = true;
-let isDarkMode = true;
-let isFormCollapsed = true;
-let activeTimeManager = null;
-let scheduledSources = [];
-let audioContext = new AudioContext();
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM fully loaded');
 
-const validTimeSignatures = [
-  '4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4', '6/4'
-];
+  const timeline = document.getElementById('timeline');
+  const timeCalculator = document.getElementById('time-calculator');
+  const currentBlockDisplay = document.getElementById('current-block-display');
+  const playBtn = document.getElementById('play-btn');
+  const soundBtn = document.getElementById('sound-btn');
+  const themeBtn = document.getElementById('theme-btn');
+  const songDropdown = document.getElementById('song-dropdown');
+  const toggleFormBtn = document.getElementById('toggle-form-btn');
+  const formContent = document.getElementById('form-content');
+  const printSongName = document.getElementById('print-song-name');
+  const songTitleInput = document.querySelector('#form-content #song-title-input'); // Use the one in form-content
+  let draggedBlock = null;
+  let selectedBlock = null;
+  let currentSongName = '(I Can’t Get No) Satisfaction';
+  let isPlaying = false;
+  let currentTime = 0;
+  let currentBeat = 0;
+  let blockBeat = 0;
+  let blockMeasure = 0;
+  let soundEnabled = true;
+  let isDarkMode = true;
+  let isFormCollapsed = true;
+  let activeTimeManager = null;
+  let scheduledSources = [];
+  let audioContext = new AudioContext();
 
-let tickBuffer = null;
-let tockBuffer = null;
-let tickShortBuffer = null;
-let tockShortBuffer = null;
+  console.log('Elements:', { timeline, songDropdown, songTitleInput });
 
-function loadAudioBuffers() {
-  return Promise.all([
-    fetch('tick.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tickBuffer = decoded),
-    fetch('tock.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tockBuffer = decoded),
-    fetch('tick_short.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tickShortBuffer = decoded),
-    fetch('tock_short.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tockShortBuffer = decoded)
-  ]).catch(error => console.error('Failed to load audio files:', error));
-}
+  const validTimeSignatures = [
+    '4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4', '6/4'
+  ];
 
-const audioBufferPromise = loadAudioBuffers();
+  let tickBuffer = null;
+  let tockBuffer = null;
+  let tickShortBuffer = null;
+  let tockShortBuffer = null;
 
-function playSound(buffer, time) {
-  if (!buffer || !soundEnabled) return null;
-  const source = audioContext.createBufferSource();
-  source.buffer = buffer;
-  source.connect(audioContext.destination);
-  source.start(time);
-  return source;
-}
-
-const TEMPO_THRESHOLD = 150;
-
-class TimeManager {
-  constructor(tempo, beatsPerMeasure, totalBeats, callback) {
-    this.tempo = tempo;
-    this.beatsPerMeasure = beatsPerMeasure;
-    this.totalBeats = totalBeats;
-    this.callback = callback;
-    this.startTime = null;
-    this.lastBeat = -1;
-    this.beatDuration = 60 / tempo;
-    this.running = false;
+  function loadAudioBuffers() {
+    return Promise.all([
+      fetch('tick.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tickBuffer = decoded),
+      fetch('tock.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tockBuffer = decoded),
+      fetch('tick_short.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tickShortBuffer = decoded),
+      fetch('tock_short.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tockShortBuffer = decoded)
+    ]).catch(error => console.error('Failed to load audio files:', error));
   }
 
-  start() {
-    this.running = true;
-    this.startTime = performance.now() / 1000 - (this.lastBeat + 1) * this.beatDuration;
-    requestAnimationFrame(this.tick.bind(this));
+  const audioBufferPromise = loadAudioBuffers();
+
+  function playSound(buffer, time) {
+    if (!buffer || !soundEnabled) return null;
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioContext.destination);
+    source.start(time);
+    return source;
   }
 
-  stop() {
-    this.running = false;
-  }
+  const TEMPO_THRESHOLD = 150;
 
-  tick(timestamp) {
-    if (!this.running) return;
-    const currentTime = timestamp / 1000;
-    const elapsed = currentTime - this.startTime;
-    const currentBeat = Math.floor(elapsed / this.beatDuration);
-
-    if (currentBeat <= this.totalBeats && currentBeat !== this.lastBeat) {
-      this.lastBeat = currentBeat;
-      const isFirstBeatOfMeasure = currentBeat % this.beatsPerMeasure === 0;
-      this.callback({
-        elapsedTime: elapsed,
-        beat: currentBeat,
-        measure: Math.floor(currentBeat / this.beatsPerMeasure) + 1,
-        isFirstBeat: isFirstBeatOfMeasure
-      });
+  class TimeManager {
+    constructor(tempo, beatsPerMeasure, totalBeats, callback) {
+      this.tempo = tempo;
+      this.beatsPerMeasure = beatsPerMeasure;
+      this.totalBeats = totalBeats;
+      this.callback = callback;
+      this.startTime = null;
+      this.lastBeat = -1;
+      this.beatDuration = 60 / tempo;
+      this.running = false;
     }
 
-    if (currentBeat < this.totalBeats) {
+    start() {
+      this.running = true;
+      this.startTime = performance.now() / 1000 - (this.lastBeat + 1) * this.beatDuration;
       requestAnimationFrame(this.tick.bind(this));
-    } else {
-      this.stop();
     }
-  }
-}
 
-function toggleSound() {
-  soundEnabled = !soundEnabled;
-  soundBtn.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
-}
-
-function toggleTheme() {
-  isDarkMode = !isDarkMode;
-  document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
-  themeBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
-}
-
-function toggleForm() {
-  isFormCollapsed = !isFormCollapsed;
-  formContent.classList.toggle('collapsed');
-  toggleFormBtn.textContent = isFormCollapsed ? 'Show Parameters' : 'Hide Parameters';
-}
-
-function changeBlockStyle(style) {
-  const blocks = document.querySelectorAll('.song-block');
-  blocks.forEach(block => {
-    block.classList.remove('default', 'vibrant', 'pastel', 'monochrome');
-    if (style) block.classList.add(style);
-  });
-}
-
-songTitleInput.addEventListener('input', (e) => {
-  updateTitle(e.target.value || 'Untitled');
-});
-
-function updateTitle(title) {
-  currentSongName = title;
-  document.getElementById('song-name').textContent = title;
-  document.getElementById('print-song-name').textContent = title;
-  songTitleInput.value = title;
-}
-
-function formatPart(part) {
-  return part.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-}
-
-function abbreviateKey(rootNote) {
-  return rootNote;
-}
-
-function truncateLyrics(lyrics) {
-  const maxLength = 50;
-  return lyrics.length > maxLength ? lyrics.substring(0, maxLength - 3) + '...' : lyrics;
-}
-
-function validateBlock(block) {
-  if (!block.type) return 'Type is required';
-  if (!block.measures || block.measures < 1) return 'Measures must be at least 1';
-  if (!block.rootNote) return 'Root note is required';
-  if (!block.mode) return 'Mode is required';
-  if (!block.tempo || block.tempo < 1) return 'Tempo must be at least 1';
-  if (!block.timeSignature || !validTimeSignatures.includes(block.timeSignature)) return 'Invalid time signature';
-  return null;
-}
-
-function updateBlockSize(block) {
-  if (!block.style.width) {
-    const measures = parseInt(block.getAttribute('data-measures'));
-    const baseWidth = 120;
-    const minWidth = 120;
-    const width = Math.max(minWidth, (measures / 4) * baseWidth);
-    block.style.width = `${width}px`;
-  }
-}
-
-function setupBlock(block) {
-  console.log('Setting up block:', block);
-  block.draggable = true;
-
-  block.addEventListener('dragstart', (e) => {
-    if (e.target.classList.contains('resize-handle')) {
-      e.preventDefault();
-      return;
+    stop() {
+      this.running = false;
     }
-    draggedBlock = block;
-    e.dataTransfer.setData('text/plain', '');
-    block.style.opacity = '0.5';
-  });
 
-  block.addEventListener('dragend', () => {
-    draggedBlock.style.opacity = '1';
-    draggedBlock = null;
-  });
+    tick(timestamp) {
+      if (!this.running) return;
+      const currentTime = timestamp / 1000;
+      const elapsed = currentTime - this.startTime;
+      const currentBeat = Math.floor(elapsed / this.beatDuration);
 
-  block.addEventListener('dragover', (e) => e.preventDefault());
-  block.addEventListener('drop', (e) => {
-    e.preventDefault();
-    if (draggedBlock && draggedBlock !== block) {
-      const allBlocks = Array.from(timeline.children);
-      const draggedIndex = allBlocks.indexOf(draggedBlock);
-      const droppedIndex = allBlocks.indexOf(block);
-
-      if (draggedIndex < droppedIndex) {
-        timeline.insertBefore(draggedBlock, block.nextSibling);
-      } else {
-        timeline.insertBefore(draggedBlock, block);
+      if (currentBeat <= this.totalBeats && currentBeat !== this.lastBeat) {
+        this.lastBeat = currentBeat;
+        const isFirstBeatOfMeasure = currentBeat % this.beatsPerMeasure === 0;
+        this.callback({
+          elapsedTime: elapsed,
+          beat: currentBeat,
+          measure: Math.floor(currentBeat / this.beatsPerMeasure) + 1,
+          isFirstBeat: isFirstBeatOfMeasure
+        });
       }
-      calculateTimings();
+
+      if (currentBeat < this.totalBeats) {
+        requestAnimationFrame(this.tick.bind(this));
+      } else {
+        this.stop();
+      }
     }
-  });
-
-  block.addEventListener('click', (e) => {
-    if (e.target.classList.contains('delete-btn') || e.target.classList.contains('resize-handle')) return;
-    if (selectedBlock) selectedBlock.classList.remove('selected');
-    selectedBlock = block;
-    block.classList.add('selected');
-
-    document.getElementById('part-type').value = block.classList[1];
-    document.getElementById('measures').value = block.getAttribute('data-measures');
-    document.getElementById('root-note').value = block.getAttribute('data-root-note') || 'C';
-    document.getElementById('mode').value = block.getAttribute('data-mode') || 'Ionian';
-    document.getElementById('tempo').value = block.getAttribute('data-tempo');
-    document.getElementById('time-signature').value = block.getAttribute('data-time-signature');
-    document.getElementById('feel').value = block.getAttribute('data-feel') || '';
-    document.getElementById('lyrics').value = block.getAttribute('data-lyrics') || '';
-  });
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.classList.add('delete-btn');
-  deleteBtn.textContent = 'X';
-  deleteBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    block.remove();
-    if (selectedBlock === block) clearSelection();
-    calculateTimings();
-  });
-  block.appendChild(deleteBtn);
-
-  const resizeHandle = document.createElement('div');
-  resizeHandle.classList.add('resize-handle');
-  block.appendChild(resizeHandle);
-
-  let startX, startWidth;
-  resizeHandle.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    startX = e.pageX;
-    startWidth = block.offsetWidth;
-    document.addEventListener('mousemove', resize);
-    document.addEventListener('mouseup', stopResize);
-  });
-
-  function resize(e) {
-    const snapWidth = 30;
-    const newWidth = Math.min(480, Math.max(120, Math.round((startWidth + (e.pageX - startX)) / snapWidth) * snapWidth));
-    block.style.width = `${newWidth}px`;
-    const measures = Math.round((newWidth / 120) * 4);
-    block.setAttribute('data-measures', measures);
-    const type = block.classList[1];
-    const tempo = block.getAttribute('data-tempo');
-    const timeSignature = block.getAttribute('data-time-signature');
-    const feel = block.getAttribute('data-feel');
-    const lyrics = block.getAttribute('data-lyrics');
-    const rootNote = block.getAttribute('data-root-note');
-    const mode = block.getAttribute('data-mode');
-    block.querySelector('.label').innerHTML = `${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
   }
 
-  function stopResize() {
-    document.removeEventListener('mousemove', resize);
-    document.removeEventListener('mouseup', stopResize);
-    calculateTimings();
-  }
-}
-
-function addBlock() {
-  const type = document.getElementById('part-type').value;
-  const measures = parseInt(document.getElementById('measures').value);
-  const rootNote = document.getElementById('root-note').value;
-  const mode = document.getElementById('mode').value;
-  const tempo = parseInt(document.getElementById('tempo').value);
-  const timeSignature = document.getElementById('time-signature').value;
-  const feel = document.getElementById('feel').value;
-  const lyrics = document.getElementById('lyrics').value;
-
-  const blockData = { type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics };
-  const error = validateBlock(blockData);
-  if (error) {
-    alert(`Error: ${error}`);
-    return;
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    soundBtn.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
   }
 
-  const block = document.createElement('div');
-  block.classList.add('song-block', type);
-  block.setAttribute('data-measures', measures);
-  block.setAttribute('data-tempo', tempo);
-  block.setAttribute('data-time-signature', timeSignature);
-  block.setAttribute('data-feel', feel);
-  block.setAttribute('data-lyrics', lyrics);
-  block.setAttribute('data-root-note', rootNote);
-  block.setAttribute('data-mode', mode);
-  block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
-  updateBlockSize(block);
-  setupBlock(block);
-  timeline.appendChild(block);
-
-  const styleDropdown = document.getElementById('style-dropdown');
-  if (styleDropdown.value) block.classList.add(styleDropdown.value);
-
-  calculateTimings();
-}
-
-function updateBlock() {
-  if (!selectedBlock) {
-    alert('Please select a block to update');
-    return;
+  function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    themeBtn.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
   }
 
-  const type = document.getElementById('part-type').value;
-  const measures = parseInt(document.getElementById('measures').value);
-  const rootNote = document.getElementById('root-note').value;
-  const mode = document.getElementById('mode').value;
-  const tempo = parseInt(document.getElementById('tempo').value);
-  const timeSignature = document.getElementById('time-signature').value;
-  const feel = document.getElementById('feel').value;
-  const lyrics = document.getElementById('lyrics').value;
-
-  const blockData = { type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics };
-  const error = validateBlock(blockData);
-  if (error) {
-    alert(`Error: ${error}`);
-    return;
+  function toggleForm() {
+    isFormCollapsed = !isFormCollapsed;
+    formContent.classList.toggle('collapsed');
+    toggleFormBtn.textContent = isFormCollapsed ? 'Show Parameters' : 'Hide Parameters';
   }
 
-  selectedBlock.className = `song-block ${type}`;
-  selectedBlock.setAttribute('data-measures', measures);
-  selectedBlock.setAttribute('data-tempo', tempo);
-  selectedBlock.setAttribute('data-time-signature', timeSignature);
-  selectedBlock.setAttribute('data-feel', feel);
-  selectedBlock.setAttribute('data-lyrics', lyrics);
-  selectedBlock.setAttribute('data-root-note', rootNote);
-  selectedBlock.setAttribute('data-mode', mode);
-  selectedBlock.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
-  updateBlockSize(selectedBlock);
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.classList.add('delete-btn');
-  deleteBtn.textContent = 'X';
-  deleteBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    selectedBlock.remove();
-    if (selectedBlock === selectedBlock) clearSelection();
-    calculateTimings();
-  });
-  selectedBlock.appendChild(deleteBtn);
-
-  const resizeHandle = document.createElement('div');
-  resizeHandle.classList.add('resize-handle');
-  selectedBlock.appendChild(resizeHandle);
-
-  const styleDropdown = document.getElementById('style-dropdown');
-  if (styleDropdown.value) selectedBlock.classList.add(styleDropdown.value);
-
-  calculateTimings();
-}
-
-function clearSelection() {
-  if (selectedBlock) {
-    selectedBlock.classList.remove('selected');
-    selectedBlock = null;
-  }
-  document.getElementById('part-type').value = 'intro';
-  document.getElementById('measures').value = 4;
-  document.getElementById('root-note').value = 'C';
-  document.getElementById('mode').value = 'Ionian';
-  document.getElementById('tempo').value = 120;
-  document.getElementById('time-signature').value = '4/4';
-  document.getElementById('feel').value = 'Happiness';
-  document.getElementById('lyrics').value = '';
-}
-
-function getBeatsPerMeasure(timeSignature) {
-  const [numerator, denominator] = timeSignature.split('/').map(Number);
-  if (timeSignature === '6/4') return 6;
-  return numerator;
-}
-
-function calculateTimings() {
-  const blocks = Array.from(timeline.children);
-  let totalSeconds = 0;
-  let totalBeats = 0;
-  let totalMeasures = 0;
-  const timings = blocks.map((block, index) => {
-    const tempo = parseInt(block.getAttribute('data-tempo'));
-    const measures = parseInt(block.getAttribute('data-measures'));
-    const timeSignature = block.getAttribute('data-time-signature');
-    const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
-    const beatDuration = 60 / tempo;
-    const totalBlockBeats = measures * beatsPerMeasure;
-    const duration = totalBlockBeats * beatDuration;
-
-    totalSeconds += duration;
-    totalBeats += totalBlockBeats;
-    totalMeasures += measures;
-
-    return {
-      block,
-      blockIndex: index,
-      tempo,
-      beatsPerMeasure,
-      totalBeats: totalBlockBeats,
-      totalMeasures: measures,
-      duration
-    };
-  });
-
-  timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${timings.length} (Measure: ${blockMeasure} of ${totalMeasures})`;
-  return { timings, totalSeconds, totalBeats };
-}
-
-function formatDuration(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-}
-
-function togglePlay() {
-  if (isPlaying) {
-    isPlaying = false;
-    playBtn.textContent = 'Play';
-    resetPlayback();
-  } else {
-    const { timings, totalSeconds, totalBeats } = calculateTimings();
-    if (timings.length === 0) return;
-    playBtn.textContent = 'Reset';
-    isPlaying = true;
-    currentTime = 0;
-    currentBeat = 0;
-    blockBeat = 0;
-    blockMeasure = 0;
-    audioContext.resume().then(() => {
-      audioBufferPromise.then(() => playLeadIn(timings, totalSeconds, totalBeats));
+  function changeBlockStyle(style) {
+    const blocks = document.querySelectorAll('.song-block');
+    blocks.forEach(block => {
+      block.classList.remove('default', 'vibrant', 'pastel', 'monochrome');
+      if (style) block.classList.add(style);
     });
   }
-}
 
-function playLeadIn(timings, totalSeconds, totalBeats) {
-  const firstBlock = timings[0];
-  const beatDuration = 60 / firstBlock.tempo;
-  const leadInBeats = firstBlock.beatsPerMeasure;
-
-  const useShortSounds = firstBlock.tempo > TEMPO_THRESHOLD;
-  const currentTickBuffer = useShortSounds ? tickShortBuffer : tickBuffer;
-  const currentTockBuffer = useShortSounds ? tockShortBuffer : tockBuffer;
-
-  currentBlockDisplay.classList.add('pulse');
-  currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
-  currentBlockDisplay.innerHTML = `
-    <span class="label">Lead-In (${firstBlock.block.getAttribute('data-time-signature')})</span>
-    <span class="info">Beat: 0 of ${leadInBeats}</span>
-  `;
-
-  const startTime = audioContext.currentTime;
-  for (let beat = 0; beat < leadInBeats; beat++) {
-    const soundTime = startTime + (beat * beatDuration);
-    const isFirstBeat = beat === 0;
-    const source = playSound(isFirstBeat ? currentTickBuffer : currentTockBuffer, soundTime);
-    if (source) scheduledSources.push(source);
-  }
-
-  activeTimeManager = new TimeManager(firstBlock.tempo, leadInBeats, leadInBeats - 1, ({ elapsedTime, beat, isFirstBeat }) => {
-    currentBlockDisplay.innerHTML = `
-      <span class="label">Lead-In (${firstBlock.block.getAttribute('data-time-signature')})</span>
-      <span class="info">Beat: ${beat + 1} of ${leadInBeats}</span>
-    `;
-    currentTime = elapsedTime;
-    timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${timings.length} (Measure: ${blockMeasure} of 0)`;
-
-    if (isFirstBeat) {
-      currentBlockDisplay.classList.add('one-count');
-    } else {
-      currentBlockDisplay.classList.remove('one-count');
-    }
+  songTitleInput.addEventListener('input', (e) => {
+    updateTitle(e.target.value || 'Untitled');
   });
 
-  activeTimeManager.start();
+  function updateTitle(title) {
+    currentSongName = title;
+    printSongName.textContent = title; // Only update print-song-name since song-name doesn’t exist
+    songTitleInput.value = title;
+  }
 
-  setTimeout(() => {
-    if (activeTimeManager) activeTimeManager.stop();
-    activeTimeManager = null;
-    currentTime = 0;
-    playSong(timings, totalSeconds, totalBeats);
-  }, leadInBeats * beatDuration * 1000);
-}
+  function formatPart(part) {
+    return part.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  }
 
-function playSong(timings, totalSeconds, totalBeats) {
-  let currentIndex = 0;
-  let blockStartTime = audioContext.currentTime;
-  let cumulativeBeats = 0;
+  function abbreviateKey(rootNote) {
+    return rootNote;
+  }
 
-  function playNextBlock() {
-    if (!isPlaying || currentIndex >= timings.length) {
-      resetPlayback();
+  function truncateLyrics(lyrics) {
+    const maxLength = 50;
+    return lyrics.length > maxLength ? lyrics.substring(0, maxLength - 3) + '...' : lyrics;
+  }
+
+  function validateBlock(block) {
+    if (!block.type) return 'Type is required';
+    if (!block.measures || block.measures < 1) return 'Measures must be at least 1';
+    if (!block.rootNote) return 'Root note is required';
+    if (!block.mode) return 'Mode is required';
+    if (!block.tempo || block.tempo < 1) return 'Tempo must be at least 1';
+    if (!block.timeSignature || !validTimeSignatures.includes(block.timeSignature)) return 'Invalid time signature';
+    return null;
+  }
+
+  function updateBlockSize(block) {
+    if (!block.style.width) {
+      const measures = parseInt(block.getAttribute('data-measures'));
+      const baseWidth = 120;
+      const minWidth = 120;
+      const width = Math.max(minWidth, (measures / 4) * baseWidth);
+      block.style.width = `${width}px`;
+    }
+  }
+
+  function setupBlock(block) {
+    console.log('Setting up block:', block.outerHTML);
+    block.draggable = true;
+
+    block.addEventListener('dragstart', (e) => {
+      if (e.target.classList.contains('resize-handle')) {
+        e.preventDefault();
+        return;
+      }
+      draggedBlock = block;
+      e.dataTransfer.setData('text/plain', '');
+      block.style.opacity = '0.5';
+    });
+
+    block.addEventListener('dragend', () => {
+      draggedBlock.style.opacity = '1';
+      draggedBlock = null;
+    });
+
+    block.addEventListener('dragover', (e) => e.preventDefault());
+    block.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (draggedBlock && draggedBlock !== block) {
+        const allBlocks = Array.from(timeline.children);
+        const draggedIndex = allBlocks.indexOf(draggedBlock);
+        const droppedIndex = allBlocks.indexOf(block);
+
+        if (draggedIndex < droppedIndex) {
+          timeline.insertBefore(draggedBlock, block.nextSibling);
+        } else {
+          timeline.insertBefore(draggedBlock, block);
+        }
+        calculateTimings();
+      }
+    });
+
+    block.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete-btn') || e.target.classList.contains('resize-handle')) return;
+      if (selectedBlock) selectedBlock.classList.remove('selected');
+      selectedBlock = block;
+      block.classList.add('selected');
+
+      document.getElementById('part-type').value = block.classList[1];
+      document.getElementById('measures').value = block.getAttribute('data-measures');
+      document.getElementById('root-note').value = block.getAttribute('data-root-note') || 'C';
+      document.getElementById('mode').value = block.getAttribute('data-mode') || 'Ionian';
+      document.getElementById('tempo').value = block.getAttribute('data-tempo');
+      document.getElementById('time-signature').value = block.getAttribute('data-time-signature');
+      document.getElementById('feel').value = block.getAttribute('data-feel') || '';
+      document.getElementById('lyrics').value = block.getAttribute('data-lyrics') || '';
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.classList.add('delete-btn');
+    deleteBtn.textContent = 'X';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      block.remove();
+      if (selectedBlock === block) clearSelection();
+      calculateTimings();
+    });
+    block.appendChild(deleteBtn);
+
+    const resizeHandle = document.createElement('div');
+    resizeHandle.classList.add('resize-handle');
+    block.appendChild(resizeHandle);
+
+    let startX, startWidth;
+    resizeHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      startX = e.pageX;
+      startWidth = block.offsetWidth;
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', stopResize);
+    });
+
+    function resize(e) {
+      const snapWidth = 30;
+      const newWidth = Math.min(480, Math.max(120, Math.round((startWidth + (e.pageX - startX)) / snapWidth) * snapWidth));
+      block.style.width = `${newWidth}px`;
+      const measures = Math.round((newWidth / 120) * 4);
+      block.setAttribute('data-measures', measures);
+      const type = block.classList[1];
+      const tempo = block.getAttribute('data-tempo');
+      const timeSignature = block.getAttribute('data-time-signature');
+      const feel = block.getAttribute('data-feel');
+      const lyrics = block.getAttribute('data-lyrics');
+      const rootNote = block.getAttribute('data-root-note');
+      const mode = block.getAttribute('data-mode');
+      block.querySelector('.label').innerHTML = `${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+    }
+
+    function stopResize() {
+      document.removeEventListener('mousemove', resize);
+      document.removeEventListener('mouseup', stopResize);
+      calculateTimings();
+    }
+  }
+
+  function addBlock() {
+    const type = document.getElementById('part-type').value;
+    const measures = parseInt(document.getElementById('measures').value);
+    const rootNote = document.getElementById('root-note').value;
+    const mode = document.getElementById('mode').value;
+    const tempo = parseInt(document.getElementById('tempo').value);
+    const timeSignature = document.getElementById('time-signature').value;
+    const feel = document.getElementById('feel').value;
+    const lyrics = document.getElementById('lyrics').value;
+
+    const blockData = { type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics };
+    const error = validateBlock(blockData);
+    if (error) {
+      alert(`Error: ${error}`);
       return;
     }
 
-    const currentTiming = timings[currentIndex];
-    const beatDuration = 60 / currentTiming.tempo;
-    const totalBlockBeats = currentTiming.totalBeats;
+    const block = document.createElement('div');
+    block.classList.add('song-block', type);
+    block.setAttribute('data-measures', measures);
+    block.setAttribute('data-tempo', tempo);
+    block.setAttribute('data-time-signature', timeSignature);
+    block.setAttribute('data-feel', feel);
+    block.setAttribute('data-lyrics', lyrics);
+    block.setAttribute('data-root-note', rootNote);
+    block.setAttribute('data-mode', mode);
+    block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+    updateBlockSize(block);
+    setupBlock(block);
+    timeline.appendChild(block);
 
-    const useShortSounds = currentTiming.tempo > TEMPO_THRESHOLD;
+    const styleDropdown = document.getElementById('style-dropdown');
+    if (styleDropdown.value) block.classList.add(styleDropdown.value);
+
+    calculateTimings();
+  }
+
+  function updateBlock() {
+    if (!selectedBlock) {
+      alert('Please select a block to update');
+      return;
+    }
+
+    const type = document.getElementById('part-type').value;
+    const measures = parseInt(document.getElementById('measures').value);
+    const rootNote = document.getElementById('root-note').value;
+    const mode = document.getElementById('mode').value;
+    const tempo = parseInt(document.getElementById('tempo').value);
+    const timeSignature = document.getElementById('time-signature').value;
+    const feel = document.getElementById('feel').value;
+    const lyrics = document.getElementById('lyrics').value;
+
+    const blockData = { type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics };
+    const error = validateBlock(blockData);
+    if (error) {
+      alert(`Error: ${error}`);
+      return;
+    }
+
+    selectedBlock.className = `song-block ${type}`;
+    selectedBlock.setAttribute('data-measures', measures);
+    selectedBlock.setAttribute('data-tempo', tempo);
+    selectedBlock.setAttribute('data-time-signature', timeSignature);
+    selectedBlock.setAttribute('data-feel', feel);
+    selectedBlock.setAttribute('data-lyrics', lyrics);
+    selectedBlock.setAttribute('data-root-note', rootNote);
+    selectedBlock.setAttribute('data-mode', mode);
+    selectedBlock.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+    updateBlockSize(selectedBlock);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.classList.add('delete-btn');
+    deleteBtn.textContent = 'X';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedBlock.remove();
+      if (selectedBlock === selectedBlock) clearSelection();
+      calculateTimings();
+    });
+    selectedBlock.appendChild(deleteBtn);
+
+    const resizeHandle = document.createElement('div');
+    resizeHandle.classList.add('resize-handle');
+    selectedBlock.appendChild(resizeHandle);
+
+    const styleDropdown = document.getElementById('style-dropdown');
+    if (styleDropdown.value) selectedBlock.classList.add(styleDropdown.value);
+
+    calculateTimings();
+  }
+
+  function clearSelection() {
+    if (selectedBlock) {
+      selectedBlock.classList.remove('selected');
+      selectedBlock = null;
+    }
+    document.getElementById('part-type').value = 'intro';
+    document.getElementById('measures').value = 4;
+    document.getElementById('root-note').value = 'C';
+    document.getElementById('mode').value = 'Ionian';
+    document.getElementById('tempo').value = 120;
+    document.getElementById('time-signature').value = '4/4';
+    document.getElementById('feel').value = 'Happiness';
+    document.getElementById('lyrics').value = '';
+  }
+
+  function getBeatsPerMeasure(timeSignature) {
+    const [numerator, denominator] = timeSignature.split('/').map(Number);
+    if (timeSignature === '6/4') return 6;
+    return numerator;
+  }
+
+  function calculateTimings() {
+    const blocks = Array.from(timeline.children);
+    let totalSeconds = 0;
+    let totalBeats = 0;
+    let totalMeasures = 0;
+    const timings = blocks.map((block, index) => {
+      const tempo = parseInt(block.getAttribute('data-tempo'));
+      const measures = parseInt(block.getAttribute('data-measures'));
+      const timeSignature = block.getAttribute('data-time-signature');
+      const beatsPerMeasure = getBeatsPerMeasure(timeSignature);
+      const beatDuration = 60 / tempo;
+      const totalBlockBeats = measures * beatsPerMeasure;
+      const duration = totalBlockBeats * beatDuration;
+
+      totalSeconds += duration;
+      totalBeats += totalBlockBeats;
+      totalMeasures += measures;
+
+      return {
+        block,
+        blockIndex: index,
+        tempo,
+        beatsPerMeasure,
+        totalBeats: totalBlockBeats,
+        totalMeasures: measures,
+        duration
+      };
+    });
+
+    timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${timings.length} (Measure: ${blockMeasure} of ${totalMeasures})`;
+    return { timings, totalSeconds, totalBeats };
+  }
+
+  function formatDuration(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  function togglePlay() {
+    if (isPlaying) {
+      isPlaying = false;
+      playBtn.textContent = 'Play';
+      resetPlayback();
+    } else {
+      const { timings, totalSeconds, totalBeats } = calculateTimings();
+      if (timings.length === 0) return;
+      playBtn.textContent = 'Reset';
+      isPlaying = true;
+      currentTime = 0;
+      currentBeat = 0;
+      blockBeat = 0;
+      blockMeasure = 0;
+      audioContext.resume().then(() => {
+        audioBufferPromise.then(() => playLeadIn(timings, totalSeconds, totalBeats));
+      });
+    }
+  }
+
+  function playLeadIn(timings, totalSeconds, totalBeats) {
+    const firstBlock = timings[0];
+    const beatDuration = 60 / firstBlock.tempo;
+    const leadInBeats = firstBlock.beatsPerMeasure;
+
+    const useShortSounds = firstBlock.tempo > TEMPO_THRESHOLD;
     const currentTickBuffer = useShortSounds ? tickShortBuffer : tickBuffer;
     const currentTockBuffer = useShortSounds ? tockShortBuffer : tockBuffer;
 
-    for (let beat = 0; beat < totalBlockBeats; beat++) {
-      const soundTime = blockStartTime + (beat * beatDuration);
-      const isFirstBeatOfMeasure = beat % currentTiming.beatsPerMeasure === 0;
-      const source = playSound(isFirstBeatOfMeasure ? currentTickBuffer : currentTockBuffer, soundTime);
+    currentBlockDisplay.classList.add('pulse');
+    currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
+    currentBlockDisplay.innerHTML = `
+      <span class="label">Lead-In (${firstBlock.block.getAttribute('data-time-signature')})</span>
+      <span class="info">Beat: 0 of ${leadInBeats}</span>
+    `;
+
+    const startTime = audioContext.currentTime;
+    for (let beat = 0; beat < leadInBeats; beat++) {
+      const soundTime = startTime + (beat * beatDuration);
+      const isFirstBeat = beat === 0;
+      const source = playSound(isFirstBeat ? currentTickBuffer : currentTockBuffer, soundTime);
       if (source) scheduledSources.push(source);
     }
 
-    updateCurrentBlock(currentTiming);
+    activeTimeManager = new TimeManager(firstBlock.tempo, leadInBeats, leadInBeats - 1, ({ elapsedTime, beat, isFirstBeat }) => {
+      currentBlockDisplay.innerHTML = `
+        <span class="label">Lead-In (${firstBlock.block.getAttribute('data-time-signature')})</span>
+        <span class="info">Beat: ${beat + 1} of ${leadInBeats}</span>
+      `;
+      currentTime = elapsedTime;
+      timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockBeat} of ${timings.length} (Measure: ${blockMeasure} of 0)`;
 
-    activeTimeManager = new TimeManager(
-      currentTiming.tempo,
-      currentTiming.beatsPerMeasure,
-      totalBlockBeats - 1,
-      ({ elapsedTime, beat, measure, isFirstBeat }) => {
-        blockBeat = beat + 1;
-        blockMeasure = measure;
-        currentTime = elapsedTime + (cumulativeBeats * (60 / timings[currentIndex].tempo));
-        currentBeat = cumulativeBeats + beat + 1;
-
-        const totalBlocks = timings.length;
-        const blockNum = currentIndex + 1;
-        const rootNote = currentTiming.block.getAttribute('data-root-note');
-        const mode = currentTiming.block.getAttribute('data-mode');
-
-        currentBlockDisplay.innerHTML = `
-          <span class="label">${formatPart(currentTiming.block.classList[1])}: ${currentTiming.block.getAttribute('data-time-signature')} ${currentTiming.totalMeasures}m<br>${abbreviateKey(rootNote)} ${mode} ${currentTiming.tempo}b ${currentTiming.block.getAttribute('data-feel')}</span>
-          <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
-        `;
-
-        timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockNum} of ${totalBlocks} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
-
-        currentBlockDisplay.classList.add('pulse');
-        currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
-
-        if (isFirstBeat) {
-          currentBlockDisplay.classList.add('one-count');
-        } else {
-          currentBlockDisplay.classList.remove('one-count');
-        }
+      if (isFirstBeat) {
+        currentBlockDisplay.classList.add('one-count');
+      } else {
+        currentBlockDisplay.classList.remove('one-count');
       }
-    );
+    });
 
     activeTimeManager.start();
 
     setTimeout(() => {
       if (activeTimeManager) activeTimeManager.stop();
       activeTimeManager = null;
-      cumulativeBeats += totalBlockBeats;
-      blockStartTime += currentTiming.duration;
-      currentIndex++;
-      playNextBlock();
-    }, currentTiming.duration * 1000 + 10);
+      currentTime = 0;
+      playSong(timings, totalSeconds, totalBeats);
+    }, leadInBeats * beatDuration * 1000);
   }
 
-  playNextBlock();
-}
+  function playSong(timings, totalSeconds, totalBeats) {
+    let currentIndex = 0;
+    let blockStartTime = audioContext.currentTime;
+    let cumulativeBeats = 0;
 
-function updateCurrentBlock(timing) {
-  const previousBlock = timeline.querySelector('.playing');
-  if (previousBlock) previousBlock.classList.remove('playing');
-  timing.block.classList.add('playing');
-}
+    function playNextBlock() {
+      if (!isPlaying || currentIndex >= timings.length) {
+        resetPlayback();
+        return;
+      }
 
-function resetPlayback() {
-  if (activeTimeManager) {
-    activeTimeManager.stop();
-    activeTimeManager = null;
-  }
+      const currentTiming = timings[currentIndex];
+      const beatDuration = 60 / currentTiming.tempo;
+      const totalBlockBeats = currentTiming.totalBeats;
 
-  scheduledSources.forEach(source => {
-    try {
-      source.stop();
-    } catch (e) {}
-  });
-  scheduledSources = [];
+      const useShortSounds = currentTiming.tempo > TEMPO_THRESHOLD;
+      const currentTickBuffer = useShortSounds ? tickShortBuffer : tickBuffer;
+      const currentTockBuffer = useShortSounds ? tockShortBuffer : tockBuffer;
 
-  audioContext.close().then(() => {
-    audioContext = new AudioContext();
-    audioBufferPromise.then(() => {
-      console.log('Audio buffers reloaded after reset');
-    }).catch(error => console.error('Failed to reload audio buffers:', error));
-  });
+      for (let beat = 0; beat < totalBlockBeats; beat++) {
+        const soundTime = blockStartTime + (beat * beatDuration);
+        const isFirstBeatOfMeasure = beat % currentTiming.beatsPerMeasure === 0;
+        const source = playSound(isFirstBeatOfMeasure ? currentTickBuffer : currentTockBuffer, soundTime);
+        if (source) scheduledSources.push(source);
+      }
 
-  currentTime = 0;
-  currentBeat = 0;
-  blockBeat = 0;
-  blockMeasure = 0;
+      updateCurrentBlock(currentTiming);
 
-  isPlaying = false;
-  playBtn.textContent = 'Play';
+      activeTimeManager = new TimeManager(
+        currentTiming.tempo,
+        currentTiming.beatsPerMeasure,
+        totalBlockBeats - 1,
+        ({ elapsedTime, beat, measure, isFirstBeat }) => {
+          blockBeat = beat + 1;
+          blockMeasure = measure;
+          currentTime = elapsedTime + (cumulativeBeats * (60 / timings[currentIndex].tempo));
+          currentBeat = cumulativeBeats + beat + 1;
 
-  const previousBlock = timeline.querySelector('.playing');
-  if (previousBlock) previousBlock.classList.remove('playing');
+          const totalBlocks = timings.length;
+          const blockNum = currentIndex + 1;
+          const rootNote = currentTiming.block.getAttribute('data-root-note');
+          const mode = currentTiming.block.getAttribute('data-mode');
 
-  currentBlockDisplay.classList.remove('pulse', 'one-count');
-  currentBlockDisplay.style.animation = 'none';
-  currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
+          currentBlockDisplay.innerHTML = `
+            <span class="label">${formatPart(currentTiming.block.classList[1])}: ${currentTiming.block.getAttribute('data-time-signature')} ${currentTiming.totalMeasures}m<br>${abbreviateKey(rootNote)} ${mode} ${currentTiming.tempo}b ${currentTiming.block.getAttribute('data-feel')}</span>
+            <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
+          `;
 
-  calculateTimings();
-}
+          timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockNum} of ${totalBlocks} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
 
-function exportSong() {
-  const blocks = Array.from(timeline.children).map(block => ({
-    type: block.classList[1],
-    measures: parseInt(block.getAttribute('data-measures')),
-    rootNote: block.getAttribute('data-root-note'),
-    mode: block.getAttribute('data-mode'),
-    tempo: parseInt(block.getAttribute('data-tempo')),
-    timeSignature: block.getAttribute('data-time-signature'),
-    feel: block.getAttribute('data-feel'),
-    lyrics: block.getAttribute('data-lyrics')
-  }));
+          currentBlockDisplay.classList.add('pulse');
+          currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
 
-  const songData = { songName: currentSongName, blocks };
-  const blob = new Blob([JSON.stringify(songData, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${currentSongName}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+          if (isFirstBeat) {
+            currentBlockDisplay.classList.add('one-count');
+          } else {
+            currentBlockDisplay.classList.remove('one-count');
+          }
+        }
+      );
 
-function importSong(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+      activeTimeManager.start();
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const songData = JSON.parse(e.target.result);
-      loadSongData(songData);
-    } catch (error) {
-      alert(`Failed to import song: ${error.message}`);
+      setTimeout(() => {
+        if (activeTimeManager) activeTimeManager.stop();
+        activeTimeManager = null;
+        cumulativeBeats += totalBlockBeats;
+        blockStartTime += currentTiming.duration;
+        currentIndex++;
+        playNextBlock();
+      }, currentTiming.duration * 1000 + 10);
     }
-  };
-  reader.readAsText(file);
-}
 
-function loadSongData(songData) {
-  if (!songData.songName || !Array.isArray(songData.blocks)) {
-    throw new Error('Invalid song file format: missing songName or blocks array.');
+    playNextBlock();
   }
 
-  for (let i = 0; i < songData.blocks.length; i++) {
-    const error = validateBlock(songData.blocks[i]);
-    if (error) throw new Error(`Block ${i + 1}: ${error}`);
+  function updateCurrentBlock(timing) {
+    const previousBlock = timeline.querySelector('.playing');
+    if (previousBlock) previousBlock.classList.remove('playing');
+    timing.block.classList.add('playing');
   }
 
-  if (isPlaying) resetPlayback();
+  function resetPlayback() {
+    if (activeTimeManager) {
+      activeTimeManager.stop();
+      activeTimeManager = null;
+    }
 
-  timeline.innerHTML = '';
-  if (selectedBlock) clearSelection();
+    scheduledSources.forEach(source => {
+      try {
+        source.stop();
+      } catch (e) {}
+    });
+    scheduledSources = [];
 
-  updateTitle(songData.songName);
+    audioContext.close().then(() => {
+      audioContext = new AudioContext();
+      audioBufferPromise.then(() => {
+        console.log('Audio buffers reloaded after reset');
+      }).catch(error => console.error('Failed to reload audio buffers:', error));
+    });
 
-  songData.blocks.forEach(({ type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics }) => {
-    const block = document.createElement('div');
-    block.classList.add('song-block', type);
-    block.setAttribute('data-measures', measures);
-    block.setAttribute('data-tempo', tempo);
-    block.setAttribute('data-time-signature', timeSignature);
-    block.setAttribute('data-feel', feel || '');
-    block.setAttribute('data-lyrics', lyrics || '');
-    block.setAttribute('data-root-note', rootNote);
-    block.setAttribute('data-mode', mode);
-    block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel || ''}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
-    updateBlockSize(block);
-    setupBlock(block);
-    timeline.appendChild(block);
-  });
+    currentTime = 0;
+    currentBeat = 0;
+    blockBeat = 0;
+    blockMeasure = 0;
 
-  const styleDropdown = document.getElementById('style-dropdown');
-  if (styleDropdown.value) changeBlockStyle(styleDropdown.value);
+    isPlaying = false;
+    playBtn.textContent = 'Play';
 
-  calculateTimings();
-}
+    const previousBlock = timeline.querySelector('.playing');
+    if (previousBlock) previousBlock.classList.remove('playing');
 
-function loadSongFromDropdown(filename) {
-  console.log('loadSongFromDropdown called with:', filename);
-  if (!filename) {
-    console.log("No filename selected");
-    return;
+    currentBlockDisplay.classList.remove('pulse', 'one-count');
+    currentBlockDisplay.style.animation = 'none';
+    currentBlockDisplay.innerHTML = '<span class="label">No block playing</span>';
+
+    calculateTimings();
   }
 
-  if (!timeline) {
-    console.error('Timeline element not found!');
-    return;
+  function exportSong() {
+    const blocks = Array.from(timeline.children).map(block => ({
+      type: block.classList[1],
+      measures: parseInt(block.getAttribute('data-measures')),
+      rootNote: block.getAttribute('data-root-note'),
+      mode: block.getAttribute('data-mode'),
+      tempo: parseInt(block.getAttribute('data-tempo')),
+      timeSignature: block.getAttribute('data-time-signature'),
+      feel: block.getAttribute('data-feel'),
+      lyrics: block.getAttribute('data-lyrics')
+    }));
+
+    const songData = { songName: currentSongName, blocks };
+    const blob = new Blob([JSON.stringify(songData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentSongName}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
-  if (isPlaying) resetPlayback();
+  function importSong(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  if (filename === 'new-song') {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const songData = JSON.parse(e.target.result);
+        loadSongData(songData);
+      } catch (error) {
+        alert(`Failed to import song: ${error.message}`);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function loadSongData(songData) {
+    if (!songData.songName || !Array.isArray(songData.blocks)) {
+      throw new Error('Invalid song file format: missing songName or blocks array.');
+    }
+
+    for (let i = 0; i < songData.blocks.length; i++) {
+      const error = validateBlock(songData.blocks[i]);
+      if (error) throw new Error(`Block ${i + 1}: ${error}`);
+    }
+
+    if (isPlaying) resetPlayback();
+
     timeline.innerHTML = '';
     if (selectedBlock) clearSelection();
-    isFormCollapsed = false;
-    formContent.classList.remove('collapsed');
-    toggleFormBtn.textContent = 'Hide Parameters';
-    currentSongName = 'New Song';
-    updateTitle(currentSongName);
-    calculateTimings();
+
+    updateTitle(songData.songName);
+
+    songData.blocks.forEach(({ type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics }) => {
+      const block = document.createElement('div');
+      block.classList.add('song-block', type);
+      block.setAttribute('data-measures', measures);
+      block.setAttribute('data-tempo', tempo);
+      block.setAttribute('data-time-signature', timeSignature);
+      block.setAttribute('data-feel', feel || '');
+      block.setAttribute('data-lyrics', lyrics || '');
+      block.setAttribute('data-root-note', rootNote);
+      block.setAttribute('data-mode', mode);
+      block.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel || ''}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+      updateBlockSize(block);
+      setupBlock(block);
+      timeline.appendChild(block);
+    });
+
     const styleDropdown = document.getElementById('style-dropdown');
-    styleDropdown.value = '';
-    return;
+    if (styleDropdown.value) changeBlockStyle(styleDropdown.value);
+
+    calculateTimings();
   }
 
-  const songs = {
-    'songs/satisfaction.js': [
-      { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
-      { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
-      { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' }
-    ]
-  };
+  function loadSongFromDropdown(filename) {
+    console.log('loadSongFromDropdown called with:', filename);
+    if (!filename) {
+      console.log("No filename selected");
+      return;
+    }
 
-  const songKey = filename;
-  const songData = songs[songKey];
+    if (!timeline) {
+      console.error('Timeline element not found!');
+      return;
+    }
 
-  if (!songData) {
-    console.error(`Song ${songKey} not found in static songs object`);
-    return;
+    if (isPlaying) resetPlayback();
+
+    if (filename === 'new-song') {
+      timeline.innerHTML = '';
+      if (selectedBlock) clearSelection();
+      isFormCollapsed = false;
+      formContent.classList.remove('collapsed');
+      toggleFormBtn.textContent = 'Hide Parameters';
+      currentSongName = 'New Song';
+      updateTitle(currentSongName);
+      calculateTimings();
+      const styleDropdown = document.getElementById('style-dropdown');
+      styleDropdown.value = '';
+      return;
+    }
+
+    const songs = {
+      'songs/satisfaction.js': [
+        { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' }
+      ]
+    };
+
+    const songKey = filename;
+    const songData = songs[songKey];
+
+    if (!songData) {
+      console.error(`Song ${songKey} not found in static songs object`);
+      return;
+    }
+
+    console.log('Clearing timeline and loading song:', songKey);
+    timeline.innerHTML = '';
+    if (selectedBlock) clearSelection();
+
+    updateTitle('(I Can’t Get No) Satisfaction');
+
+    songData.forEach(blockData => {
+      console.log('Creating block with data:', blockData);
+      const block = document.createElement('div');
+      block.classList.add('song-block', blockData.type);
+      block.setAttribute('data-measures', blockData.measures);
+      block.setAttribute('data-tempo', blockData.tempo);
+      block.setAttribute('data-time-signature', blockData.timeSignature);
+      block.setAttribute('data-feel', blockData.feel);
+      block.setAttribute('data-lyrics', blockData.lyrics || '');
+      block.setAttribute('data-root-note', blockData.rootNote);
+      block.setAttribute('data-mode', blockData.mode);
+      block.innerHTML = `
+        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+        <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+      `;
+      updateBlockSize(block);
+      setupBlock(block);
+      console.log('Appending block to timeline:', block.outerHTML);
+      timeline.appendChild(block);
+    });
+
+    console.log('Timeline after load:', timeline.innerHTML);
+    calculateTimings();
+    songDropdown.value = filename;
   }
 
-  console.log('Clearing timeline and loading song:', songKey);
-  timeline.innerHTML = '';
-  if (selectedBlock) clearSelection();
+  function populateSongDropdown() {
+    console.log('Populating song dropdown');
+    const availableSongs = ['new-song', 'songs/satisfaction.js'];
+    console.log('Available songs:', availableSongs);
+    availableSongs.forEach(song => {
+      const option = document.createElement('option');
+      option.value = song;
+      option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
+      songDropdown.appendChild(option);
+      console.log('Added option:', option.outerHTML);
+    });
+    console.log('Dropdown after population:', songDropdown.innerHTML);
+  }
 
-  updateTitle('(I Can’t Get No) Satisfaction');
+  function randomizeSong() {
+    console.log('Randomize song called');
+    timeline.innerHTML = '';
+    if (selectedBlock) clearSelection();
 
-  songData.forEach(blockData => {
-    console.log('Creating block with data:', blockData);
+    const titleAdjectives = ['Cosmic', 'Silent', 'Electric'];
+    const titleNouns = ['Echo', 'Pulse', 'Wave'];
+    const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
+    const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
+    const newTitle = `${randomAdj} ${randomNoun}`;
+    updateTitle(newTitle);
+
+    const partTypes = ['intro', 'verse', 'chorus'];
+    const rootNotes = ['C', 'D', 'E'];
+    const modes = ['Ionian', 'Dorian', 'Mixolydian'];
+    const feels = ['Happiness', 'Sadness', 'Tension'];
+
+    const blockData = {
+      type: partTypes[Math.floor(Math.random() * partTypes.length)],
+      measures: 4,
+      rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
+      mode: modes[Math.floor(Math.random() * modes.length)],
+      tempo: 120,
+      timeSignature: '4/4',
+      feel: feels[Math.floor(Math.random() * feels.length)],
+      lyrics: 'Random song lyrics...'
+    };
+
+    console.log('Random block data:', blockData);
+
     const block = document.createElement('div');
     block.classList.add('song-block', blockData.type);
     block.setAttribute('data-measures', blockData.measures);
     block.setAttribute('data-tempo', blockData.tempo);
     block.setAttribute('data-time-signature', blockData.timeSignature);
     block.setAttribute('data-feel', blockData.feel);
-    block.setAttribute('data-lyrics', blockData.lyrics || '');
+    block.setAttribute('data-lyrics', blockData.lyrics);
     block.setAttribute('data-root-note', blockData.rootNote);
     block.setAttribute('data-mode', blockData.mode);
     block.innerHTML = `
-      <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
-      <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+      <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}<br>-<br>${truncateLyrics(blockData.lyrics)}</span>
+      <span class="tooltip">${blockData.lyrics}</span>
     `;
     updateBlockSize(block);
     setupBlock(block);
-    console.log('Appending block to timeline:', block);
+    console.log('Appending random block:', block.outerHTML);
     timeline.appendChild(block);
-  });
 
-  console.log('Timeline after load:', timeline.innerHTML);
-  calculateTimings();
-  songDropdown.value = filename;
-}
+    console.log('Timeline after randomize:', timeline.innerHTML);
+    calculateTimings();
+  }
 
-function populateSongDropdown() {
-  const availableSongs = ['new-song', 'songs/satisfaction.js'];
-  console.log('Populating dropdown with songs:', availableSongs);
-  availableSongs.forEach(song => {
-    const option = document.createElement('option');
-    option.value = song;
-    option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
-    songDropdown.appendChild(option);
-  });
-}
+  function printSong() {
+    const { totalSeconds, totalBeats } = calculateTimings();
+    const blockCount = timeline.children.length;
 
-function randomizeSong() {
-  timeline.innerHTML = '';
-  if (selectedBlock) clearSelection();
+    const originalContent = currentBlockDisplay.innerHTML;
 
-  const titleAdjectives = ['Cosmic', 'Silent', 'Electric'];
-  const titleNouns = ['Echo', 'Pulse', 'Wave'];
-  const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
-  const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
-  const newTitle = `${randomAdj} ${randomNoun}`;
-  updateTitle(newTitle);
+    currentBlockDisplay.innerHTML = `
+      <span class="label">
+        Total Duration: ${formatDuration(totalSeconds)} | Beats: ${totalBeats} | Blocks: ${blockCount}<br>
+        © 2025 SongMaker by kappter. All rights reserved.
+      </span>
+    `;
 
-  const partTypes = ['intro', 'verse', 'chorus'];
-  const rootNotes = ['C', 'D', 'E'];
-  const modes = ['Ionian', 'Dorian', 'Mixolydian'];
-  const feels = ['Happiness', 'Sadness', 'Tension'];
+    window.print();
 
-  const blockData = {
-    type: partTypes[Math.floor(Math.random() * partTypes.length)],
-    measures: 4,
-    rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
-    mode: modes[Math.floor(Math.random() * modes.length)],
-    tempo: 120,
-    timeSignature: '4/4',
-    feel: feels[Math.floor(Math.random() * feels.length)],
-    lyrics: 'Random song lyrics...'
-  };
+    currentBlockDisplay.innerHTML = originalContent;
+  }
 
-  const block = document.createElement('div');
-  block.classList.add('song-block', blockData.type);
-  block.setAttribute('data-measures', blockData.measures);
-  block.setAttribute('data-tempo', blockData.tempo);
-  block.setAttribute('data-time-signature', blockData.timeSignature);
-  block.setAttribute('data-feel', blockData.feel);
-  block.setAttribute('data-lyrics', blockData.lyrics);
-  block.setAttribute('data-root-note', blockData.rootNote);
-  block.setAttribute('data-mode', blockData.mode);
-  block.innerHTML = `
-    <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}<br>-<br>${truncateLyrics(blockData.lyrics)}</span>
-    <span class="tooltip">${blockData.lyrics}</span>
-  `;
-  updateBlockSize(block);
-  setupBlock(block);
-  timeline.appendChild(block);
-
-  calculateTimings();
-}
-
-function printSong() {
-  const { totalSeconds, totalBeats } = calculateTimings();
-  const blockCount = timeline.children.length;
-
-  const originalContent = currentBlockDisplay.innerHTML;
-
-  currentBlockDisplay.innerHTML = `
-    <span class="label">
-      Total Duration: ${formatDuration(totalSeconds)} | Beats: ${totalBeats} | Blocks: ${blockCount}<br>
-      © 2025 SongMaker by kappter. All rights reserved.
-    </span>
-  `;
-
-  window.print();
-
-  currentBlockDisplay.innerHTML = originalContent;
-}
-
-// Initial setup
-console.log('Starting initial setup');
-populateSongDropdown();
-songTitleInput.value = currentSongName;
-updateTitle(currentSongName);
-console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
-loadSongFromDropdown('songs/satisfaction.js');
-console.log('Initial setup complete');
+  // Initial setup
+  console.log('Starting initial setup');
+  populateSongDropdown();
+  songTitleInput.value = currentSongName;
+  updateTitle(currentSongName);
+  console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
+  loadSongFromDropdown('songs/satisfaction.js');
+  console.log('Initial setup complete');
+});
