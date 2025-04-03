@@ -172,6 +172,7 @@ function updateBlockSize(block) {
 }
 
 function setupBlock(block) {
+  console.log('Setting up block:', block);
   block.draggable = true;
 
   block.addEventListener('dragstart', (e) => {
@@ -688,8 +689,14 @@ function loadSongData(songData) {
 }
 
 function loadSongFromDropdown(filename) {
+  console.log('loadSongFromDropdown called with:', filename);
   if (!filename) {
     console.log("No filename selected");
+    return;
+  }
+
+  if (!timeline) {
+    console.error('Timeline element not found!');
     return;
   }
 
@@ -713,48 +720,7 @@ function loadSongFromDropdown(filename) {
     'songs/satisfaction.js': [
       { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
       { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
-      { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
-      { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'When I’m drivin’ in my car...', rootNote: 'E', mode: 'Mixolydian' },
-      { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
-      { type: 'outro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' }
-    ],
-    'songs/pneuma.js': [
-      { type: 'intro', measures: 6, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: '', rootNote: 'F#', mode: 'Dorian' },
-      { type: 'verse', measures: 8, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: 'We are spirit bound to this flesh...', rootNote: 'F#', mode: 'Dorian' },
-      { type: 'chorus', measures: 8, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: 'Pneuma, reach beyond...', rootNote: 'F#', mode: 'Dorian' },
-      { type: 'bridge', measures: 6, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: '', rootNote: 'F#', mode: 'Dorian' },
-      { type: 'outro', measures: 8, tempo: 92, timeSignature: '6/8', feel: 'Progressive', lyrics: 'Wake and breathe...', rootNote: 'F#', mode: 'Dorian' }
-    ],
-    'songs/jambi.js': [
-      { type: 'intro', measures: 4, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: '', rootNote: 'D', mode: 'Phrygian' },
-      { type: 'verse', measures: 8, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: 'Woe to you, oh earth and sea...', rootNote: 'D', mode: 'Phrygian' },
-      { type: 'chorus', measures: 8, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: 'If I could wish it all away...', rootNote: 'D', mode: 'Phrygian' },
-      { type: 'solo', measures: 6, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: '', rootNote: 'D', mode: 'Phrygian' },
-      { type: 'outro', measures: 4, tempo: 126, timeSignature: '7/8', feel: 'Heavy', lyrics: '', rootNote: 'D', mode: 'Phrygian' }
-    ],
-    'songs/dirtyLaundry.js': [
-      { type: 'intro', measures: 4, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'A', mode: 'Aeolian' },
-      { type: 'verse', measures: 8, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: 'Kickin’ down the doors...', rootNote: 'A', mode: 'Aeolian' },
-      { type: 'chorus', measures: 8, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: 'Dirty laundry...', rootNote: 'A', mode: 'Aeolian' },
-      { type: 'outro', measures: 4, tempo: 110, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'A', mode: 'Aeolian' }
-    ],
-    'songs/invincible.js': [
-      { type: 'intro', measures: 8, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: '', rootNote: 'C', mode: 'Ionian' },
-      { type: 'verse', measures: 8, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: 'Keep your eyes on the horizon...', rootNote: 'C', mode: 'Ionian' },
-      { type: 'chorus', measures: 8, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: 'We are invincible...', rootNote: 'C', mode: 'Ionian' },
-      { type: 'outro', measures: 4, tempo: 85, timeSignature: '4/4', feel: 'Progressive', lyrics: '', rootNote: 'C', mode: 'Ionian' }
-    ],
-    'songs/astroworld.js': [
-      { type: 'intro', measures: 4, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'G', mode: 'Aeolian' },
-      { type: 'verse', measures: 8, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'It’s lit, straight up...', rootNote: 'G', mode: 'Aeolian' },
-      { type: 'chorus', measures: 8, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'Astroworld, take me home...', rootNote: 'G', mode: 'Aeolian' },
-      { type: 'outro', measures: 4, tempo: 140, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'G', mode: 'Aeolian' }
-    ],
-    'songs/astrothunder.js': [
-      { type: 'intro', measures: 4, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'F', mode: 'Dorian' },
-      { type: 'verse', measures: 8, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'Seems like the life I lead...', rootNote: 'F', mode: 'Dorian' },
-      { type: 'chorus', measures: 8, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: 'Astrothunder, feel the vibe...', rootNote: 'F', mode: 'Dorian' },
-      { type: 'outro', measures: 4, tempo: 130, timeSignature: '4/4', feel: 'Hip-Hop', lyrics: '', rootNote: 'F', mode: 'Dorian' }
+      { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' }
     ]
   };
 
@@ -766,12 +732,14 @@ function loadSongFromDropdown(filename) {
     return;
   }
 
+  console.log('Clearing timeline and loading song:', songKey);
   timeline.innerHTML = '';
   if (selectedBlock) clearSelection();
 
-  updateTitle(songKey === 'songs/satisfaction.js' ? '(I Can’t Get No) Satisfaction' : formatPart(songKey.replace('songs/', '').replace('.js', '')));
+  updateTitle('(I Can’t Get No) Satisfaction');
 
   songData.forEach(blockData => {
+    console.log('Creating block with data:', blockData);
     const block = document.createElement('div');
     block.classList.add('song-block', blockData.type);
     block.setAttribute('data-measures', blockData.measures);
@@ -787,18 +755,18 @@ function loadSongFromDropdown(filename) {
     `;
     updateBlockSize(block);
     setupBlock(block);
+    console.log('Appending block to timeline:', block);
     timeline.appendChild(block);
   });
 
+  console.log('Timeline after load:', timeline.innerHTML);
   calculateTimings();
   songDropdown.value = filename;
 }
 
 function populateSongDropdown() {
-  const availableSongs = [
-    'new-song', 'songs/satisfaction.js', 'songs/pneuma.js', 'songs/jambi.js',
-    'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js'
-  ];
+  const availableSongs = ['new-song', 'songs/satisfaction.js'];
+  console.log('Populating dropdown with songs:', availableSongs);
   availableSongs.forEach(song => {
     const option = document.createElement('option');
     option.value = song;
@@ -811,62 +779,45 @@ function randomizeSong() {
   timeline.innerHTML = '';
   if (selectedBlock) clearSelection();
 
-  const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Fading', 'Raging', 'Dreamy', 'Wild', 'Mystic'];
-  const titleNouns = ['Echo', 'Pulse', 'Wave', 'Night', 'Fire', 'Journey', 'Sky', 'Dream'];
+  const titleAdjectives = ['Cosmic', 'Silent', 'Electric'];
+  const titleNouns = ['Echo', 'Pulse', 'Wave'];
   const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
   const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
   const newTitle = `${randomAdj} ${randomNoun}`;
   updateTitle(newTitle);
 
-  const partTypes = [
-    'intro', 'verse', 'chorus', 'bridge', 'outro', 'solo', 'breakdown', 'pre-chorus', 'post-chorus',
-    'refrain', 'hook', 'interlude', 'ad-lib', 'elision', 'coda', 'drop', 'modulation', 'tag'
-  ];
-  const rootNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-  const modes = ['Ionian', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Aeolian', 'Locrian'];
-  const feels = ['Happiness', 'Sadness', 'Tension', 'Euphoria', 'Calmness', 'Anger', 'Mystical'];
-  const possibleLyrics = [
-    'La la la, here we go again...', 'Feel the rhythm, let it flow...', 
-    'Shadows dancing in the moonlight...', 'Break free, let your spirit soar...', 
-    'Echoes of a forgotten dream...', ''
-  ];
+  const partTypes = ['intro', 'verse', 'chorus'];
+  const rootNotes = ['C', 'D', 'E'];
+  const modes = ['Ionian', 'Dorian', 'Mixolydian'];
+  const feels = ['Happiness', 'Sadness', 'Tension'];
 
-  const numBlocks = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
+  const blockData = {
+    type: partTypes[Math.floor(Math.random() * partTypes.length)],
+    measures: 4,
+    rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
+    mode: modes[Math.floor(Math.random() * modes.length)],
+    tempo: 120,
+    timeSignature: '4/4',
+    feel: feels[Math.floor(Math.random() * feels.length)],
+    lyrics: 'Random song lyrics...'
+  };
 
-  for (let i = 0; i < numBlocks; i++) {
-    const type = partTypes[Math.floor(Math.random() * partTypes.length)];
-    const measures = Math.floor(Math.random() * (16 - 1 + 1)) + 1;
-    const rootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
-    const mode = modes[Math.floor(Math.random() * modes.length)];
-    const tempo = Math.floor(Math.random() * (180 - 60 + 1)) + 60;
-    const timeSignature = validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)];
-    const feel = feels[Math.floor(Math.random() * feels.length)];
-    const lyrics = possibleLyrics[Math.floor(Math.random() * possibleLyrics.length)];
-
-    const blockData = { type, measures, rootNote, mode, tempo, timeSignature, feel, lyrics };
-    const error = validateBlock(blockData);
-    if (error) {
-      console.error(`Generated block failed validation: ${error}`);
-      continue;
-    }
-
-    const block = document.createElement('div');
-    block.classList.add('song-block', type);
-    block.setAttribute('data-measures', measures);
-    block.setAttribute('data-tempo', tempo);
-    block.setAttribute('data-time-signature', timeSignature);
-    block.setAttribute('data-feel', feel);
-    block.setAttribute('data-lyrics', lyrics);
-    block.setAttribute('data-root-note', rootNote);
-    block.setAttribute('data-mode', mode);
-    block.innerHTML = `
-      <span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span>
-      <span class="tooltip">${lyrics || 'No lyrics'}</span>
-    `;
-    updateBlockSize(block);
-    setupBlock(block);
-    timeline.appendChild(block);
-  }
+  const block = document.createElement('div');
+  block.classList.add('song-block', blockData.type);
+  block.setAttribute('data-measures', blockData.measures);
+  block.setAttribute('data-tempo', blockData.tempo);
+  block.setAttribute('data-time-signature', blockData.timeSignature);
+  block.setAttribute('data-feel', blockData.feel);
+  block.setAttribute('data-lyrics', blockData.lyrics);
+  block.setAttribute('data-root-note', blockData.rootNote);
+  block.setAttribute('data-mode', blockData.mode);
+  block.innerHTML = `
+    <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}<br>-<br>${truncateLyrics(blockData.lyrics)}</span>
+    <span class="tooltip">${blockData.lyrics}</span>
+  `;
+  updateBlockSize(block);
+  setupBlock(block);
+  timeline.appendChild(block);
 
   calculateTimings();
 }
@@ -890,7 +841,10 @@ function printSong() {
 }
 
 // Initial setup
+console.log('Starting initial setup');
 populateSongDropdown();
 songTitleInput.value = currentSongName;
 updateTitle(currentSongName);
+console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
 loadSongFromDropdown('songs/satisfaction.js');
+console.log('Initial setup complete');
