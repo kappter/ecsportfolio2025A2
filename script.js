@@ -42,38 +42,79 @@ document.addEventListener('DOMContentLoaded', () => {
   let tockBuffer = null;
   let tickShortBuffer = null;
   let tockShortBuffer = null;
+  
 
-  function loadAudioBuffers() {
-    const audioFiles = [
-      'tick.wav',
-      'tock.wav',
-      'tick_short.wav',
-      'tock_short.wav'
-    ];
-    console.log('Attempting to load audio files:', audioFiles);
-    return Promise.all(
-      audioFiles.map((file, index) =>
-        fetch(file)
-          .then(response => {
-            if (!response.ok) throw new Error(`Failed to fetch ${file}: ${response.status}`);
-            return response.arrayBuffer();
-          })
-          .then(buffer => audioContext.decodeAudioData(buffer))
-          .then(decoded => {
-            console.log(`Loaded ${file}`);
-            if (index === 0) tickBuffer = decoded;
-            if (index === 1) tockBuffer = decoded;
-            if (index === 2) tickShortBuffer = decoded;
-            if (index === 3) tockShortBuffer = decoded;
-          })
-      )
-    ).catch(error => {
-      console.error('Audio loading error:', error);
-      soundEnabled = false;
-      soundBtn.textContent = 'Sound Off (Files Missing)';
+ async function loadAudioBuffers() {
+  const audioFiles = ['tick.wav', 'tock.wav', 'tick_short.wav', 'tock_short.wav'];
+  console.log('Attempting to load audio files:', audioFiles);
+  try {
+    const buffers = await Promise.all(
+      audioFiles.map(async (file) => {
+        try {
+          const response = await fetch(file);
+          if (!response.ok) throw new Error(`Failed to fetch ${file}: ${response.status}`);
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = await audioContext.decodeAudioData(arrayBuffer);
+          console.log(`Loaded ${file}`);
+          return buffer;
+        } catch (error) {
+          console.warn(`${file} not found, using fallback:`, error);
+          return null; // Return null for failed loads
+        }
+      })
+    );
+    tickBuffer = buffers[0];
+    tockBuffer = buffers[1];
+    tickShortBuffer = buffers[2] || tickBuffer; // Fallback to tickBuffer
+    tockShortBuffer = buffers[3] || tockBuffer; // Fallback to tockBuffer
+    console.log('Audio buffers loaded:', {
+      tick: !!tickBuffer,
+      tock: !!tockBuffer,
+      tickShort: !!tickShortBuffer,
+      tockShort: !!tockShortBuffer
     });
+  } catch (error) {
+    console.error('Audio loading failed entirely:', error);
+  }
+}
+
+function playBlock(block, onFinish) {
+  if (!audioContext || !tickBuffer || !tockBuffer) {
+    console.error('Audio context or buffers not initialized');
+    if (onFinish) onFinish();
+    return;
   }
 
+  const measures = parseInt(block.getAttribute('data-measures'));
+  const tempo = parseInt(block.getAttribute('data-tempo'));
+  const timeSignature = block.getAttribute('data-time-signature');
+  const beatsPerMeasure = parseInt(timeSignature.split('/')[0]);
+  const beatDuration = 60 / tempo; // Seconds per beat
+
+  let currentTime = audioContext.currentTime;
+  let isTick = true;
+
+  for (let i = 0; i < measures * beatsPerMeasure; i++) {
+    const isShort = beatsPerMeasure % 2 === 0 && i % beatsPerMeasure === beatsPerMeasure - 1;
+    const buffer = isTick
+      ? (isShort && tickShortBuffer ? tickShortBuffer : tickBuffer)
+      : (isShort && tockShortBuffer ? tockShortBuffer : tockBuffer);
+    
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioContext.destination);
+    source.start(currentTime);
+    source.onended = () => {
+      if (i === measures * beatsPerMeasure - 1 && onFinish) onFinish();
+    };
+
+    currentTime += beatDuration;
+    isTick = !isTick;
+  }
+
+  block.classList.add('playing');
+  console.log(`Playing block: ${block.querySelector('.label').textContent}`);
+}
   const audioBufferPromise = loadAudioBuffers();
 
   function playSound(buffer, time) {
