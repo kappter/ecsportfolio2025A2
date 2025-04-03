@@ -191,6 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Static song data (expand this as needed)
       const songs = {
         'songs/satisfaction.js': [
           { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
@@ -202,15 +203,19 @@ document.addEventListener('DOMContentLoaded', () => {
           { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
           { type: 'outro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' }
         ]
+        // Add other songs here if you have their data
       };
 
       let songData;
       if (songs[filename]) {
         songData = songs[filename];
+        console.log(`Using static data for ${filename}`);
       } else {
+        // Try fetching as JSON (adjust paths if needed)
         const response = await fetch(filename);
-        if (!response.ok) throw new Error(`Failed to fetch ${filename}`);
-        songData = filename.endsWith('.json') ? await response.json() : (await import(filename)).default;
+        if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.status}`);
+        songData = await response.json(); // Assumes .js files are actually .json or served as JSON
+        console.log(`Fetched ${filename} as JSON`);
       }
 
       timeline.innerHTML = '';
