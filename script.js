@@ -90,12 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ? (isShort && tickShortBuffer ? tickShortBuffer : tickBuffer)
         : (isShort && tockShortBuffer ? tockShortBuffer : tockBuffer);
       
-      const source = audioContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start(currentTime);
-      if (i === measures * beatsPerMeasure - 1) {
-        source.onended = onFinish;
+      if (soundEnabled) {
+        const source = audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContext.destination);
+        source.start(currentTime);
+        if (i === measures * beatsPerMeasure - 1) {
+          source.onended = onFinish;
+        }
       }
       currentTime += beatDuration;
       isTick = !isTick;
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     let currentBlockIndex = 0;
     function playNextBlock() {
-      if (currentBlockIndex >= timeline.children.length) {
+      if (currentBlockIndex >= timeline.children.length || !isPlaying) {
         resetPlayback();
         return;
       }
@@ -247,8 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
     timeline.innerHTML = '';
     if (selectedBlock) clearSelection();
 
-    const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Mystic', 'Faded', 'Lunar', 'Radiant', 'Ethereal', 'Glowing', 'Distant', /* ... */];
-    const titleNouns = ['Echo', 'Pulse', 'Wave', 'Dream', 'Shadow', 'Flame', 'Horizon', 'Void', 'Star', 'Mist', /* ... */];
+    const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Mystic', 'Faded', 'Lunar', 'Radiant', 'Ethereal', 'Glowing', 'Distant'];
+    const titleNouns = ['Echo', 'Pulse', 'Wave', 'Dream', 'Shadow', 'Flame', 'Horizon', 'Void', 'Star', 'Mist'];
     const newTitle = `${titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)]} ${titleNouns[Math.floor(Math.random() * titleNouns.length)]}`;
     updateTitle(newTitle);
 
@@ -334,6 +336,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupBlock(block) {
     block.draggable = true;
     block.addEventListener('dragstart', (e) => {
+      if (e.target.classList.contains('resize-handle')) {
+        e.preventDefault();
+        return;
+      }
       draggedBlock = block;
       block.style.opacity = '0.5';
     });
@@ -361,6 +367,43 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedBlock = block;
       block.classList.add('selected');
     });
+
+    // Add Resize Handle
+    const resizeHandle = document.createElement('div');
+    resizeHandle.classList.add('resize-handle');
+    block.appendChild(resizeHandle);
+
+    let startX, startWidth;
+    resizeHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      startX = e.pageX;
+      startWidth = block.offsetWidth;
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', stopResize);
+    });
+
+    function resize(e) {
+      const snapWidth = 30;
+      const newWidth = Math.max(120, Math.round((startWidth + (e.pageX - startX)) / snapWidth) * snapWidth);
+      block.style.width = `${newWidth}px`;
+      const measures = Math.round((newWidth / 120) * 4);
+      block.setAttribute('data-measures', measures);
+      const type = block.classList[1];
+      const tempo = block.getAttribute('data-tempo');
+      const timeSignature = block.getAttribute('data-time-signature');
+      const feel = block.getAttribute('data-feel');
+      const lyrics = block.getAttribute('data-lyrics');
+      const rootNote = block.getAttribute('data-root-note');
+      const mode = block.getAttribute('data-mode');
+      block.querySelector('.label').innerHTML = `${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}`;
+    }
+
+    function stopResize() {
+      document.removeEventListener('mousemove', resize);
+      document.removeEventListener('mouseup', stopResize);
+      calculateTimings();
+    }
   }
 
   function calculateTimings() {
@@ -402,8 +445,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Expose Functions Globally
   window.togglePlay = togglePlay;
-  window.toggleSound = () => soundEnabled = !soundEnabled;
-  window.toggleTheme = () => isDarkMode = !isDarkMode;
+  window.toggleSound = () => {
+    soundEnabled = !soundEnabled;
+    soundBtn.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
+  };
+  window.toggleTheme = () => {
+    isDarkMode = !isDarkMode;
+    document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+  };
   window.loadSongFromDropdown = loadSongFromDropdown;
   window.randomizeSong = randomizeSong;
 
