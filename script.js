@@ -29,6 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('Elements:', { timeline, songDropdown, songTitleInput });
 
+  songDropdown.addEventListener('change', (e) => {
+    console.log('Dropdown changed to:', e.target.value);
+    loadSongFromDropdown(e.target.value);
+  });
+
   const validTimeSignatures = [
     '4/4', '3/4', '6/8', '2/4', '5/4', '7/8', '12/8', '9/8', '11/8', '15/8', '13/8', '10/4', '8/8', '14/8', '16/8', '7/4', '6/4'
   ];
@@ -731,22 +736,21 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
       };
 
-      const songKey = filename;
-      const songData = songs[songKey];
-
+      const songData = songs[filename];
       if (!songData) {
-        console.error(`Song ${songKey} not found in static songs object`);
+        console.error(`Song ${filename} not found in static songs object`);
         return;
       }
 
-      console.log('Clearing timeline and loading song:', songKey);
+      console.log('Clearing timeline and loading song:', filename);
       timeline.innerHTML = '';
       if (selectedBlock) clearSelection();
 
       updateTitle('(I Can’t Get No) Satisfaction');
 
-      songData.forEach(blockData => {
-        console.log('Creating block with data:', blockData);
+      console.log('Song data has', songData.length, 'blocks');
+      songData.forEach((blockData, index) => {
+        console.log(`Creating block ${index + 1} with data:`, blockData);
         const block = document.createElement('div');
         block.classList.add('song-block', blockData.type);
         block.setAttribute('data-measures', blockData.measures);
@@ -762,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         updateBlockSize(block);
         setupBlock(block);
-        console.log('Appending block to timeline:', block.outerHTML);
+        console.log(`Appending block ${index + 1} to timeline:`, block.outerHTML);
         timeline.appendChild(block);
       });
 
@@ -802,40 +806,49 @@ document.addEventListener('DOMContentLoaded', () => {
       updateTitle(newTitle);
 
       const partTypes = ['intro', 'verse', 'chorus'];
-      const rootNotes = ['C', 'D', 'E'];
-      const modes = ['Ionian', 'Dorian', 'Mixolydian'];
-      const feels = ['Happiness', 'Sadness', 'Tension'];
+      const rootNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const modes = ['Ionian', 'Dorian', 'Mixolydian', 'Aeolian'];
+      const feels = ['Happiness', 'Sadness', 'Tension', 'Calmness'];
+      const tempos = [90, 100, 120, 140, 160];
 
-      const blockData = {
-        type: partTypes[Math.floor(Math.random() * partTypes.length)],
-        measures: 4,
-        rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
-        mode: modes[Math.floor(Math.random() * modes.length)],
-        tempo: 120,
-        timeSignature: '4/4',
-        feel: feels[Math.floor(Math.random() * feels.length)],
-        lyrics: 'Random song lyrics...'
-      };
+      const randomBlocks = [
+        { type: 'intro', measures: 4 },
+        { type: 'verse', measures: 8 },
+        { type: 'chorus', measures: 8 }
+      ];
 
-      console.log('Random block data:', blockData);
+      randomBlocks.forEach((baseData, index) => {
+        const blockData = {
+          type: baseData.type,
+          measures: baseData.measures,
+          rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
+          mode: modes[Math.floor(Math.random() * modes.length)],
+          tempo: tempos[Math.floor(Math.random() * tempos.length)],
+          timeSignature: '4/4',
+          feel: feels[Math.floor(Math.random() * feels.length)],
+          lyrics: index > 0 ? `Random ${baseData.type} lyrics...` : ''
+        };
 
-      const block = document.createElement('div');
-      block.classList.add('song-block', blockData.type);
-      block.setAttribute('data-measures', blockData.measures);
-      block.setAttribute('data-tempo', blockData.tempo);
-      block.setAttribute('data-time-signature', blockData.timeSignature);
-      block.setAttribute('data-feel', blockData.feel);
-      block.setAttribute('data-lyrics', blockData.lyrics);
-      block.setAttribute('data-root-note', blockData.rootNote);
-      block.setAttribute('data-mode', blockData.mode);
-      block.innerHTML = `
-        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}<br>-<br>${truncateLyrics(blockData.lyrics)}</span>
-        <span class="tooltip">${blockData.lyrics}</span>
-      `;
-      updateBlockSize(block);
-      setupBlock(block);
-      console.log('Appending random block:', block.outerHTML);
-      timeline.appendChild(block);
+        console.log(`Random block ${index + 1} data:`, blockData);
+
+        const block = document.createElement('div');
+        block.classList.add('song-block', blockData.type);
+        block.setAttribute('data-measures', blockData.measures);
+        block.setAttribute('data-tempo', blockData.tempo);
+        block.setAttribute('data-time-signature', blockData.timeSignature);
+        block.setAttribute('data-feel', blockData.feel);
+        block.setAttribute('data-lyrics', blockData.lyrics);
+        block.setAttribute('data-root-note', blockData.rootNote);
+        block.setAttribute('data-mode', blockData.mode);
+        block.innerHTML = `
+          <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+          <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+        `;
+        updateBlockSize(block);
+        setupBlock(block);
+        console.log(`Appending random block ${index + 1}:`, block.outerHTML);
+        timeline.appendChild(block);
+      });
 
       console.log('Timeline after randomize:', timeline.innerHTML);
       calculateTimings();
