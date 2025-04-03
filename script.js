@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   songDropdown.addEventListener('change', (e) => {
     console.log('Dropdown changed to:', e.target.value);
     loadSongFromDropdown(e.target.value);
+    randomizeSong();
   });
 
   const validTimeSignatures = [
@@ -201,7 +202,8 @@ function playBlock(block, onFinish) {
   }
 
   playBtn.addEventListener('click', () => {
-  audioContext.resume().then(() => playSong());
+  if (audioContext.state === 'suspended') audioContext.resume().then(() => playSong());
+  else playSong();
 });
 
   songTitleInput.addEventListener('input', (e) => {
@@ -567,81 +569,26 @@ function playBlock(block, onFinish) {
     }, leadInBeats * beatDuration * 1000);
   }
 
-  function playSong(timings, totalSeconds, totalBeats) {
-    let currentIndex = 0;
-    let blockStartTime = audioContext.currentTime;
-    let cumulativeBeats = 0;
-
-    function playNextBlock() {
-      if (!isPlaying || currentIndex >= timings.length) {
-        resetPlayback();
-        return;
-      }
-
-      const currentTiming = timings[currentIndex];
-      const beatDuration = 60 / currentTiming.tempo;
-      const totalBlockBeats = currentTiming.totalBeats;
-
-      const useShortSounds = currentTiming.tempo > TEMPO_THRESHOLD;
-      const currentTickBuffer = useShortSounds ? tickShortBuffer : tickBuffer;
-      const currentTockBuffer = useShortSounds ? tockShortBuffer : tockBuffer;
-
-      for (let beat = 0; beat < totalBlockBeats; beat++) {
-        const soundTime = blockStartTime + (beat * beatDuration);
-        const isFirstBeatOfMeasure = beat % currentTiming.beatsPerMeasure === 0;
-        const source = playSound(isFirstBeatOfMeasure ? currentTickBuffer : currentTockBuffer, soundTime);
-        if (source) scheduledSources.push(source);
-      }
-
-      updateCurrentBlock(currentTiming);
-
-      activeTimeManager = new TimeManager(
-        currentTiming.tempo,
-        currentTiming.beatsPerMeasure,
-        totalBlockBeats - 1,
-        ({ elapsedTime, beat, measure, isFirstBeat }) => {
-          blockBeat = beat + 1;
-          blockMeasure = measure;
-          currentTime = elapsedTime + (cumulativeBeats * (60 / timings[currentIndex].tempo));
-          currentBeat = cumulativeBeats + beat + 1;
-
-          const totalBlocks = timings.length;
-          const blockNum = currentIndex + 1;
-          const rootNote = currentTiming.block.getAttribute('data-root-note');
-          const mode = currentTiming.block.getAttribute('data-mode');
-
-          currentBlockDisplay.innerHTML = `
-            <span class="label">${formatPart(currentTiming.block.classList[1])}: ${currentTiming.block.getAttribute('data-time-signature')} ${currentTiming.totalMeasures}m<br>${abbreviateKey(rootNote)} ${mode} ${currentTiming.tempo}b ${currentTiming.block.getAttribute('data-feel')}</span>
-            <span class="info">Beat: ${blockBeat} of ${currentTiming.totalBeats} | Measure: ${blockMeasure} of ${currentTiming.totalMeasures} | Block: ${blockNum} of ${totalBlocks}</span>
-          `;
-
-          timeCalculator.textContent = `Current Time: ${formatDuration(currentTime)} / Total Duration: ${formatDuration(totalSeconds)} | Song Beat: ${currentBeat} of ${totalBeats} | Block: ${blockNum} of ${totalBlocks} (Measure: ${blockMeasure} of ${currentTiming.totalMeasures})`;
-
-          currentBlockDisplay.classList.add('pulse');
-          currentBlockDisplay.style.animation = `pulse ${beatDuration}s infinite`;
-
-          if (isFirstBeat) {
-            currentBlockDisplay.classList.add('one-count');
-          } else {
-            currentBlockDisplay.classList.remove('one-count');
-          }
-        }
-      );
-
-      activeTimeManager.start();
-
-      setTimeout(() => {
-        if (activeTimeManager) activeTimeManager.stop();
-        activeTimeManager = null;
-        cumulativeBeats += totalBlockBeats;
-        blockStartTime += currentTiming.duration;
-        currentIndex++;
-        playNextBlock();
-      }, currentTiming.duration * 1000 + 10);
-    }
-
-    playNextBlock();
+  function playSong() {
+  if (!timeline.children.length) {
+    console.log('No blocks to play');
+    return;
   }
+  let currentBlockIndex = 0;
+  function playNextBlock() {
+    if (currentBlockIndex >= timeline.children.length) {
+      resetPlayback();
+      return;
+    }
+    const block = timeline.children[currentBlockIndex];
+    playBlock(block, () => {
+      block.classList.remove('playing');
+      currentBlockIndex++;
+      playNextBlock();
+    });
+  }
+  playNextBlock();
+}
 
   function updateCurrentBlock(timing) {
     const previousBlock = timeline.querySelector('.playing');
@@ -849,6 +796,123 @@ function playBlock(block, onFinish) {
     console.error('loadSongFromDropdown failed:', error);
   }
 }
+
+function randomizeSong() {
+  try {
+    console.log('Randomize song called');
+    timeline.innerHTML = '';
+    if (selectedBlock) clearSelection();
+
+    const titleAdjectives = [
+      'Cosmic', 'Silent', 'Electric', 'Mystic', 'Faded', 'Lunar', 'Radiant', 'Ethereal', 'Glowing', 'Distant',
+      'Velvet', 'Shimmering', 'Dark', 'Golden', 'Crystal', 'Neon', 'Frozen', 'Burning', 'Wandering', 'Ancient',
+      'Vivid', 'Hollow', 'Spectral', 'Twisted', 'Bright', 'Echoing', 'Stellar', 'Pale', 'Infinite', 'Rustic',
+      'Somber', 'Blazing', 'Gentle', 'Flickering', 'Lost', 'Silver', 'Thunderous', 'Drifting', 'Haunted', 'Pure',
+      'Sapphire', 'Emerald', 'Crimson', 'Azure', 'Onyx', 'Turbulent', 'Serene', 'Feral', 'Timeless', 'Whispering',
+      'Jagged', 'Molten', 'Fragile', 'Icy', 'Warm'
+    ];
+    const titleNouns = [
+      'Echo', 'Pulse', 'Wave', 'Dream', 'Shadow', 'Flame', 'Horizon', 'Void', 'Star', 'Mist',
+      'River', 'Dawn', 'Night', 'Spark', 'Abyss', 'Sky', 'Drift', 'Gale', 'Peak', 'Shade',
+      'Journey', 'Whisper', 'Storm', 'Tide', 'Glow', 'Path', 'Ruin', 'Sphere', 'Dusk', 'Chasm',
+      'Beacon', 'Frost', 'Haze', 'Cliff', 'Veil', 'Crest', 'Bloom', 'Fang', 'Ash', 'Canyon',
+      'Ripple', 'Dust', 'Forge', 'Scream', 'Mirage', 'Blade', 'Lantern', 'Crater', 'Vortex', 'Harmony',
+      'Fury', 'Glade', 'Spire', 'Ember', 'Ridge'
+    ];
+
+    const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
+    const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
+    const newTitle = `${randomAdj} ${randomNoun}`;
+    updateTitle(newTitle);
+
+    const rootNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const modes = ['Ionian', 'Dorian', 'Mixolydian', 'Aeolian', 'Phrygian'];
+    const timeSignatures = ['4/4', '3/4', '6/8'];
+    const tempos = [90, 100, 110, 120, 130, 140, 150];
+    const feels = ['Happiness', 'Sadness', 'Tension', 'Calmness', 'Energy'];
+
+    const songRootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
+    const songMode = modes[Math.floor(Math.random() * modes.length)];
+    const songTimeSignature = timeSignatures[Math.floor(Math.random() * timeSignatures.length)];
+    const songTempo = tempos[Math.floor(Math.random() * tempos.length)];
+    const songFeel = feels[Math.floor(Math.random() * feels.length)];
+
+    const possibleParts = [
+      { type: 'intro', measures: 4, required: true },
+      { type: 'verse', measures: 8, required: true },
+      { type: 'pre-chorus', measures: 4, required: false, chance: 0.4 },
+      { type: 'chorus', measures: 8, required: true },
+      { type: 'verse', measures: 8, required: true },
+      { type: 'chorus', measures: 8, required: true },
+      { type: 'bridge', measures: 4, required: false, chance: 0.6 },
+      { type: 'chorus', measures: 8, required: true },
+      { type: 'outro', measures: 4, required: false, chance: 0.5 }
+    ];
+
+    const minBlocks = 3;
+    const maxBlocks = 7;
+    const blockCount = Math.floor(Math.random() * (maxBlocks - minBlocks + 1)) + minBlocks;
+    console.log(`Generating song with ${blockCount} blocks`);
+
+    const randomBlocks = [];
+    let requiredPartsAdded = 0;
+
+    for (let i = 0; randomBlocks.length < blockCount && i < possibleParts.length; i++) {
+      const part = possibleParts[i];
+      if (part.required && requiredPartsAdded < blockCount) {
+        randomBlocks.push({ ...part });
+        requiredPartsAdded++;
+      } else if (!part.required && randomBlocks.length < blockCount) {
+        if (Math.random() < part.chance) {
+          randomBlocks.push({ ...part });
+        }
+      }
+    }
+
+    while (randomBlocks.length < blockCount) {
+      const filler = Math.random() < 0.5 ? { type: 'verse', measures: 8 } : { type: 'chorus', measures: 8 };
+      randomBlocks.push(filler);
+    }
+
+    randomBlocks.forEach((baseData, index) => {
+      const blockData = {
+        type: baseData.type,
+        measures: baseData.measures,
+        rootNote: songRootNote,
+        mode: songMode,
+        tempo: songTempo,
+        timeSignature: songTimeSignature,
+        feel: songFeel,
+        lyrics: baseData.type === 'intro' || baseData.type === 'outro' ? '' : `Random ${baseData.type} lyrics for ${newTitle}...`
+      };
+
+      console.log(`Random block ${index + 1} data:`, blockData);
+
+      const block = document.createElement('div');
+      block.classList.add('song-block', blockData.type);
+      block.setAttribute('data-measures', blockData.measures);
+      block.setAttribute('data-tempo', blockData.tempo);
+      block.setAttribute('data-time-signature', blockData.timeSignature);
+      block.setAttribute('data-feel', blockData.feel);
+      block.setAttribute('data-lyrics', blockData.lyrics);
+      block.setAttribute('data-root-note', blockData.rootNote);
+      block.setAttribute('data-mode', blockData.mode);
+      block.innerHTML = `
+        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+        <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+      `;
+      updateBlockSize(block);
+      setupBlock(block);
+      console.log(`Appending random block ${index + 1}:`, block.outerHTML);
+      timeline.appendChild(block);
+    });
+
+    console.log('Timeline after randomize:', timeline.innerHTML);
+    calculateTimings();
+  } catch (error) {
+    console.error('Randomize failed:', error);
+  }
+}  
 
 async function loadSongFromDropdown(filename) {
   console.log('loadSongFromDropdown called with:', filename);
