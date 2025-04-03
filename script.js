@@ -720,99 +720,104 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function loadSongFromDropdown(filename) {
-    console.log('loadSongFromDropdown called with:', filename);
-    if (!filename) {
-      console.log("No filename selected");
-      return;
-    }
+  console.log('loadSongFromDropdown called with:', filename);
+  if (!filename) {
+    console.log("No filename selected");
+    return;
+  }
 
-    if (!timeline) {
-      console.error('Timeline element not found!');
-      return;
-    }
+  if (!timeline) {
+    console.error('Timeline element not found!');
+    return;
+  }
 
-    if (isPlaying) resetPlayback();
+  if (isPlaying) resetPlayback();
 
-    try {
-      if (filename === 'new-song') {
-        console.log('Loading new song');
-        timeline.innerHTML = '';
-        if (selectedBlock) clearSelection();
-        isFormCollapsed = false;
-        formContent.classList.remove('collapsed');
-        toggleFormBtn.textContent = 'Hide Parameters';
-        currentSongName = 'New Song';
-        updateTitle(currentSongName);
-        calculateTimings();
-        const styleDropdown = document.getElementById('style-dropdown');
-        styleDropdown.value = '';
-        console.log('New song loaded, timeline:', timeline.innerHTML);
-        return;
-      }
-
-      const songs = {
-        'songs/satisfaction.js': [
-          { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
-          { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
-          { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' }
-        ]
-      };
-
-      const songData = songs[filename];
-      if (!songData) {
-        console.error(`Song ${filename} not found in static songs object`);
-        return;
-      }
-
-      console.log('Clearing timeline and loading song:', filename);
+  try {
+    if (filename === 'new-song') {
+      console.log('Loading new song');
       timeline.innerHTML = '';
       if (selectedBlock) clearSelection();
-
-      updateTitle('(I Can’t Get No) Satisfaction');
-
-      console.log('Song data has', songData.length, 'blocks');
-      songData.forEach((blockData, index) => {
-        console.log(`Creating block ${index + 1} with data:`, blockData);
-        const block = document.createElement('div');
-        block.classList.add('song-block', blockData.type);
-        block.setAttribute('data-measures', blockData.measures);
-        block.setAttribute('data-tempo', blockData.tempo);
-        block.setAttribute('data-time-signature', blockData.timeSignature);
-        block.setAttribute('data-feel', blockData.feel);
-        block.setAttribute('data-lyrics', blockData.lyrics || '');
-        block.setAttribute('data-root-note', blockData.rootNote);
-        block.setAttribute('data-mode', blockData.mode);
-        block.innerHTML = `
-          <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
-          <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
-        `;
-        updateBlockSize(block);
-        setupBlock(block);
-        console.log(`Appending block ${index + 1} to timeline:`, block.outerHTML);
-        timeline.appendChild(block);
-      });
-
-      console.log('Timeline after load:', timeline.innerHTML);
+      isFormCollapsed = false;
+      formContent.classList.remove('collapsed');
+      toggleFormBtn.textContent = 'Hide Parameters';
+      currentSongName = 'New Song';
+      updateTitle(currentSongName);
       calculateTimings();
-      songDropdown.value = filename;
-    } catch (error) {
-      console.error('loadSongFromDropdown failed:', error);
+      const styleDropdown = document.getElementById('style-dropdown');
+      styleDropdown.value = '';
+      console.log('New song loaded, timeline:', timeline.innerHTML);
+      return;
     }
-  }
 
-  function populateSongDropdown() {
-    console.log('Populating song dropdown');
-    const availableSongs = ['new-song', 'songs/satisfaction.js'];
-    songDropdown.innerHTML = '';
-    availableSongs.forEach((song, index) => {
-      const option = document.createElement('option');
-      option.value = song;
-      option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
-      songDropdown.appendChild(option);
-      console.log(`Added option ${index + 1}:`, option.outerHTML);
+    const songs = {
+      'songs/satisfaction.js': [
+        { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I try and I try...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'When I’m drivin’ in my car...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'outro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' }
+      ]
+    };
+
+    const songData = songs[filename];
+    if (!songData) {
+      console.error(`Song ${filename} not found in static songs object`);
+      return;
+    }
+
+    console.log('Clearing timeline and loading song:', filename);
+    timeline.innerHTML = '';
+    if (selectedBlock) clearSelection();
+
+    updateTitle('(I Can’t Get No) Satisfaction');
+
+    console.log('Song data has', songData.length, 'blocks');
+    songData.forEach((blockData, index) => {
+      console.log(`Creating block ${index + 1} with data:`, blockData);
+      const block = document.createElement('div');
+      block.classList.add('song-block', blockData.type);
+      block.setAttribute('data-measures', blockData.measures);
+      block.setAttribute('data-tempo', blockData.tempo);
+      block.setAttribute('data-time-signature', blockData.timeSignature);
+      block.setAttribute('data-feel', blockData.feel);
+      block.setAttribute('data-lyrics', blockData.lyrics || '');
+      block.setAttribute('data-root-note', blockData.rootNote);
+      block.setAttribute('data-mode', blockData.mode);
+      block.innerHTML = `
+        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+        <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+      `;
+      updateBlockSize(block);
+      setupBlock(block);
+      console.log(`Appending block ${index + 1} to timeline:`, block.outerHTML);
+      timeline.appendChild(block);
     });
-    console.log('Dropdown final HTML:', songDropdown.innerHTML);
+
+    console.log('Timeline after load:', timeline.innerHTML);
+    calculateTimings();
+    songDropdown.value = filename;
+  } catch (error) {
+    console.error('loadSongFromDropdown failed:', error);
   }
+}
+
+ function populateSongDropdown() {
+  console.log('Populating song dropdown');
+  const availableSongs = ['new-song', 'songs/satisfaction.js'];
+  songDropdown.innerHTML = '';
+  availableSongs.forEach((song, index) => {
+    const option = document.createElement('option');
+    option.value = song;
+    option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
+    songDropdown.appendChild(option);
+    console.log(`Added option ${index + 1}:`, option.outerHTML);
+  });
+  console.log('Dropdown final HTML:', songDropdown.innerHTML);
+}
 
   function randomizeSong() {
   try {
@@ -966,10 +971,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial setup
   console.log('Starting initial setup');
-  populateSongDropdown();
-  songTitleInput.value = currentSongName;
-  updateTitle(currentSongName);
-  console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
-  loadSongFromDropdown('songs/satisfaction.js');
-  console.log('Initial setup complete');
+populateSongDropdown();
+songTitleInput.value = currentSongName;
+updateTitle(currentSongName);
+console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
+loadSongFromDropdown('songs/satisfaction.js');
+console.log('Initial setup complete');
 }); // Line ~959: This should be the only closing brace here
