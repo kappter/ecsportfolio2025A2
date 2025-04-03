@@ -44,15 +44,49 @@ document.addEventListener('DOMContentLoaded', () => {
   let tockShortBuffer = null;
 
   function loadAudioBuffers() {
-    return Promise.all([
-      fetch('tick.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tickBuffer = decoded),
-      fetch('tock.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tockBuffer = decoded),
-      fetch('tick_short.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tickShortBuffer = decoded),
-      fetch('tock_short.wav').then(response => response.arrayBuffer()).then(buffer => audioContext.decodeAudioData(buffer)).then(decoded => tockShortBuffer = decoded)
-    ]).catch(error => console.error('Failed to load audio files:', error));
+    const audioFiles = [
+      'tick.wav',
+      'tock.wav',
+      'tick_short.wav',
+      'tock_short.wav'
+    ];
+    console.log('Attempting to load audio files:', audioFiles);
+    return Promise.all(
+      audioFiles.map((file, index) =>
+        fetch(file)
+          .then(response => {
+            if (!response.ok) throw new Error(`Failed to fetch ${file}: ${response.status}`);
+            return response.arrayBuffer();
+          })
+          .then(buffer => audioContext.decodeAudioData(buffer))
+          .then(decoded => {
+            console.log(`Loaded ${file}`);
+            if (index === 0) tickBuffer = decoded;
+            if (index === 1) tockBuffer = decoded;
+            if (index === 2) tickShortBuffer = decoded;
+            if (index === 3) tockShortBuffer = decoded;
+          })
+      )
+    ).catch(error => {
+      console.error('Audio loading error:', error);
+      soundEnabled = false;
+      soundBtn.textContent = 'Sound Off (Files Missing)';
+    });
   }
 
   const audioBufferPromise = loadAudioBuffers();
+
+  // ... (rest of functions remain unchanged)
+
+  // Initial setup
+  console.log('Starting initial setup');
+  populateSongDropdown();
+  songTitleInput.value = currentSongName;
+  updateTitle(currentSongName);
+  console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
+  loadSongFromDropdown('songs/satisfaction.js');
+  console.log('Initial setup complete');
+});
 
   function playSound(buffer, time) {
     if (!buffer || !soundEnabled) return null;
