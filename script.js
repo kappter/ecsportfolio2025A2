@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const formContent = document.getElementById('form-content');
   const printSongName = document.getElementById('print-song-name');
   const songTitleInput = document.querySelector('#form-content #song-title-input');
+  const footer = document.querySelector('footer'); // Check for footer
 
   // State Variables
   let draggedBlock = null;
@@ -29,7 +30,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let audioContext = new AudioContext();
   let tickBuffer, tockBuffer, tickShortBuffer, tockShortBuffer;
 
-  console.log('Elements:', { timeline, songDropdown, songTitleInput });
+  console.log('Elements:', { 
+    timeline, 
+    songDropdown, 
+    songTitleInput, 
+    playBtn, 
+    footer: footer ? 'Found' : 'Not found' 
+  });
 
   // Valid Time Signatures
   const validTimeSignatures = [
@@ -84,6 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTime = audioContext.currentTime;
     let isTick = true;
 
+    console.log(`Scheduling block: ${block.querySelector('.label').textContent}`);
+
     for (let i = 0; i < measures * beatsPerMeasure; i++) {
       const isShort = beatsPerMeasure % 2 === 0 && i % beatsPerMeasure === beatsPerMeasure - 1;
       const buffer = isTick
@@ -96,7 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
         source.connect(audioContext.destination);
         source.start(currentTime);
         if (i === measures * beatsPerMeasure - 1) {
-          source.onended = onFinish;
+          source.onended = () => {
+            console.log(`Finished block: ${block.querySelector('.label').textContent}`);
+            if (onFinish) onFinish();
+          };
         }
       }
       currentTime += beatDuration;
@@ -113,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('No blocks to play');
       return;
     }
+    console.log('Starting song playback');
     let currentBlockIndex = 0;
     function playNextBlock() {
       if (currentBlockIndex >= timeline.children.length || !isPlaying) {
@@ -131,17 +144,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Toggle Play
   function togglePlay() {
+    console.log('togglePlay called, isPlaying:', isPlaying);
     if (isPlaying) {
       resetPlayback();
     } else {
       isPlaying = true;
       playBtn.textContent = 'Reset';
-      audioContext.resume().then(() => playSong());
+      audioContext.resume().then(() => {
+        console.log('AudioContext resumed');
+        playSong();
+      }).catch(err => console.error('AudioContext resume failed:', err));
     }
   }
 
   // Reset Playback
   function resetPlayback() {
+    console.log('Resetting playback');
     isPlaying = false;
     playBtn.textContent = 'Play';
     timeline.querySelectorAll('.playing').forEach(block => block.classList.remove('playing'));
@@ -191,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Static song data (expand this as needed)
       const songs = {
         'songs/satisfaction.js': [
           { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
@@ -203,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
           { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
           { type: 'outro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' }
         ]
-        // Add other songs here if you have their data
       };
 
       let songData;
@@ -211,10 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
         songData = songs[filename];
         console.log(`Using static data for ${filename}`);
       } else {
-        // Try fetching as JSON (adjust paths if needed)
         const response = await fetch(filename);
         if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.status}`);
-        songData = await response.json(); // Assumes .js files are actually .json or served as JSON
+        songData = await response.json();
         console.log(`Fetched ${filename} as JSON`);
       }
 
@@ -373,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
       block.classList.add('selected');
     });
 
-    // Add Resize Handle
     const resizeHandle = document.createElement('div');
     resizeHandle.classList.add('resize-handle');
     block.appendChild(resizeHandle);
@@ -430,7 +444,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Event Listeners
-  playBtn.addEventListener('click', togglePlay);
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      console.log('Play button clicked');
+      togglePlay();
+    });
+  } else {
+    console.error('Play button not found in DOM');
+  }
+
   soundBtn.addEventListener('click', () => {
     soundEnabled = !soundEnabled;
     soundBtn.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
