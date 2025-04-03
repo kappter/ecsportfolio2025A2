@@ -76,18 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const audioBufferPromise = loadAudioBuffers();
 
-  // ... (rest of functions remain unchanged)
-
-  // Initial setup
-  console.log('Starting initial setup');
-  populateSongDropdown();
-  songTitleInput.value = currentSongName;
-  updateTitle(currentSongName);
-  console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
-  loadSongFromDropdown('songs/satisfaction.js');
-  console.log('Initial setup complete');
-});
-
   function playSound(buffer, time) {
     if (!buffer || !soundEnabled) return null;
     const source = audioContext.createBufferSource();
@@ -812,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
- function populateSongDropdown() {
+  function populateSongDropdown() {
     console.log('Populating song dropdown');
     const availableSongs = ['new-song', 'songs/satisfaction.js'];
     songDropdown.innerHTML = '';
@@ -827,112 +815,124 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function randomizeSong() {
-  try {
-    console.log('Randomize song called');
-    timeline.innerHTML = '';
-    if (selectedBlock) clearSelection();
+    try {
+      console.log('Randomize song called');
+      timeline.innerHTML = '';
+      if (selectedBlock) clearSelection();
 
-    // Random song title
-    const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Mystic', 'Faded'];
-    const titleNouns = ['Echo', 'Pulse', 'Wave', 'Dream', 'Shadow'];
-    const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
-    const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
-    const newTitle = `${randomAdj} ${randomNoun}`;
-    updateTitle(newTitle);
+      const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Mystic', 'Faded'];
+      const titleNouns = ['Echo', 'Pulse', 'Wave', 'Dream', 'Shadow'];
+      const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
+      const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
+      const newTitle = `${randomAdj} ${randomNoun}`;
+      updateTitle(newTitle);
 
-    // Consistent song attributes
-    const rootNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-    const modes = ['Ionian', 'Dorian', 'Mixolydian', 'Aeolian', 'Phrygian'];
-    const timeSignatures = ['4/4', '3/4', '6/8'];
-    const tempos = [90, 100, 110, 120, 130, 140, 150];
-    const feels = ['Happiness', 'Sadness', 'Tension', 'Calmness', 'Energy'];
+      const rootNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const modes = ['Ionian', 'Dorian', 'Mixolydian', 'Aeolian', 'Phrygian'];
+      const timeSignatures = ['4/4', '3/4', '6/8'];
+      const tempos = [90, 100, 110, 120, 130, 140, 150];
+      const feels = ['Happiness', 'Sadness', 'Tension', 'Calmness', 'Energy'];
 
-    const songRootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
-    const songMode = modes[Math.floor(Math.random() * modes.length)];
-    const songTimeSignature = timeSignatures[Math.floor(Math.random() * timeSignatures.length)];
-    const songTempo = tempos[Math.floor(Math.random() * tempos.length)];
-    const songFeel = feels[Math.floor(Math.random() * feels.length)];
+      const songRootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
+      const songMode = modes[Math.floor(Math.random() * modes.length)];
+      const songTimeSignature = timeSignatures[Math.floor(Math.random() * timeSignatures.length)];
+      const songTempo = tempos[Math.floor(Math.random() * tempos.length)];
+      const songFeel = feels[Math.floor(Math.random() * feels.length)];
 
-    // Song structure with random length and optional parts
-    const possibleParts = [
-      { type: 'intro', measures: 4, required: true },
-      { type: 'verse', measures: 8, required: true },
-      { type: 'pre-chorus', measures: 4, required: false, chance: 0.4 },
-      { type: 'chorus', measures: 8, required: true },
-      { type: 'verse', measures: 8, required: true },
-      { type: 'chorus', measures: 8, required: true },
-      { type: 'bridge', measures: 4, required: false, chance: 0.6 },
-      { type: 'chorus', measures: 8, required: true },
-      { type: 'outro', measures: 4, required: false, chance: 0.5 }
-    ];
+      const possibleParts = [
+        { type: 'intro', measures: 4, required: true },
+        { type: 'verse', measures: 8, required: true },
+        { type: 'pre-chorus', measures: 4, required: false, chance: 0.4 },
+        { type: 'chorus', measures: 8, required: true },
+        { type: 'verse', measures: 8, required: true },
+        { type: 'chorus', measures: 8, required: true },
+        { type: 'bridge', measures: 4, required: false, chance: 0.6 },
+        { type: 'chorus', measures: 8, required: true },
+        { type: 'outro', measures: 4, required: false, chance: 0.5 }
+      ];
 
-    const minBlocks = 3;
-    const maxBlocks = 7;
-    const blockCount = Math.floor(Math.random() * (maxBlocks - minBlocks + 1)) + minBlocks;
-    console.log(`Generating song with ${blockCount} blocks`);
+      const minBlocks = 3;
+      const maxBlocks = 7;
+      const blockCount = Math.floor(Math.random() * (maxBlocks - minBlocks + 1)) + minBlocks;
+      console.log(`Generating song with ${blockCount} blocks`);
 
-    const randomBlocks = [];
-    let requiredPartsAdded = 0;
+      const randomBlocks = [];
+      let requiredPartsAdded = 0;
 
-    // Add required parts first to ensure logical structure
-    for (let i = 0; randomBlocks.length < blockCount && i < possibleParts.length; i++) {
-      const part = possibleParts[i];
-      if (part.required && requiredPartsAdded < blockCount) {
-        randomBlocks.push({ ...part });
-        requiredPartsAdded++;
-      } else if (!part.required && randomBlocks.length < blockCount) {
-        if (Math.random() < part.chance) {
+      for (let i = 0; randomBlocks.length < blockCount && i < possibleParts.length; i++) {
+        const part = possibleParts[i];
+        if (part.required && requiredPartsAdded < blockCount) {
           randomBlocks.push({ ...part });
+          requiredPartsAdded++;
+        } else if (!part.required && randomBlocks.length < blockCount) {
+          if (Math.random() < part.chance) {
+            randomBlocks.push({ ...part });
+          }
         }
       }
+
+      while (randomBlocks.length < blockCount) {
+        const filler = Math.random() < 0.5 ? { type: 'verse', measures: 8 } : { type: 'chorus', measures: 8 };
+        randomBlocks.push(filler);
+      }
+
+      randomBlocks.forEach((baseData, index) => {
+        const blockData = {
+          type: baseData.type,
+          measures: baseData.measures,
+          rootNote: songRootNote,
+          mode: songMode,
+          tempo: songTempo,
+          timeSignature: songTimeSignature,
+          feel: songFeel,
+          lyrics: baseData.type === 'intro' || baseData.type === 'outro' ? '' : `Random ${baseData.type} lyrics for ${newTitle}...`
+        };
+
+        console.log(`Random block ${index + 1} data:`, blockData);
+
+        const block = document.createElement('div');
+        block.classList.add('song-block', blockData.type);
+        block.setAttribute('data-measures', blockData.measures);
+        block.setAttribute('data-tempo', blockData.tempo);
+        block.setAttribute('data-time-signature', blockData.timeSignature);
+        block.setAttribute('data-feel', blockData.feel);
+        block.setAttribute('data-lyrics', blockData.lyrics);
+        block.setAttribute('data-root-note', blockData.rootNote);
+        block.setAttribute('data-mode', blockData.mode);
+        block.innerHTML = `
+          <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+          <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+        `;
+        updateBlockSize(block);
+        setupBlock(block);
+        console.log(`Appending random block ${index + 1}:`, block.outerHTML);
+        timeline.appendChild(block);
+      });
+
+      console.log('Timeline after randomize:', timeline.innerHTML);
+      calculateTimings();
+    } catch (error) {
+      console.error('Randomize failed:', error);
     }
-
-    // Fill remaining slots with Verse or Chorus if needed
-    while (randomBlocks.length < blockCount) {
-      const filler = Math.random() < 0.5 ? { type: 'verse', measures: 8 } : { type: 'chorus', measures: 8 };
-      randomBlocks.push(filler);
-    }
-
-    // Generate blocks
-    randomBlocks.forEach((baseData, index) => {
-      const blockData = {
-        type: baseData.type,
-        measures: baseData.measures,
-        rootNote: songRootNote,
-        mode: songMode,
-        tempo: songTempo,
-        timeSignature: songTimeSignature,
-        feel: songFeel,
-        lyrics: baseData.type === 'intro' || baseData.type === 'outro' ? '' : `Random ${baseData.type} lyrics for ${newTitle}...`
-      };
-
-      console.log(`Random block ${index + 1} data:`, blockData);
-
-      const block = document.createElement('div');
-      block.classList.add('song-block', blockData.type);
-      block.setAttribute('data-measures', blockData.measures);
-      block.setAttribute('data-tempo', blockData.tempo);
-      block.setAttribute('data-time-signature', blockData.timeSignature);
-      block.setAttribute('data-feel', blockData.feel);
-      block.setAttribute('data-lyrics', blockData.lyrics);
-      block.setAttribute('data-root-note', blockData.rootNote);
-      block.setAttribute('data-mode', blockData.mode);
-      block.innerHTML = `
-        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
-        <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
-      `;
-      updateBlockSize(block);
-      setupBlock(block);
-      console.log(`Appending random block ${index + 1}:`, block.outerHTML);
-      timeline.appendChild(block);
-    });
-
-    console.log('Timeline after randomize:', timeline.innerHTML);
-    calculateTimings();
-  } catch (error) {
-    console.error('Randomize failed:', error);
   }
-}
+
+  function printSong() {
+    const { totalSeconds, totalBeats } = calculateTimings();
+    const blockCount = timeline.children.length;
+
+    const originalContent = currentBlockDisplay.innerHTML;
+
+    currentBlockDisplay.innerHTML = `
+      <span class="label">
+        Total Duration: ${formatDuration(totalSeconds)} | Beats: ${totalBeats} | Blocks: ${blockCount}<br>
+        © 2025 SongMaker by kappter. All rights reserved.
+      </span>
+    `;
+
+    window.print();
+
+    currentBlockDisplay.innerHTML = originalContent;
+  }
 
   // Expose functions globally for onclick
   window.togglePlay = togglePlay;
@@ -956,4 +956,4 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Calling loadSongFromDropdown with songs/satisfaction.js');
   loadSongFromDropdown('songs/satisfaction.js');
   console.log('Initial setup complete');
-});
+}); // Line ~959: This should be the only closing brace here
