@@ -805,119 +805,91 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 }
 
- function populateSongDropdown() {
-  console.log('Populating song dropdown');
-  const availableSongs = ['new-song', 'songs/satisfaction.js'];
-  songDropdown.innerHTML = '';
-  availableSongs.forEach((song, index) => {
-    const option = document.createElement('option');
-    option.value = song;
-    option.textContent = song === 'new-song' ? 'New Song' : song.replace('songs/', '').replace('.js', '');
-    songDropdown.appendChild(option);
-    console.log(`Added option ${index + 1}:`, option.outerHTML);
-  });
-  console.log('Dropdown final HTML:', songDropdown.innerHTML);
-}
+async function loadSongFromDropdown(filename) {
+  console.log('loadSongFromDropdown called with:', filename);
+  if (!filename) {
+    console.log("No filename selected");
+    return;
+  }
 
-  function randomizeSong() {
+  if (!timeline) {
+    console.error('Timeline element not found!');
+    return;
+  }
+
+  if (isPlaying) resetPlayback();
+
   try {
-    console.log('Randomize song called');
+    if (filename === 'new-song') {
+      console.log('Loading new song');
+      timeline.innerHTML = '';
+      if (selectedBlock) clearSelection();
+      isFormCollapsed = false;
+      formContent.classList.remove('collapsed');
+      toggleFormBtn.textContent = 'Hide Parameters';
+      currentSongName = 'New Song';
+      updateTitle(currentSongName);
+      calculateTimings();
+      const styleDropdown = document.getElementById('style-dropdown');
+      styleDropdown.value = '';
+      console.log('New song loaded, timeline:', timeline.innerHTML);
+      return;
+    }
+
+    // Static song data for satisfaction (as a fallback)
+    const songs = {
+      'songs/satisfaction.js': [
+        { type: 'intro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no satisfaction...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I try and I try...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'verse', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'When I’m drivin’ in my car...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'chorus', measures: 8, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: 'I can’t get no...', rootNote: 'E', mode: 'Mixolydian' },
+        { type: 'outro', measures: 4, tempo: 136, timeSignature: '4/4', feel: 'Rock', lyrics: '', rootNote: 'E', mode: 'Mixolydian' }
+      ]
+    };
+
+    let songData;
+    if (songs[filename]) {
+      songData = songs[filename];
+      console.log('Using static song data for:', filename);
+    } else {
+      console.log('Fetching song data from:', filename);
+      const response = await fetch(filename);
+      if (!response.ok) throw new Error(`Failed to fetch ${filename}: ${response.status}`);
+      if (filename.endsWith('.json')) {
+        songData = await response.json();
+      } else if (filename.endsWith('.js')) {
+        const module = await import(filename); // Dynamic import for JS modules
+        songData = module.default || module; // Assumes the JS file exports an array or object
+      }
+      console.log('Fetched song data:', songData);
+    }
+
+    if (!songData || !Array.isArray(songData)) {
+      console.error(`Invalid song data for ${filename}:`, songData);
+      return;
+    }
+
+    console.log('Clearing timeline and loading song:', filename);
     timeline.innerHTML = '';
     if (selectedBlock) clearSelection();
 
-    // Expanded song title arrays
-    const titleAdjectives = [
-      'Cosmic', 'Silent', 'Electric', 'Mystic', 'Faded', 'Lunar', 'Radiant', 'Ethereal', 'Glowing', 'Distant',
-      'Velvet', 'Shimmering', 'Dark', 'Golden', 'Crystal', 'Neon', 'Frozen', 'Burning', 'Wandering', 'Ancient',
-      'Vivid', 'Hollow', 'Spectral', 'Twisted', 'Bright', 'Echoing', 'Stellar', 'Pale', 'Infinite', 'Rustic',
-      'Somber', 'Blazing', 'Gentle', 'Flickering', 'Lost', 'Silver', 'Thunderous', 'Drifting', 'Haunted', 'Pure',
-      'Sapphire', 'Emerald', 'Crimson', 'Azure', 'Onyx', 'Turbulent', 'Serene', 'Feral', 'Timeless', 'Whispering',
-      'Jagged', 'Molten', 'Fragile', 'Icy', 'Warm'
-    ];
-    const titleNouns = [
-      'Echo', 'Pulse', 'Wave', 'Dream', 'Shadow', 'Flame', 'Horizon', 'Void', 'Star', 'Mist',
-      'River', 'Dawn', 'Night', 'Spark', 'Abyss', 'Sky', 'Drift', 'Gale', 'Peak', 'Shade',
-      'Journey', 'Whisper', 'Storm', 'Tide', 'Glow', 'Path', 'Ruin', 'Sphere', 'Dusk', 'Chasm',
-      'Beacon', 'Frost', 'Haze', 'Cliff', 'Veil', 'Crest', 'Bloom', 'Fang', 'Ash', 'Canyon',
-      'Ripple', 'Dust', 'Forge', 'Scream', 'Mirage', 'Blade', 'Lantern', 'Crater', 'Vortex', 'Harmony',
-      'Fury', 'Glade', 'Spire', 'Ember', 'Ridge'
-    ];
+    // Extract song title from filename if not provided in data
+    const songTitle = filename.replace('songs/', '').replace(/\.(js|json)$/, '');
+    updateTitle(songTitle);
 
-    const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
-    const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
-    const newTitle = `${randomAdj} ${randomNoun}`;
-    updateTitle(newTitle);
-
-    const rootNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-    const modes = ['Ionian', 'Dorian', 'Mixolydian', 'Aeolian', 'Phrygian'];
-    const timeSignatures = ['4/4', '3/4', '6/8'];
-    const tempos = [90, 100, 110, 120, 130, 140, 150];
-    const feels = ['Happiness', 'Sadness', 'Tension', 'Calmness', 'Energy'];
-
-    const songRootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
-    const songMode = modes[Math.floor(Math.random() * modes.length)];
-    const songTimeSignature = timeSignatures[Math.floor(Math.random() * timeSignatures.length)];
-    const songTempo = tempos[Math.floor(Math.random() * tempos.length)];
-    const songFeel = feels[Math.floor(Math.random() * feels.length)];
-
-    const possibleParts = [
-      { type: 'intro', measures: 4, required: true },
-      { type: 'verse', measures: 8, required: true },
-      { type: 'pre-chorus', measures: 4, required: false, chance: 0.4 },
-      { type: 'chorus', measures: 8, required: true },
-      { type: 'verse', measures: 8, required: true },
-      { type: 'chorus', measures: 8, required: true },
-      { type: 'bridge', measures: 4, required: false, chance: 0.6 },
-      { type: 'chorus', measures: 8, required: true },
-      { type: 'outro', measures: 4, required: false, chance: 0.5 }
-    ];
-
-    const minBlocks = 3;
-    const maxBlocks = 7;
-    const blockCount = Math.floor(Math.random() * (maxBlocks - minBlocks + 1)) + minBlocks;
-    console.log(`Generating song with ${blockCount} blocks`);
-
-    const randomBlocks = [];
-    let requiredPartsAdded = 0;
-
-    for (let i = 0; randomBlocks.length < blockCount && i < possibleParts.length; i++) {
-      const part = possibleParts[i];
-      if (part.required && requiredPartsAdded < blockCount) {
-        randomBlocks.push({ ...part });
-        requiredPartsAdded++;
-      } else if (!part.required && randomBlocks.length < blockCount) {
-        if (Math.random() < part.chance) {
-          randomBlocks.push({ ...part });
-        }
-      }
-    }
-
-    while (randomBlocks.length < blockCount) {
-      const filler = Math.random() < 0.5 ? { type: 'verse', measures: 8 } : { type: 'chorus', measures: 8 };
-      randomBlocks.push(filler);
-    }
-
-    randomBlocks.forEach((baseData, index) => {
-      const blockData = {
-        type: baseData.type,
-        measures: baseData.measures,
-        rootNote: songRootNote,
-        mode: songMode,
-        tempo: songTempo,
-        timeSignature: songTimeSignature,
-        feel: songFeel,
-        lyrics: baseData.type === 'intro' || baseData.type === 'outro' ? '' : `Random ${baseData.type} lyrics for ${newTitle}...`
-      };
-
-      console.log(`Random block ${index + 1} data:`, blockData);
-
+    console.log('Song data has', songData.length, 'blocks');
+    songData.forEach((blockData, index) => {
+      console.log(`Creating block ${index + 1} with data:`, blockData);
       const block = document.createElement('div');
       block.classList.add('song-block', blockData.type);
       block.setAttribute('data-measures', blockData.measures);
       block.setAttribute('data-tempo', blockData.tempo);
       block.setAttribute('data-time-signature', blockData.timeSignature);
       block.setAttribute('data-feel', blockData.feel);
-      block.setAttribute('data-lyrics', blockData.lyrics);
+      block.setAttribute('data-lyrics', blockData.lyrics || '');
       block.setAttribute('data-root-note', blockData.rootNote);
       block.setAttribute('data-mode', blockData.mode);
       block.innerHTML = `
@@ -926,14 +898,15 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       updateBlockSize(block);
       setupBlock(block);
-      console.log(`Appending random block ${index + 1}:`, block.outerHTML);
+      console.log(`Appending block ${index + 1} to timeline:`, block.outerHTML);
       timeline.appendChild(block);
     });
 
-    console.log('Timeline after randomize:', timeline.innerHTML);
+    console.log('Timeline after load:', timeline.innerHTML);
     calculateTimings();
+    songDropdown.value = filename;
   } catch (error) {
-    console.error('Randomize failed:', error);
+    console.error('loadSongFromDropdown failed:', error);
   }
 }
 
