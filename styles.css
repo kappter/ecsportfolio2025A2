@@ -426,7 +426,7 @@ footer {
 @media print {
   body {
     margin: 0;
-    padding: 0.25in;
+    padding: 0.2in; /* Reduced from 0.25in */
     font-family: 'Helvetica', 'Arial', sans-serif;
     color: #000;
     background: #fff;
@@ -434,7 +434,7 @@ footer {
   }
 
   header {
-    margin-bottom: 10px;
+    margin-bottom: 5px; /* Reduced from 10px */
   }
 
   h1 {
@@ -445,38 +445,36 @@ footer {
     font-size: 18pt;
     font-weight: bold;
     text-align: center;
-    margin: 10px 0 5px;
-    padding-bottom: 3px;
+    margin: 5px 0 2px; /* Tightened from 10px 0 5px */
+    padding-bottom: 2px; /* Reduced from 3px */
     color: #000 !important;
     font-family: 'Georgia', 'Times New Roman', serif;
     border-bottom: 1px solid #333;
     letter-spacing: 0.5px;
   }
 
-  /* Hide the form container entirely */
   .form-container {
     display: none;
   }
 
-  /* Repurpose current-block-display for song info */
   #current-block-display {
-    display: block; /* Ensure it’s visible */
+    display: block;
     text-align: center;
-    padding: 8px; /* Slightly reduced from 12px */
+    padding: 5px; /* Reduced from 8px */
     background: #fff;
-    border: 1px solid #999; /* Match block borders */
+    border: 1px solid #999;
     border-radius: 0;
-    margin: 0 auto 10px; /* Reduced from 20px */
-    max-width: 100%; /* Full width */
+    margin: 0 auto 5px; /* Reduced from 10px */
+    max-width: 100%;
     box-shadow: none;
-    font-size: 9pt; /* Match block text size */
+    font-size: 9pt;
   }
 
   #current-block-display .label {
     display: block;
-    font-weight: normal; /* Less bold for info */
+    font-weight: normal;
     font-size: 9pt;
-    line-height: 1.2;
+    line-height: 1.1; /* Tightened from 1.2 */
     margin: 0;
   }
 
@@ -486,7 +484,7 @@ footer {
     gap: 5px;
     width: 100%;
     padding: 0;
-    margin: 0 0 20px;
+    margin: 0; /* Removed 20px bottom margin */
   }
 
   .song-block {
@@ -495,7 +493,7 @@ footer {
     min-width: 150px;
     max-width: 200px;
     margin: 0;
-    padding: 8px;
+    padding: 6px; /* Reduced from 8px */
     box-sizing: border-box;
     border: 1px solid #999;
     color: #000;
@@ -538,7 +536,7 @@ footer {
 
   .song-block .label {
     font-size: 9pt;
-    line-height: 1.2;
+    line-height: 1.1; /* Tightened from 1.2 */
     margin: 0;
     padding: 0;
     white-space: normal;
@@ -563,7 +561,6 @@ footer {
     display: none;
   }
 
-  /* Hide info-box since we’re using current-block-display */
   .info-box {
     display: none;
   }
@@ -576,20 +573,21 @@ footer {
   }
 
   @page {
-    margin: 0.25in;
+    margin: 0.2in; /* Reduced from 0.25in */
     @top-center {
-      content: counter(page) " of " counter(pages); /* Page numbers only */
+      content: counter(page) " of " counter(pages);
       font-size: 8pt;
       color: #555;
     }
-    /* Remove bottom-center since copyright moves to current-block-display */
+    /* No bottom-center content */
   }
 
   .timeline::before {
     content: none;
   }
 
+  /* Remove forced page break */
   .timeline {
-    page-break-before: always;
+    page-break-before: auto; /* Changed from always */
   }
 }
