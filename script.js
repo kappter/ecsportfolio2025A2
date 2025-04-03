@@ -827,87 +827,112 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function randomizeSong() {
-    try {
-      console.log('Randomize song called');
-      timeline.innerHTML = '';
-      if (selectedBlock) clearSelection();
+  try {
+    console.log('Randomize song called');
+    timeline.innerHTML = '';
+    if (selectedBlock) clearSelection();
 
-      const titleAdjectives = ['Cosmic', 'Silent', 'Electric'];
-      const titleNouns = ['Echo', 'Pulse', 'Wave'];
-      const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
-      const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
-      const newTitle = `${randomAdj} ${randomNoun}`;
-      updateTitle(newTitle);
+    // Random song title
+    const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Mystic', 'Faded'];
+    const titleNouns = ['Echo', 'Pulse', 'Wave', 'Dream', 'Shadow'];
+    const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
+    const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
+    const newTitle = `${randomAdj} ${randomNoun}`;
+    updateTitle(newTitle);
 
-      const partTypes = ['intro', 'verse', 'chorus'];
-      const rootNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-      const modes = ['Ionian', 'Dorian', 'Mixolydian', 'Aeolian'];
-      const feels = ['Happiness', 'Sadness', 'Tension', 'Calmness'];
-      const tempos = [90, 100, 120, 140, 160];
+    // Consistent song attributes
+    const rootNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    const modes = ['Ionian', 'Dorian', 'Mixolydian', 'Aeolian', 'Phrygian'];
+    const timeSignatures = ['4/4', '3/4', '6/8'];
+    const tempos = [90, 100, 110, 120, 130, 140, 150];
+    const feels = ['Happiness', 'Sadness', 'Tension', 'Calmness', 'Energy'];
 
-      const randomBlocks = [
-        { type: 'intro', measures: 4 },
-        { type: 'verse', measures: 8 },
-        { type: 'chorus', measures: 8 }
-      ];
+    const songRootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
+    const songMode = modes[Math.floor(Math.random() * modes.length)];
+    const songTimeSignature = timeSignatures[Math.floor(Math.random() * timeSignatures.length)];
+    const songTempo = tempos[Math.floor(Math.random() * tempos.length)];
+    const songFeel = feels[Math.floor(Math.random() * feels.length)];
 
-      randomBlocks.forEach((baseData, index) => {
-        const blockData = {
-          type: baseData.type,
-          measures: baseData.measures,
-          rootNote: rootNotes[Math.floor(Math.random() * rootNotes.length)],
-          mode: modes[Math.floor(Math.random() * modes.length)],
-          tempo: tempos[Math.floor(Math.random() * tempos.length)],
-          timeSignature: '4/4',
-          feel: feels[Math.floor(Math.random() * feels.length)],
-          lyrics: index > 0 ? `Random ${baseData.type} lyrics...` : ''
-        };
+    // Song structure with random length and optional parts
+    const possibleParts = [
+      { type: 'intro', measures: 4, required: true },
+      { type: 'verse', measures: 8, required: true },
+      { type: 'pre-chorus', measures: 4, required: false, chance: 0.4 },
+      { type: 'chorus', measures: 8, required: true },
+      { type: 'verse', measures: 8, required: true },
+      { type: 'chorus', measures: 8, required: true },
+      { type: 'bridge', measures: 4, required: false, chance: 0.6 },
+      { type: 'chorus', measures: 8, required: true },
+      { type: 'outro', measures: 4, required: false, chance: 0.5 }
+    ];
 
-        console.log(`Random block ${index + 1} data:`, blockData);
+    const minBlocks = 3;
+    const maxBlocks = 7;
+    const blockCount = Math.floor(Math.random() * (maxBlocks - minBlocks + 1)) + minBlocks;
+    console.log(`Generating song with ${blockCount} blocks`);
 
-        const block = document.createElement('div');
-        block.classList.add('song-block', blockData.type);
-        block.setAttribute('data-measures', blockData.measures);
-        block.setAttribute('data-tempo', blockData.tempo);
-        block.setAttribute('data-time-signature', blockData.timeSignature);
-        block.setAttribute('data-feel', blockData.feel);
-        block.setAttribute('data-lyrics', blockData.lyrics);
-        block.setAttribute('data-root-note', blockData.rootNote);
-        block.setAttribute('data-mode', blockData.mode);
-        block.innerHTML = `
-          <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
-          <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
-        `;
-        updateBlockSize(block);
-        setupBlock(block);
-        console.log(`Appending random block ${index + 1}:`, block.outerHTML);
-        timeline.appendChild(block);
-      });
+    const randomBlocks = [];
+    let requiredPartsAdded = 0;
 
-      console.log('Timeline after randomize:', timeline.innerHTML);
-      calculateTimings();
-    } catch (error) {
-      console.error('Randomize failed:', error);
+    // Add required parts first to ensure logical structure
+    for (let i = 0; randomBlocks.length < blockCount && i < possibleParts.length; i++) {
+      const part = possibleParts[i];
+      if (part.required && requiredPartsAdded < blockCount) {
+        randomBlocks.push({ ...part });
+        requiredPartsAdded++;
+      } else if (!part.required && randomBlocks.length < blockCount) {
+        if (Math.random() < part.chance) {
+          randomBlocks.push({ ...part });
+        }
+      }
     }
+
+    // Fill remaining slots with Verse or Chorus if needed
+    while (randomBlocks.length < blockCount) {
+      const filler = Math.random() < 0.5 ? { type: 'verse', measures: 8 } : { type: 'chorus', measures: 8 };
+      randomBlocks.push(filler);
+    }
+
+    // Generate blocks
+    randomBlocks.forEach((baseData, index) => {
+      const blockData = {
+        type: baseData.type,
+        measures: baseData.measures,
+        rootNote: songRootNote,
+        mode: songMode,
+        tempo: songTempo,
+        timeSignature: songTimeSignature,
+        feel: songFeel,
+        lyrics: baseData.type === 'intro' || baseData.type === 'outro' ? '' : `Random ${baseData.type} lyrics for ${newTitle}...`
+      };
+
+      console.log(`Random block ${index + 1} data:`, blockData);
+
+      const block = document.createElement('div');
+      block.classList.add('song-block', blockData.type);
+      block.setAttribute('data-measures', blockData.measures);
+      block.setAttribute('data-tempo', blockData.tempo);
+      block.setAttribute('data-time-signature', blockData.timeSignature);
+      block.setAttribute('data-feel', blockData.feel);
+      block.setAttribute('data-lyrics', blockData.lyrics);
+      block.setAttribute('data-root-note', blockData.rootNote);
+      block.setAttribute('data-mode', blockData.mode);
+      block.innerHTML = `
+        <span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span>
+        <span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>
+      `;
+      updateBlockSize(block);
+      setupBlock(block);
+      console.log(`Appending random block ${index + 1}:`, block.outerHTML);
+      timeline.appendChild(block);
+    });
+
+    console.log('Timeline after randomize:', timeline.innerHTML);
+    calculateTimings();
+  } catch (error) {
+    console.error('Randomize failed:', error);
   }
-
-  function printSong() {
-    const { totalSeconds, totalBeats } = calculateTimings();
-    const blockCount = timeline.children.length;
-
-    const originalContent = currentBlockDisplay.innerHTML;
-
-    currentBlockDisplay.innerHTML = `
-      <span class="label">
-        Total Duration: ${formatDuration(totalSeconds)} | Beats: ${totalBeats} | Blocks: ${blockCount}<br>
-        © 2025 SongMaker by kappter. All rights reserved.
-      </span>
-    `;
-
-    window.print();
-
-    currentBlockDisplay.innerHTML = originalContent;
-  }
+}
 
   // Expose functions globally for onclick
   window.togglePlay = togglePlay;
