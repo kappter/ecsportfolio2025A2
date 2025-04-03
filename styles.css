@@ -426,65 +426,94 @@ footer {
 @media print {
   body {
     margin: 0;
-    padding: 0.25in; /* Reduced from 0.5in */
+    padding: 0.25in;
     font-family: 'Helvetica', 'Arial', sans-serif;
     color: #000;
     background: #fff;
-    font-size: 10pt; /* Base font size for compactness */
+    font-size: 10pt;
   }
 
   header {
-    margin-bottom: 10px; /* Reduced from 20px */
+    margin-bottom: 10px;
   }
 
   h1 {
-    display: none; /* Still hidden */
+    display: none;
   }
 
   #print-song-name {
-    font-size: 18pt; /* Slightly smaller for space, still prominent */
+    font-size: 18pt;
     font-weight: bold;
     text-align: center;
-    margin: 10px 0 5px; /* Tightened spacing */
+    margin: 10px 0 5px;
     padding-bottom: 3px;
-    color: #000 !important; /* Full black for print */
+    color: #000 !important;
     font-family: 'Georgia', 'Times New Roman', serif;
-    border-bottom: 1px solid #333; /* Thinner border */
+    border-bottom: 1px solid #333;
     letter-spacing: 0.5px;
   }
 
   .timeline {
-    display: grid; /* Switch to grid for tighter packing */
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Flexible columns */
-    gap: 5px; /* Reduced from 10px */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 5px;
     width: 100%;
     padding: 0;
-    margin: 0 0 20px; /* Reduced from 40px */
+    margin: 0 0 20px;
   }
 
   .song-block {
-    break-inside: avoid; /* Prevent splitting blocks across pages */
+    break-inside: avoid;
     page-break-inside: avoid;
-    min-width: 150px; /* Smaller base width */
-    max-width: 200px; /* Cap to prevent overflow */
+    min-width: 150px;
+    max-width: 200px;
     margin: 0;
-    padding: 8px; /* Slightly reduced from 10px */
+    padding: 8px;
     box-sizing: border-box;
-    border: 1px solid #999; /* Slightly darker border */
-    background: #fff;
-    color: #000;
-    box-shadow: none; /* Remove shadow for cleaner print */
+    border: 1px solid #999;
+    color: #000; /* Black text for all blocks */
+    box-shadow: none;
     position: relative;
     overflow: hidden;
-    height: auto; /* Allow height to adjust to content */
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
 
+  /* Lightened fill colors for each block type */
+  .song-block.intro { background: #e6f0e6; } /* Pale green */
+  .song-block.verse { background: #e6ebf0; } /* Pale blue */
+  .song-block.refrain { background: #f0e6eb; } /* Pale pink */
+  .song-block.pre-chorus { background: #e6f0e0; } /* Pale lime */
+  .song-block.chorus { background: #f0ebe6; } /* Pale peach */
+  .song-block.post-chorus { background: #e6f0ea; } /* Pale teal */
+  .song-block.bridge { background: #ebe6f0; } /* Pale purple */
+  .song-block.outro { background: #f0f0e6; } /* Pale yellow */
+  .song-block.elision { background: #e6e6e6; } /* Pale gray */
+  .song-block.solo { background: #f0e6f0; } /* Pale magenta */
+  .song-block.ad-lib { background: #e6f0f0; } /* Pale cyan */
+  .song-block.hook { background: #f0e6e6; } /* Pale red */
+  .song-block.interlude { background: #e6f0e2; } /* Pale mint */
+  .song-block.breakdown { background: #e6e6f0; } /* Pale indigo */
+  .song-block.drop { background: #f0e6e4; } /* Pale coral */
+  .song-block.coda { background: #e6f0e8; } /* Pale aqua */
+  .song-block.modulation { background: #f0f0e8; } /* Pale gold */
+  .song-block.tag { background: #e6e6ea; } /* Pale slate */
+  .song-block.chorus-reprise { background: #e6f0ee; } /* Pale turquoise */
+  .song-block.countermelody { background: #f0e6ee; } /* Pale violet */
+  .song-block.instrumental-verse-chorus { background: #e6f0e6; } /* Pale green (reused) */
+  .song-block.false-ending { background: #f0e6ea; } /* Pale rose */
+
+  /* Override style variations to ensure lightened colors */
+  .song-block.default { background: #f0f0f0; } /* Very pale gray */
+  .song-block.vibrant { background: #fff0f0; } /* Very pale red-orange */
+  .song-block.pastel { background: #f0f5f0; } /* Very pale green-blue */
+  .song-block.monochrome { background: #f5f5f5; } /* Very pale gray */
+
   .song-block .label {
-    font-size: 9pt; /* Smaller for compactness */
-    line-height: 1.2; /* Tighter line spacing */
+    font-size: 9pt;
+    line-height: 1.2;
     margin: 0;
     padding: 0;
     white-space: normal;
@@ -492,55 +521,55 @@ footer {
     text-overflow: ellipsis;
     max-width: 100%;
     box-sizing: border-box;
+    color: #000; /* Ensure black text */
   }
 
   .song-block .label br {
-    display: none; /* Still remove line breaks */
+    display: none;
   }
 
   .song-block .label::after {
-    content: ""; /* Simplified */
+    content: "";
   }
 
   .song-block .resize-handle,
   .song-block .delete-btn,
   .song-block .tooltip {
-    display: none; /* Hide all interactive elements */
+    display: none;
   }
 
   .info-box {
     display: block;
     position: static;
-    margin: 10px auto 0; /* Reduced from 20px */
+    margin: 10px auto 0;
     padding: 8px;
     background: #fff;
     border: 1px solid #ccc;
     border-radius: 0;
-    font-size: 9pt; /* Match block size */
+    font-size: 9pt;
     text-align: center;
     color: #000;
     width: 100%;
-    max-width: 100%; /* Full width for summary */
+    max-width: 100%;
     box-sizing: border-box;
   }
 
-  /* Hide other UI elements */
   nav,
   .controls,
   .form-content,
   footer {
-    display: none; /* Hide footer in favor of @page */
+    display: none;
   }
 
   @page {
-    margin: 0.25in; /* Reduced margins */
+    margin: 0.25in;
     @top-center {
-      content: counter(page) " of " counter(pages); /* Page numbers */
+      content: counter(page) " of " counter(pages);
       font-size: 8pt;
       color: #555;
     }
     @bottom-center {
-      content: "© 2025 SongMaker by kappter. All rights reserved."; /* Moved from footer */
+      content: "© 2025 SongMaker by kappter. All rights reserved.";
       font-size: 8pt;
       font-style: italic;
       color: #555;
@@ -551,8 +580,7 @@ footer {
     content: none;
   }
 
-  /* Ensure blocks don’t split across pages if possible */
   .timeline {
-    page-break-before: always; /* Start on new page if needed */
+    page-break-before: always;
   }
 }
