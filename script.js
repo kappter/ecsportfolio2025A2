@@ -9,7 +9,6 @@ const toggleFormBtn = document.getElementById('toggle-form-btn');
 const formContent = document.getElementById('form-content');
 const printSongName = document.getElementById('print-song-name');
 const songTitleInput = document.getElementById('song-title-input');
-
 let draggedBlock = null;
 let selectedBlock = null;
 let currentSongName = '(I Can’t Get No) Satisfaction';
@@ -136,14 +135,9 @@ function randomizeSong() {
   timeline.innerHTML = '';
   if (selectedBlock) clearSelection();
 
-  // Random title generator
-  const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Fading', 'Raging', 'Dreamy', 'Wild', 'Mystic'];
-  const titleNouns = ['Echo', 'Pulse', 'Wave', 'Night', 'Fire', 'Journey', 'Sky', 'Dream'];
-  const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
-  const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
-  const newTitle = `${randomAdj} ${randomNoun}`;
-  updateTitle(newTitle);
-  songTitleInput.value = currentSongName;
+  // Reset title to "Random Song" or prompt user
+  updateTitle('Random Song');
+  songTitleInput.value = 'Random Song'; // Sync input with title
 
   const partTypes = [/* unchanged */];
   const rootNotes = [/* unchanged */];
@@ -154,6 +148,7 @@ function randomizeSong() {
   const numBlocks = Math.floor(Math.random() * (15 - 5 + 1)) + 5;
 
   for (let i = 0; i < numBlocks; i++) {
+    // Block generation logic (unchanged)
     const type = partTypes[Math.floor(Math.random() * partTypes.length)];
     const measures = Math.floor(Math.random() * (16 - 1 + 1)) + 1;
     const rootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
