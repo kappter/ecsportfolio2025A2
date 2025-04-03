@@ -832,7 +832,24 @@ function populateSongDropdown() {
 }
 
 function printSong() {
+  const { totalSeconds, totalBeats } = calculateTimings();
+  const blockCount = timeline.children.length;
+
+  // Store original content to restore later
+  const originalContent = currentBlockDisplay.innerHTML;
+
+  // Populate current-block-display with song info and copyright
+  currentBlockDisplay.innerHTML = `
+    <span class="label">
+      Total Duration: ${formatDuration(totalSeconds)} | Beats: ${totalBeats} | Blocks: ${blockCount}<br>
+      © 2025 SongMaker by kappter. All rights reserved.
+    </span>
+  `;
+
   window.print();
+
+  // Restore original content after printing
+  currentBlockDisplay.innerHTML = originalContent;
 }
 
 populateSongDropdown();
