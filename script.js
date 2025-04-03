@@ -200,6 +200,10 @@ function playBlock(block, onFinish) {
     });
   }
 
+  playBtn.addEventListener('click', () => {
+  audioContext.resume().then(() => playSong());
+});
+
   songTitleInput.addEventListener('input', (e) => {
     updateTitle(e.target.value || 'Untitled');
   });
