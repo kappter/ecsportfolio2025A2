@@ -10,7 +10,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "5/8",
+      timeSignature: "11/8", // Changed from 5/8
       feel: "Atmospheric",
       lyrics: "" // Opening bass and guitar riff
     },
@@ -20,7 +20,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "5/8",
+      timeSignature: "11/8", // Changed from 5/8
       feel: "Tension",
       lyrics: "I know the pieces fit 'cause I watched them fall away"
     },
@@ -30,7 +30,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "6/8",
+      timeSignature: "6/8", // Already valid
       feel: "Mystical",
       lyrics: "" // Shift to 6/8 instrumental
     },
@@ -40,7 +40,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "5/8",
+      timeSignature: "11/8", // Changed from 5/8
       feel: "Tension",
       lyrics: "Milquetoast and misery between sobriety and silence"
     },
@@ -50,7 +50,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "4/4",
+      timeSignature: "4/4", // Already valid
       feel: "Intense",
       lyrics: "The pieces fit, I know the pieces fit"
     },
@@ -60,7 +60,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "6/8",
+      timeSignature: "6/8", // Already valid
       feel: "Trippy",
       lyrics: "" // Extended polyrhythmic drumming
     },
@@ -70,7 +70,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "5/8",
+      timeSignature: "11/8", // Changed from 5/8
       feel: "Climactic",
       lyrics: "There was a time that the pieces fit, but I watched them fall away"
     },
@@ -80,7 +80,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "6/8",
+      timeSignature: "6/8", // Already valid
       feel: "Atmospheric",
       lyrics: "" // Instrumental build-up
     },
@@ -90,7 +90,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "4/4",
+      timeSignature: "4/4", // Already valid
       feel: "Awakening",
       lyrics: "Cold silence has a tendency to atrophy any sense of compassion"
     },
@@ -100,7 +100,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "5/8",
+      timeSignature: "11/8", // Changed from 5/8
       feel: "Resolution",
       lyrics: "Between supposed lovers, between supposed brothers"
     },
@@ -110,7 +110,7 @@ const schismSong = {
       rootNote: "D",
       mode: "Dorian",
       tempo: 107,
-      timeSignature: "4/4",
+      timeSignature: "4/4", // Already valid
       feel: "Calmness",
       lyrics: "I know the pieces fit, I know the pieces fit"
     }
