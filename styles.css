@@ -232,7 +232,7 @@ main {
 }
 
 #current-block-display .info {
-  display|"block;
+  display: block; /* Fixed typo from display|"block */
   font-size: 0.85em;
   color: #bbb;
 }
@@ -426,26 +426,29 @@ footer {
 @media print {
   body {
     margin: 0;
-    padding: 0.1in; /* Further reduced from 0.15in */
+    padding: 0.05in;
     font-family: 'Helvetica', 'Arial', sans-serif;
     color: #000;
     background: #fff;
-    font-size: 9pt;
+    font-size: 8pt;
+    max-height: 10.5in;
+    overflow: hidden;
   }
 
   header {
-    margin-bottom: 2px;
+    margin-bottom: 1px;
+    padding: 0;
   }
 
-  h1 {
-    display: none; /* Already hidden, kept for clarity */
+  h1, #song-title-input {
+    display: none;
   }
 
   #print-song-name {
-    font-size: 16pt;
+    font-size: 14pt;
     font-weight: bold;
     text-align: center;
-    margin: 2px 0 1px;
+    margin: 1px 0;
     padding-bottom: 1px;
     color: #000 !important;
     font-family: 'Georgia', 'Times New Roman', serif;
@@ -454,26 +457,33 @@ footer {
   }
 
   .form-container, nav, .controls, .form-content, footer {
-    display: none; /* Hide unnecessary elements */
+    display: none;
   }
 
   #current-block-display {
     display: block;
     text-align: center;
-    padding: 3px;
+    padding: 2px;
     background: #fff;
     border: 1px solid #999;
     border-radius: 0;
-    margin: 0 auto 2px;
+    margin: 0 auto 1px;
     max-width: 100%;
     box-shadow: none;
-    font-size: 8pt;
+    font-size: 7pt;
+  }
+
+  #current-block-display .label {
+    font-weight: normal;
+    font-size: 7pt;
+    line-height: 1;
+    margin: 0;
   }
 
   #timeline {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Reduced from 140px to fit more */
-    gap: 2px; /* Reduced from 3px */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
     width: 100%;
     padding: 0;
     margin: 0;
@@ -483,10 +493,10 @@ footer {
   .song-block {
     break-inside: avoid;
     page-break-inside: avoid;
-    min-width: 120px; /* Reduced from 140px */
-    max-width: 160px; /* Reduced from 180px */
+    min-width: 100px;
+    max-width: 140px;
     margin: 0;
-    padding: 4px;
+    padding: 3px;
     box-sizing: border-box;
     border: 1px solid #999;
     color: #000;
@@ -494,14 +504,12 @@ footer {
     position: relative;
     overflow: hidden;
     height: auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex: 0 0 auto;
   }
 
   .song-block .label {
-    font-size: 8pt;
-    line-height: 1;
+    font-size: 7pt;
+    line-height: 0.9;
     margin: 0;
     padding: 0;
     white-space: normal;
@@ -516,13 +524,7 @@ footer {
     display: none;
   }
 
-  .song-block .resize-handle,
-  .song-block .delete-btn,
-  .song-block .tooltip {
-    display: none;
-  }
-
-  /* Lightened fill colors (unchanged) */
+  /* Lightened fill colors */
   .song-block.intro { background: #e6f0e6; }
   .song-block.verse { background: #e6ebf0; }
   .song-block.refrain { background: #f0e6eb; }
@@ -550,65 +552,16 @@ footer {
   .song-block.pastel { background: #f0f5f0; }
   .song-block.monochrome { background: #f5f5f5; }
 
-  .song-block .label {
-    font-size: 8pt; /* Reduced from 9pt */
-    line-height: 1; /* Reduced from 1.1 */
-    margin: 0;
-    padding: 0;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-    box-sizing: border-box;
-    color: #000;
-  }
-
-  .song-block .label br {
-    display: none;
-  }
-
-  .song-block .label::after {
-    content: "";
-  }
-
   .song-block .resize-handle,
   .song-block .delete-btn,
   .song-block .tooltip {
     display: none;
   }
 
-  .info-box {
-    display: none;
-  }
-
-  nav,
-  .controls,
-  .form-content,
-  footer {
-    display: none;
-  }
-
   @page {
-    margin: 0.1in; /* Reduced from 0.15in */
+    margin: 0.05in;
     @top-center {
-      content: none; /* Remove page numbering */
-    }
-  }
-
-  .timeline::before {
-    content: none;
-  }
-
-  .timeline {
-    page-break-before: auto;
-  }
-
-  /* Force single page by scaling if needed */
-  @media print and (max-height: 11in) {
-    body {
-      transform: none; /* Remove scaling */
-      width: 100%; /* Reset to normal */
-      height: auto; /* Let content flow naturally */
+      content: none;
     }
   }
 }
