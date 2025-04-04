@@ -8,6 +8,7 @@ const songDropdown = document.getElementById('song-dropdown');
 const toggleFormBtn = document.getElementById('toggle-form-btn');
 const formContent = document.getElementById('form-content');
 const printSongName = document.getElementById('print-song-name');
+const songTitleInput = document.getElementById('song-title-input'); // Reference to parameters input
 let draggedBlock = null;
 let selectedBlock = null;
 let currentSongName = '(I Can’t Get No) Satisfaction';
@@ -207,7 +208,13 @@ function updateTitle(name) {
   currentSongName = name;
   document.title = `${name} - SongMaker`;
   printSongName.textContent = name;
+  songTitleInput.value = name; // Sync the parameters input
 }
+
+// Event listener for manual title updates
+songTitleInput.addEventListener('input', (e) => {
+  updateTitle(e.target.value); // Update title when user types
+});
 
 function formatPart(part) {
   return part.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -866,5 +873,7 @@ function printSong() {
   currentBlockDisplay.innerHTML = originalContent;
 }
 
+// Initial setup
 populateSongDropdown();
 loadSongFromDropdown('songs/satisfaction.js');
+updateTitle(currentSongName); // Sync input on load
