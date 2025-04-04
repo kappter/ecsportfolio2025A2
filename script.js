@@ -150,8 +150,14 @@ function randomizeSong() {
   ];
 
   // Random title generator
-  const titleAdjectives = ['Cosmic', 'Silent', 'Electric', 'Fading', 'Raging', 'Dreamy', 'Wild'];
-  const titleNouns = ['Echo', 'Pulse', 'Wave', 'Night', 'Fire', 'Journey', 'Sky'];
+  const titleAdjectives = [
+    'Cosmic', 'Silent', 'Electric', 'Fading', 'Raging', 'Dreamy', 'Wild', 'Ethereal', 'Vivid', 'Haunting',
+    'Radiant', 'Mystic', 'Glowing', 'Somber', 'Frenzied', 'Tranquil', 'Jagged', 'Luminous', 'Restless', 'Blazing'
+  ];
+  const titleNouns = [
+    'Echo', 'Pulse', 'Wave', 'Night', 'Fire', 'Journey', 'Sky', 'Dawn', 'Shadow', 'Rhythm',
+    'Storm', 'Horizon', 'Drift', 'Flame', 'Void', 'Quest', 'Tide', 'Whisper', 'Thunder', 'Mirage'
+  ];
   const randomAdj = titleAdjectives[Math.floor(Math.random() * titleAdjectives.length)];
   const randomNoun = titleNouns[Math.floor(Math.random() * titleNouns.length)];
   const newTitle = `${randomAdj} ${randomNoun}`;
