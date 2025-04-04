@@ -812,6 +812,7 @@ function loadSongFromDropdown(filename) {
           else if (filename === 'songs/astroworld.js' && typeof loadAstroworld === 'function') loadAstroworld();
           else if (filename === 'songs/astrothunder.js' && typeof loadAstrothunder === 'function') loadAstrothunder();
           else if (filename === 'songs/jambi.js' && typeof loadJambi === 'function') loadJambi();
+            else if (filename === 'songs/schism.js' && typeof loadSchism === 'function') loadSchism();
           else throw new Error(`No load function found for ${filename}`);
         })
         .catch(error => {
@@ -841,9 +842,10 @@ function loadSongFromDropdown(filename) {
 
 function populateSongDropdown() {
   const availableSongs = [
-    'new-song', 'songs/Echoes of Joy.json', 'songs/pneuma.js', 'songs/satisfaction.js',
-    'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js', 'songs/jambi.js'
-  ];
+  'new-song', 'songs/Echoes of Joy.json', 'songs/pneuma.js', 'songs/satisfaction.js',
+  'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js', 
+  'songs/jambi.js', 'songs/schism.js'
+];
   availableSongs.forEach(song => {
     const option = document.createElement('option');
     option.value = song;
