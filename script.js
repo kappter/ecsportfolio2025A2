@@ -840,6 +840,18 @@ function loadSongFromDropdown(filename) {
   }
 }
 
+function populateTimeSignatures() {
+  const select = document.getElementById('time-signature');
+  validTimeSignatures.forEach(ts => {
+    const option = document.createElement('option');
+    option.value = ts;
+    option.textContent = ts;
+    select.appendChild(option);
+  });
+}
+// Call this during initialization, e.g., after populateSongDropdown()
+populateTimeSignatures();
+
 function populateSongDropdown() {
   const availableSongs = [
   'new-song', 'songs/Echoes of Joy.json', 'songs/pneuma.js', 'songs/satisfaction.js',
