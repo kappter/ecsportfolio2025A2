@@ -166,15 +166,11 @@ main {
   margin: 0 auto 10px;
 }
 
-#form-content input#song-title-input {
-  width: 100%;
-  padding: 5px;
-  margin: 5px 0;
-  background: #222;
-  color: #fff;
-  border: 1px solid #555;
-  border-radius: 5px;
-  box-sizing: border-box;
+#form-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px;
 }
 
 #form-content.collapsed {
@@ -329,19 +325,6 @@ main {
   background: #ff7777;
 }
 
-.resize-handle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 10px;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  cursor: ew-resize;
-}
-.song-block {
-  position: relative; /* Ensures resize handle positions correctly */
-}
-
 .song-block .resize-handle {
   position: absolute;
   right: -5px;
@@ -425,76 +408,142 @@ main {
   100% { transform: scale(1); }
 }
 
+/* Footer */
 footer {
-  display: block;
-  text-align: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 10px;
+  background: var(--footer-bg);
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  z-index: 1000;
+  font-size: 0.9em;
+  color: #bbb;
 }
 
 @media print {
   body {
     margin: 0;
-    padding: 0.25in; /* Reduced from 0.5in */
-    font-family: Arial, Helvetica, sans-serif;
+    padding: 0.15in; /* Reduced from 0.2in to 0.15in (~11pt) */
+    font-family: 'Helvetica', 'Arial', sans-serif;
     color: #000;
     background: #fff;
+    font-size: 9pt; /* Reduced base from 10pt */
   }
 
   header {
-    margin-bottom: 10px; /* Reduced from 20px */
+    margin-bottom: 2px; /* Reduced from 5px */
   }
 
   h1 {
     display: none;
   }
 
-  #song-name {
-    display: none; /* Hide UI title */
-  }
-
   #print-song-name {
-    display: block;
-    font-size: 18pt; /* Slightly smaller than UI but still bold */
+    font-size: 16pt; /* Reduced from 18pt */
     font-weight: bold;
     text-align: center;
-    margin: 5px 0; /* Tightened */
-    padding-bottom: 5px;
+    margin: 2px 0 1px; /* Tightened further */
+    padding-bottom: 1px;
     color: #000 !important;
-    border-bottom: 2px solid #000;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    border-bottom: 1px solid #333;
+    letter-spacing: 0.5px;
+  }
+
+  .form-container {
+    display: none;
+  }
+
+  #current-block-display {
+    display: block;
+    text-align: center;
+    padding: 3px; /* Reduced from 5px */
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 0;
+    margin: 0 auto 2px; /* Reduced from 5px */
+    max-width: 100%;
+    box-shadow: none;
+    font-size: 8pt; /* Reduced from 9pt */
+  }
+
+  #current-block-display .label {
+    font-weight: normal;
+    font-size: 8pt;
+    line-height: 1; /* Reduced from 1.1 */
+    margin: 0;
   }
 
   .timeline {
-    display: grid; /* Switch to grid for print */
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Slightly smaller than 200px */
-    gap: 5px; /* Reduced from 10px */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Reduced from 150px */
+    gap: 3px; /* Reduced from 5px */
     width: 100%;
     padding: 0;
-    margin: 0 0 10px; /* Reduced from 40px */
+    margin: 0;
   }
 
   .song-block {
     break-inside: avoid;
     page-break-inside: avoid;
-    width: 100%; /* Fit grid column */
-    min-width: 0; /* Override 200px */
+    min-width: 140px; /* Reduced from 150px */
+    max-width: 180px; /* Reduced from 200px */
     margin: 0;
-    padding: 8px; /* Slightly less than 10px */
+    padding: 4px; /* Reduced from 6px */
     box-sizing: border-box;
-    border: 1px solid #000;
-    background: #fff;
+    border: 1px solid #999;
     color: #000;
     box-shadow: none;
     position: relative;
+    overflow: hidden;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
+  /* Lightened fill colors (unchanged) */
+  .song-block.intro { background: #e6f0e6; }
+  .song-block.verse { background: #e6ebf0; }
+  .song-block.refrain { background: #f0e6eb; }
+  .song-block.pre-chorus { background: #e6f0e0; }
+  .song-block.chorus { background: #f0ebe6; }
+  .song-block.post-chorus { background: #e6f0ea; }
+  .song-block.bridge { background: #ebe6f0; }
+  .song-block.outro { background: #f0f0e6; }
+  .song-block.elision { background: #e6e6e6; }
+  .song-block.solo { background: #f0e6f0; }
+  .song-block.ad-lib { background: #e6f0f0; }
+  .song-block.hook { background: #f0e6e6; }
+  .song-block.interlude { background: #e6f0e2; }
+  .song-block.breakdown { background: #e6e6f0; }
+  .song-block.drop { background: #f0e6e4; }
+  .song-block.coda { background: #e6f0e8; }
+  .song-block.modulation { background: #f0f0e8; }
+  .song-block.tag { background: #e6e6ea; }
+  .song-block.chorus-reprise { background: #e6f0ee; }
+  .song-block.countermelody { background: #f0e6ee; }
+  .song-block.instrumental-verse-chorus { background: #e6f0e6; }
+  .song-block.false-ending { background: #f0e6ea; }
+  .song-block.default { background: #f0f0f0; }
+  .song-block.vibrant { background: #fff0f0; }
+  .song-block.pastel { background: #f0f5f0; }
+  .song-block.monochrome { background: #f5f5f5; }
+
   .song-block .label {
-    font-size: 10pt; /* Slightly smaller for compactness */
-    line-height: 1.2;
+    font-size: 8pt; /* Reduced from 9pt */
+    line-height: 1; /* Reduced from 1.1 */
     margin: 0;
     padding: 0;
     white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
+    box-sizing: border-box;
+    color: #000;
   }
 
   .song-block .label br {
@@ -511,17 +560,21 @@ footer {
     display: none;
   }
 
+  .info-box {
+    display: none;
+  }
+
   nav,
   .controls,
-  .form-container,
+  .form-content,
   footer {
     display: none;
   }
 
   @page {
-    margin: 0.25in; /* Reduced from 0.5in */
-    @bottom-center {
-      content: "© 2025 SongMaker by kappter";
+    margin: 0.15in; /* Reduced from 0.2in */
+    @top-center {
+      content: counter(page) " of " counter(pages);
       font-size: 8pt;
       color: #555;
     }
@@ -529,5 +582,19 @@ footer {
 
   .timeline::before {
     content: none;
+  }
+
+  .timeline {
+    page-break-before: auto;
+  }
+
+  /* Force single page by scaling if needed */
+  @media print and (max-height: 11in) {
+    body {
+      transform: scale(0.95); /* Slight scale down */
+      transform-origin: top left;
+      width: 105%; /* Compensate for scaling */
+      height: 105%;
+    }
   }
 }

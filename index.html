@@ -13,6 +13,7 @@
     <header>
         <h1>SongMaker</h1>
         <h2 id="print-song-name">(I Can’t Get No) Satisfaction</h2>
+        <input type="text" id="song-title-input" value="(I Can’t Get No) Satisfaction" placeholder="Enter song title">
     </header>
 
     <nav>
@@ -25,10 +26,8 @@
                 Import
                 <input type="file" accept=".json" onchange="importSong(event)">
             </label>
-            <select id="song-dropdown">
-                <option value="new-song">New Song</option>
-                <option value="songs/satisfaction.js">satisfaction</option>
-            </select>
+            <select id="song-dropdown" onchange="loadSongFromDropdown(this.value)">
+                <!-- Options populated by JS -->
             </select>
             <select id="style-dropdown" onchange="changeBlockStyle(this.value)">
                 <option value="">Default Style</option>
