@@ -167,6 +167,7 @@ function randomizeSong() {
   const songRootNote = rootNotes[Math.floor(Math.random() * rootNotes.length)];
   const songMode = modes[Math.floor(Math.random() * modes.length)];
   const songTempo = Math.floor(Math.random() * (180 - 60 + 1)) + 60; // 60-180 BPM
+  const songTimeSignature = validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)]; // Random from valid list
 
   // Song structure algorithm
   const songStructure = [];
@@ -178,7 +179,8 @@ function randomizeSong() {
     rootNote: songRootNote,
     mode: songMode,
     tempo: songTempo,
-    timeSignature: validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)],    feel: 'Atmospheric',
+    timeSignature: songTimeSignature, // Use song-wide time signature
+    feel: 'Atmospheric',
     lyrics: ''
   });
 
@@ -218,7 +220,7 @@ function randomizeSong() {
       rootNote: songRootNote,
       mode: songMode,
       tempo: songTempo,
-      timeSignature: '4/4', // Default, can expand
+      timeSignature: songTimeSignature, // Use song-wide time signature
       feel: feels[Math.floor(Math.random() * feels.length)],
       lyrics: possibleLyrics[Math.floor(Math.random() * possibleLyrics.length)]
     });
@@ -231,10 +233,39 @@ function randomizeSong() {
     rootNote: songRootNote,
     mode: songMode,
     tempo: songTempo,
-    timeSignature: '4/4', // Default
+    timeSignature: songTimeSignature, // Use song-wide time signature
     feel: 'Resolution',
     lyrics: ''
   });
+
+  // Build blocks in the timeline
+  songStructure.forEach(blockData => {
+    const error = validateBlock(blockData);
+    if (error) {
+      console.error(`Generated block failed validation: ${error}`);
+      return;
+    }
+
+    const block = document.createElement('div');
+    block.classList.add('song-block', blockData.type);
+    block.setAttribute('data-measures', blockData.measures);
+    block.setAttribute('data-tempo', blockData.tempo);
+    block.setAttribute('data-time-signature', blockData.timeSignature);
+    block.setAttribute('data-feel', blockData.feel);
+    block.setAttribute('data-lyrics', blockData.lyrics);
+    block.setAttribute('data-root-note', blockData.rootNote);
+    block.setAttribute('data-mode', blockData.mode);
+    block.innerHTML = `<span class="label">${formatPart(blockData.type)}: ${blockData.timeSignature} ${blockData.measures}m<br>${abbreviateKey(blockData.rootNote)} ${blockData.mode} ${blockData.tempo}b ${blockData.feel}${blockData.lyrics ? '<br>-<br>' + truncateLyrics(blockData.lyrics) : ''}</span><span class="tooltip">${blockData.lyrics || 'No lyrics'}</span>`;
+    updateBlockSize(block);
+    setupBlock(block);
+    timeline.appendChild(block);
+
+    const styleDropdown = document.getElementById('style-dropdown');
+    if (styleDropdown.value) block.classList.add(styleDropdown.value);
+  });
+
+  calculateTimings();
+}
 
   // Build blocks in the timeline
   songStructure.forEach(blockData => {
