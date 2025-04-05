@@ -178,8 +178,7 @@ function randomizeSong() {
     rootNote: songRootNote,
     mode: songMode,
     tempo: songTempo,
-    timeSignature: '4/4', // Default, can randomize later
-    feel: 'Atmospheric',
+    timeSignature: validTimeSignatures[Math.floor(Math.random() * validTimeSignatures.length)],    feel: 'Atmospheric',
     lyrics: ''
   });
 
