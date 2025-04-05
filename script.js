@@ -813,6 +813,7 @@ function loadSongFromDropdown(filename) {
           else if (filename === 'songs/astrothunder.js' && typeof loadAstrothunder === 'function') loadAstrothunder();
           else if (filename === 'songs/jambi.js' && typeof loadJambi === 'function') loadJambi();
             else if (filename === 'songs/schism.js' && typeof loadSchism === 'function') loadSchism();
+              else if (filename === 'songs/7empest.js' && typeof loadSevenTempest === 'function') loadSevenTempest();
           else throw new Error(`No load function found for ${filename}`);
         })
         .catch(error => {
@@ -853,10 +854,10 @@ function populateTimeSignatures() {
 populateTimeSignatures();
 
 function populateSongDropdown() {
-  const availableSongs = [
+const availableSongs = [
   'new-song', 'songs/Echoes of Joy.json', 'songs/pneuma.js', 'songs/satisfaction.js',
-  'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js', 
-  'songs/jambi.js', 'songs/schism.js'
+  'songs/dirtyLaundry.js', 'songs/invincible.js', 'songs/astroworld.js', 'songs/astrothunder.js',
+  'songs/jambi.js', 'songs/schism.js', 'songs/7empest.js'
 ];
   availableSongs.forEach(song => {
     const option = document.createElement('option');
@@ -873,17 +874,19 @@ function printSong() {
   // Store original content to restore later
   const originalContent = currentBlockDisplay.innerHTML;
 
-  // Populate current-block-display with song info and copyright
+  // Populate with concise info, add print-specific class
+  currentBlockDisplay.classList.add('print-view');
   currentBlockDisplay.innerHTML = `
     <span class="label">
-      Total Duration: ${formatDuration(totalSeconds)} | Beats: ${totalBeats} | Blocks: ${blockCount}<br>
-      © 2025 SongMaker by kappter. All rights reserved.
+      ${currentSongName} | ${formatDuration(totalSeconds)} | ${totalBeats} Beats | ${blockCount} Blocks
+      <br>© 2025 SongMaker by kappter
     </span>
   `;
 
   window.print();
 
-  // Restore original content after printing
+  // Restore original state
+  currentBlockDisplay.classList.remove('print-view');
   currentBlockDisplay.innerHTML = originalContent;
 }
 
