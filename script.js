@@ -447,6 +447,14 @@ function addBlock() {
   calculateTimings();
 }
 
+function updateBlockSize(block) {
+  const measures = parseInt(block.getAttribute('data-measures'));
+  const baseWidth = 120;
+  const minWidth = 120;
+  const width = Math.max(minWidth, (measures / 4) * baseWidth);
+  block.style.width = `${width}px`;
+}
+
 function updateBlock() {
   if (!selectedBlock) {
     alert('Please select a block to update');
@@ -478,19 +486,23 @@ function updateBlock() {
   selectedBlock.setAttribute('data-root-note', rootNote);
   selectedBlock.setAttribute('data-mode', mode);
   selectedBlock.innerHTML = `<span class="label">${formatPart(type)}: ${timeSignature} ${measures}m<br>${abbreviateKey(rootNote)} ${mode} ${tempo}b ${feel}${lyrics ? '<br>-<br>' + truncateLyrics(lyrics) : ''}</span><span class="tooltip">${lyrics || 'No lyrics'}</span>`;
+  
+  // Resize the block after updating measures
   updateBlockSize(selectedBlock);
 
+  // Reattach delete button
   const deleteBtn = document.createElement('button');
   deleteBtn.classList.add('delete-btn');
   deleteBtn.textContent = 'X';
   deleteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     selectedBlock.remove();
-    if (selectedBlock === selectedBlock) clearSelection();
+    if (selectedBlock === selectedBlock) clearSelection(); // Note: This could be simplified to just clearSelection()
     calculateTimings();
   });
   selectedBlock.appendChild(deleteBtn);
 
+  // Reattach resize handle
   const resizeHandle = document.createElement('div');
   resizeHandle.classList.add('resize-handle');
   selectedBlock.appendChild(resizeHandle);
